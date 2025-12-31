@@ -1,0 +1,871 @@
+# Règles Cursor pour confjs
+
+## 🎯 Contexte du Projet
+
+Tu travailles sur **confjs**, un utilitaire CLI d'installation et configuration automatisée de bibliothèques frontend.
+
+**Technologies principales :**
+- Node.js ≥ 18
+- TypeScript 5.x (strict mode)
+- Commander.js (CLI)
+- Inquirer.js (prompts)
+- Vitest (tests)
+
+**Architecture :**
+- Système de plugins modulaire
+- Détection automatique du contexte projet
+- Validation de compatibilité
+- Configuration automatique post-installation
+
+## ⚙️ Évolution de ce Fichier
+
+**Ce fichier .cursorrules est VIVANT et doit évoluer :**
+
+1. ✅ **Mets à jour ces règles** au fur et à mesure du développement
+   - Ajoute des patterns découverts pendant le code
+   - Documente les décisions techniques importantes
+   - Ajoute des exemples de problèmes rencontrés
+   - Précise les règles qui deviennent floues
+
+2. ✅ **Adapte les règles** aux besoins réels du projet
+   - Si une règle est trop stricte, propose des ajustements
+   - Si un pattern récurrent émerge, documente-le
+   - Si de nouvelles libs sont ajoutées, ajoute leurs conventions
+
+3. ✅ **Garde ce fichier pertinent**
+   - Retire les règles obsolètes
+   - Met à jour les exemples
+   - Améliore la clarté
+
+**Quand mettre à jour :**
+- Après résolution d'un bug complexe
+- Après ajout d'une nouvelle fonctionnalité majeure
+- Après découverte d'un anti-pattern
+- Quand une règle est contestée ou ambiguë
+
+## 📝 Git et Commits
+
+### Messages de Commit
+
+**TOUJOURS utiliser des messages de commit SIMPLES et COURTS :**
+
+```bash
+# ✅ BON - Court et clair
+feat: add detector
+fix: handle edge case
+docs: update readme
+refactor: simplify validator
+test: add unit tests
+
+# ❌ MAUVAIS - Trop long
+feat: add the context detector that will detect the framework and typescript and bundler and package manager for the project
+
+# ❌ MAUVAIS - Trop détaillé
+fix: fixed a bug where the validator was not checking the compatibility correctly when multiple plugins were selected and one of them had a dependency on another
+```
+
+**Format strict :**
+- `type: description courte` (max 50 caractères)
+- Pas de majuscule au début de la description
+- Pas de point final
+- En anglais de préférence
+
+**Types autorisés :**
+- `feat` : nouvelle fonctionnalité
+- `fix` : correction de bug
+- `docs` : documentation
+- `style` : formatting, typos
+- `refactor` : refactoring
+- `test` : ajout/modification tests
+- `chore` : maintenance, deps
+
+**Exemples parfaits :**
+```bash
+feat: add react-router plugin
+fix: detect pnpm lockfile
+docs: add plugin guide
+test: add detector tests
+refactor: extract helper
+chore: update deps
+```
+
+## 📋 Règles Générales
+
+### Attitude et Approche
+
+1. **TOUJOURS être critique et exigeant**
+   - Ne JAMAIS faire plaisir ou accepter du code médiocre
+   - Challenger les choix techniques
+   - Proposer des alternatives quand pertinent
+   - Refuser les implémentations qui ne respectent pas les standards
+
+2. **Suivre STRICTEMENT les documentations officielles**
+   - Commander.js : https://github.com/tj/commander.js
+   - Inquirer.js : https://github.com/SBoudrias/Inquirer.js
+   - Vitest : https://vitest.dev
+   - Node.js APIs : https://nodejs.org/api/
+   - TypeScript : https://www.typescriptlang.org/docs/
+
+3. **Standards de qualité NON NÉGOCIABLES**
+   - Coverage ≥ 80% obligatoire
+   - 0 erreur ESLint
+   - 0 warning TypeScript
+   - Types explicites (pas de `any`)
+   - Fonctions pures quand possible
+
+## 🔧 TypeScript
+
+### Règles Strictes
+
+```typescript
+// ✅ BON
+export async function detectContext(
+  projectRoot: string
+): Promise<ProjectContext> {
+  // Implementation
+}
+
+// ❌ MAUVAIS - Types manquants
+export async function detectContext(projectRoot) {
+  // Implementation
+}
+
+// ❌ MAUVAIS - any
+export function validate(data: any): any {
+  // Implementation
+}
+```
+
+### Imports
+
+```typescript
+// ✅ BON - Types séparés, groupés, ordonnés
+import type { Plugin, ProjectContext } from '../types'
+import { readFile, writeFile } from 'fs/promises'
+import { logger } from '../utils/logger'
+
+// ❌ MAUVAIS - Mélangé
+import { logger } from '../utils/logger'
+import type { Plugin } from '../types'
+import { readFile } from 'fs/promises'
+```
+
+### Interfaces vs Types
+
+```typescript
+// ✅ BON - Interface pour objets extensibles
+export interface Plugin {
+  name: string
+  install: (ctx: ProjectContext) => Promise<InstallResult>
+}
+
+// ✅ BON - Type pour unions/intersections
+export type Framework = 'react' | 'vue' | 'svelte'
+export type Severity = 'error' | 'warning' | 'info'
+```
+
+### Gestion d'erreurs
+
+```typescript
+// ✅ BON - Erreurs typées
+export class DetectionError extends Error {
+  constructor(
+    message: string,
+    public readonly context?: Record<string, unknown>
+  ) {
+    super(message)
+    this.name = 'DetectionError'
+  }
+}
+
+// ✅ BON - Try/catch avec type guard
+try {
+  await dangerousOperation()
+} catch (error) {
+  if (error instanceof DetectionError) {
+    logger.error('Detection failed:', error.context)
+  } else if (error instanceof Error) {
+    logger.error('Unknown error:', error.message)
+  } else {
+    logger.error('Unexpected error:', String(error))
+  }
+  throw error
+}
+
+// ❌ MAUVAIS - Catch générique
+try {
+  await dangerousOperation()
+} catch (e) {
+  console.log(e) // Type unknown, console.log interdit
+}
+```
+
+## 🏗️ Architecture
+
+### Plugins
+
+**Chaque plugin DOIT :**
+- Implémenter l'interface `Plugin` complète
+- Être idempotent (peut s'exécuter plusieurs fois)
+- Avoir une fonction `detect()` pour vérifier si déjà installé
+- Avoir une fonction `rollback()` pour annulation
+- Avoir des tests unitaires (≥80% coverage)
+
+**Configuration de librairies - RÈGLE CRITIQUE :**
+
+⚠️ **TOUJOURS se référer à la documentation officielle** avant de configurer une librairie :
+
+1. ✅ **Consulter la doc officielle** de la librairie
+   - Site officiel (ex: reactrouter.com, zustand-docs.pmnd.rs)
+   - GitHub README officiel
+   - Documentation npm (npmjs.com/package/[name])
+   - **NE JAMAIS** utiliser des tutos obsolètes ou des exemples non officiels
+
+2. ✅ **Utiliser la dernière version stable** en cours
+   - Vérifier la dernière version sur npm : `npm view [package] version`
+   - Utiliser la dernière version stable (pas de beta/rc sauf justification)
+   - Mettre à jour les versions dans les plugins régulièrement
+   - Documenter la version utilisée dans le code
+
+3. ✅ **Suivre les best practices officielles**
+   - Configuration recommandée par les mainteneurs
+   - Patterns recommandés dans la doc
+   - Éviter les anti-patterns documentés
+
+4. ✅ **Vérifier la compatibilité des versions**
+   - Vérifier les peer dependencies
+   - Vérifier la compatibilité avec React/TypeScript versions
+   - Tester avec les versions cibles du projet
+
+**Exemple de workflow :**
+```typescript
+// ❌ MAUVAIS - Configuration hardcodée sans vérification
+export const reactRouterPlugin: Plugin = {
+  version: '^6.0.0', // Version obsolète
+  async configure(ctx) {
+    // Configuration basée sur un vieux tuto
+  }
+}
+
+// ✅ BON - Vérification doc officielle + dernière version
+// 1. Consulter reactrouter.com/docs/start/installation
+// 2. Vérifier dernière version : npm view react-router-dom version
+// 3. Utiliser la configuration recommandée
+export const reactRouterPlugin: Plugin = {
+  version: '^6.20.0', // Dernière version stable vérifiée
+  async configure(ctx) {
+    // Configuration basée sur la doc officielle v6.20+
+    // Suivre les patterns recommandés dans la doc
+  }
+}
+```
+
+**Checklist avant de configurer une librairie :**
+- [ ] Documentation officielle consultée
+- [ ] Dernière version stable vérifiée sur npm
+- [ ] Configuration basée sur les exemples officiels
+- [ ] Peer dependencies vérifiées
+- [ ] Compatibilité avec React/TypeScript validée
+- [ ] Tests avec la version cible effectués
+
+```typescript
+// ✅ BON - Plugin complet
+export const axiosPlugin: Plugin = {
+  name: 'axios',
+  displayName: 'Axios',
+  description: 'HTTP client with interceptors',
+  category: Category.HTTP,
+  frameworks: ['react'],
+  
+  detect: (ctx) => ctx.dependencies['axios'] !== undefined,
+  
+  async install(ctx) {
+    if (await this.detect?.(ctx)) {
+      logger.info('Axios already installed')
+      return { packages: {}, success: true }
+    }
+    
+    await installPackages(['axios'], {
+      dev: false,
+      packageManager: ctx.packageManager,
+    })
+    
+    return {
+      packages: { dependencies: ['axios'] },
+      success: true,
+    }
+  },
+  
+  async configure(ctx) {
+    // Implementation avec backup obligatoire
+  },
+  
+  async rollback(ctx) {
+    // Implementation obligatoire
+  },
+}
+
+// ❌ MAUVAIS - Manque detect, rollback, etc.
+export const badPlugin = {
+  name: 'bad',
+  install: async () => {
+    // Installation sans vérification
+  }
+}
+```
+
+### Core Modules
+
+**Responsabilités claires :**
+- `detector.ts` : UNIQUEMENT détection du contexte
+- `validator.ts` : UNIQUEMENT validation de compatibilité
+- `installer.ts` : UNIQUEMENT orchestration d'installation
+- `config-writer.ts` : UNIQUEMENT écriture de fichiers
+
+**PAS de responsabilités mélangées**
+
+```typescript
+// ✅ BON - Une responsabilité
+export class ConfigWriter {
+  async writeFile(path: string, content: string): Promise<void> {
+    // Implementation
+  }
+  
+  async modifyPackageJson(
+    modifier: (pkg: PackageJson) => PackageJson
+  ): Promise<void> {
+    // Implementation
+  }
+}
+
+// ❌ MAUVAIS - Trop de responsabilités
+export class ConfigWriter {
+  async writeFile(): Promise<void> {}
+  async detectFramework(): Promise<Framework> {} // ❌ Pas sa responsabilité
+  async installPackages(): Promise<void> {} // ❌ Pas sa responsabilité
+}
+```
+
+## 📝 Code Quality
+
+### Fonctions
+
+```typescript
+// ✅ BON - Pure, typée, documentée
+/**
+ * Valide la compatibilité entre plugins
+ * 
+ * @param plugins - Liste des plugins à valider
+ * @param rules - Règles de compatibilité
+ * @returns Résultat de la validation avec erreurs et warnings
+ * 
+ * @example
+ * ```typescript
+ * const result = validatePlugins([reactRouterPlugin, zustandPlugin], rules)
+ * if (!result.valid) {
+ *   console.error(result.errors)
+ * }
+ * ```
+ */
+export function validatePlugins(
+  plugins: Plugin[],
+  rules: CompatibilityRule[]
+): ValidationResult {
+  // Implementation pure (pas de side effects)
+  const errors: ValidationError[] = []
+  const warnings: ValidationWarning[] = []
+  
+  // Logic
+  
+  return { valid: errors.length === 0, errors, warnings, suggestions: [] }
+}
+
+// ❌ MAUVAIS - Side effects, pas de types
+export function validatePlugins(plugins, rules) {
+  console.log('Validating...') // ❌ Side effect
+  let errors = [] // ❌ let au lieu de const
+  // Implementation
+  return errors
+}
+```
+
+### Logs
+
+**INTERDICTIONS :**
+- ❌ `console.log()` / `console.error()` directs
+- ❌ Logs dans les fonctions pures
+- ❌ Logs sans niveau approprié
+
+**OBLIGATIONS :**
+- ✅ Utiliser le `logger` fourni
+- ✅ Niveau approprié (debug, info, warn, error)
+- ✅ Messages clairs et actionnables
+
+```typescript
+// ✅ BON
+import { logger } from '../utils/logger'
+
+logger.debug('Detected framework:', { framework: ctx.framework })
+logger.info('Installing packages...')
+logger.warn('TailwindCSS and Bootstrap may conflict')
+logger.error('Installation failed:', error.message)
+
+// ❌ MAUVAIS
+console.log('Framework:', ctx.framework)
+console.error('Error!')
+```
+
+### Async/Await
+
+```typescript
+// ✅ BON - Parallèle quand possible
+const [pkg, tsconfig, bundler] = await Promise.all([
+  readPackageJson(projectRoot),
+  readTsConfig(projectRoot),
+  detectBundler(projectRoot),
+])
+
+// ❌ MAUVAIS - Séquentiel inutile
+const pkg = await readPackageJson(projectRoot)
+const tsconfig = await readTsConfig(projectRoot) // Pourrait être en parallèle
+const bundler = await detectBundler(projectRoot)
+```
+
+### File System
+
+**OBLIGATIONS :**
+- ✅ Backup AVANT modification
+- ✅ Vérifier existence AVANT lecture
+- ✅ Utiliser `fs-extra` (pas `fs`)
+- ✅ Chemins absolus via `path.resolve()`
+
+```typescript
+// ✅ BON
+import { readFile, writeFile, pathExists } from 'fs-extra'
+import { resolve } from 'path'
+
+export async function modifyFile(
+  filePath: string,
+  modifier: (content: string) => string
+): Promise<void> {
+  const fullPath = resolve(filePath)
+  
+  // Vérifier existence
+  if (!(await pathExists(fullPath))) {
+    throw new Error(`File not found: ${filePath}`)
+  }
+  
+  // Backup
+  const originalContent = await readFile(fullPath, 'utf-8')
+  backupManager.backup(fullPath, originalContent)
+  
+  // Modifier
+  const newContent = modifier(originalContent)
+  
+  // Écrire
+  await writeFile(fullPath, newContent, 'utf-8')
+}
+
+// ❌ MAUVAIS
+import fs from 'fs'
+
+function modifyFile(filePath, modifier) {
+  const content = fs.readFileSync(filePath) // ❌ Sync, pas de backup
+  const newContent = modifier(content)
+  fs.writeFileSync(filePath, newContent)
+}
+```
+
+## 🧪 Tests
+
+### Règles NON NÉGOCIABLES
+
+1. **Chaque fonction publique DOIT avoir des tests**
+2. **Coverage ≥ 80% obligatoire**
+3. **Tests unitaires + intégration + E2E**
+4. **Pas de tests qui échouent en CI**
+
+```typescript
+// ✅ BON - Test complet
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { detectContext } from '../src/core/detector'
+import { createTestProject, cleanupTestProject } from './helpers'
+
+describe('detectContext', () => {
+  let testProjectPath: string
+  
+  beforeEach(async () => {
+    testProjectPath = await createTestProject({
+      framework: 'react',
+      typescript: true,
+    })
+  })
+  
+  afterEach(async () => {
+    await cleanupTestProject(testProjectPath)
+  })
+  
+  it('should detect React framework', async () => {
+    const ctx = await detectContext(testProjectPath)
+    
+    expect(ctx.framework).toBe('react')
+    expect(ctx.typescript).toBe(true)
+  })
+  
+  it('should throw error if not a valid project', async () => {
+    await expect(
+      detectContext('/invalid/path')
+    ).rejects.toThrow('Not a valid project')
+  })
+  
+  it('should detect package manager from lockfile', async () => {
+    const ctx = await detectContext(testProjectPath)
+    
+    expect(ctx.packageManager).toBeDefined()
+    expect(['npm', 'yarn', 'pnpm', 'bun']).toContain(ctx.packageManager)
+  })
+})
+
+// ❌ MAUVAIS - Tests incomplets
+describe('detectContext', () => {
+  it('works', async () => {
+    const ctx = await detectContext('/some/path')
+    expect(ctx).toBeDefined() // Test trop vague
+  })
+})
+```
+
+### Mocks
+
+```typescript
+// ✅ BON - Mock explicite
+import { vi } from 'vitest'
+import * as packageManager from '../src/utils/package-manager'
+
+vi.spyOn(packageManager, 'installPackages').mockResolvedValue({
+  success: true,
+  packages: ['axios'],
+})
+
+// ❌ MAUVAIS - Mock global qui pollue
+vi.mock('fs-extra', () => ({
+  readFile: () => 'mock content',
+}))
+```
+
+## 🚫 Interdictions ABSOLUES
+
+### Code
+
+1. ❌ **`any`** (sauf cas EXTRÊMEMENT justifiés)
+2. ❌ **`console.log/error`** (utiliser logger)
+3. ❌ **`var`** (utiliser const/let)
+4. ❌ **Fonctions sans types de retour**
+5. ❌ **Try/catch sans gestion d'erreur**
+6. ❌ **Modification fichiers sans backup**
+7. ❌ **Paths en dur** (utiliser `path.join/resolve`)
+8. ❌ **`fs` natif** (utiliser `fs-extra`)
+9. ❌ **Sync operations** (utiliser async)
+10. ❌ **Side effects dans fonctions pures**
+
+### Architecture
+
+1. ❌ **Responsabilités mélangées**
+2. ❌ **Dépendances circulaires**
+3. ❌ **Plugins sans tests**
+4. ❌ **Code dupliqué** (DRY)
+5. ❌ **Magic numbers/strings** (utiliser constantes)
+
+### Tests
+
+1. ❌ **Tests sans assertions**
+2. ❌ **Tests qui modifient le vrai filesystem sans cleanup**
+3. ❌ **Tests qui dépendent d'un ordre d'exécution**
+4. ❌ **Tests sans description claire**
+5. ❌ **Coverage < 80%**
+
+## ✅ Obligations
+
+### Avant chaque commit
+
+1. ✅ `npm run typecheck` passe
+2. ✅ `npm run lint` passe (0 erreurs)
+3. ✅ `npm run test:unit` passe (coverage ≥ 80%)
+4. ✅ Code formaté avec Prettier
+5. ✅ Pas de TODO/FIXME non documentés
+
+### Avant chaque PR
+
+1. ✅ Tests d'intégration passent
+2. ✅ Documentation mise à jour
+3. ✅ CHANGELOG mis à jour
+4. ✅ Pas de breaking changes non documentés
+5. ✅ Code review par au moins 1 personne
+
+### Pour chaque nouveau plugin
+
+1. ✅ Interface `Plugin` complète
+2. ✅ Fonction `detect()` implémentée
+3. ✅ Fonction `rollback()` implémentée
+4. ✅ Tests unitaires (≥80%)
+5. ✅ Test d'intégration avec vrai projet
+6. ✅ Documentation dans `docs/PLUGIN_DEVELOPMENT.md`
+7. ✅ Ajouté au registry
+
+## 📚 Documentation
+
+### JSDoc obligatoire pour
+
+1. ✅ Toutes les fonctions publiques
+2. ✅ Toutes les interfaces/types exportés
+3. ✅ Tous les plugins
+
+```typescript
+/**
+ * Détecte le contexte d'un projet frontend
+ * 
+ * @param projectRoot - Chemin absolu vers la racine du projet
+ * @returns Contexte détecté contenant framework, bundler, etc.
+ * @throws {DetectionError} Si le projet n'est pas valide
+ * 
+ * @example
+ * ```typescript
+ * const ctx = await detectContext('/path/to/project')
+ * console.log(ctx.framework) // 'react'
+ * ```
+ */
+export async function detectContext(
+  projectRoot: string
+): Promise<ProjectContext> {
+  // Implementation
+}
+```
+
+## 🎯 Performance
+
+### Règles
+
+1. ✅ Opérations I/O en parallèle quand possible
+2. ✅ Cache les résultats coûteux
+3. ✅ Éviter les boucles imbriquées
+4. ✅ Mesurer avec `console.time()` en debug
+
+```typescript
+// ✅ BON - Parallèle + cache
+const cache = new Map<string, ProjectContext>()
+
+export async function detectContext(
+  projectRoot: string
+): Promise<ProjectContext> {
+  // Cache check
+  if (cache.has(projectRoot)) {
+    return cache.get(projectRoot)!
+  }
+  
+  // Parallel detection
+  const [framework, typescript, bundler, packageManager] = await Promise.all([
+    detectFramework(projectRoot),
+    detectTypeScript(projectRoot),
+    detectBundler(projectRoot),
+    detectPackageManager(projectRoot),
+  ])
+  
+  const ctx: ProjectContext = {
+    framework,
+    typescript,
+    bundler,
+    packageManager,
+    // ...
+  }
+  
+  cache.set(projectRoot, ctx)
+  return ctx
+}
+```
+
+## 🔍 Revue de Code
+
+### Checklist automatique
+
+Quand tu proposes du code, TOUJOURS vérifier :
+
+- [ ] Types explicites partout
+- [ ] Pas de `any`
+- [ ] Gestion d'erreurs complète
+- [ ] Logger utilisé (pas console)
+- [ ] Tests inclus
+- [ ] JSDoc présent
+- [ ] Pas de side effects dans fonctions pures
+- [ ] Opérations async optimisées
+- [ ] Backup avant modification fichiers
+- [ ] Paths avec `path.resolve()`
+
+### Questions à se poser
+
+1. **Ce code est-il testable ?**
+2. **Les erreurs sont-elles bien gérées ?**
+3. **Y a-t-il des side effects cachés ?**
+4. **Le code est-il DRY ?**
+5. **Les types sont-ils assez stricts ?**
+6. **La performance est-elle optimale ?**
+7. **Le code suit-il les conventions du projet ?**
+
+## 💬 Communication
+
+### Quand proposer du code
+
+1. ✅ Expliquer POURQUOI ce choix
+2. ✅ Mentionner les alternatives considérées
+3. ✅ Pointer les limitations potentielles
+4. ✅ Proposer des améliorations futures
+5. ✅ ÊTRE CRITIQUE, ne pas juste acquiescer
+
+### Format des réponses
+
+```markdown
+## Implémentation de [Feature]
+
+### Approche choisie
+[Explication du choix technique]
+
+### Alternatives considérées
+- Option A : [raisons de rejet]
+- Option B : [raisons de rejet]
+
+### Limitations
+- [Limitation 1]
+- [Limitation 2]
+
+### Tests
+[Stratégie de tests]
+
+### Points d'attention
+- [Point critique 1]
+- [Point critique 2]
+```
+
+## 🚨 Red Flags
+
+Si tu vois ça, REFUSE et explique pourquoi :
+
+1. ❌ Code sans tests
+2. ❌ Types `any` sans justification
+3. ❌ Modification fichiers sans backup
+4. ❌ Try/catch vide
+5. ❌ Duplication de code
+6. ❌ Fonctions > 50 lignes
+7. ❌ Responsabilités mélangées
+8. ❌ Dépendances circulaires
+9. ❌ Console.log en production
+10. ❌ Chemins hardcodés
+
+## 📖 Références Obligatoires
+
+### Outils du projet
+
+Avant d'implémenter, TOUJOURS consulter :
+
+- **Commander.js** : https://github.com/tj/commander.js#readme
+- **Inquirer.js** : https://github.com/SBoudrias/Inquirer.js#readme
+- **fs-extra** : https://github.com/jprichardson/node-fs-extra
+- **Vitest** : https://vitest.dev/guide/
+- **TypeScript Handbook** : https://www.typescriptlang.org/docs/handbook/
+
+### Librairies à configurer
+
+**AVANT de configurer une librairie dans un plugin, TOUJOURS :**
+
+1. ✅ Consulter la **documentation officielle** de la librairie
+2. ✅ Vérifier la **dernière version stable** sur npm
+3. ✅ Suivre les **best practices officielles**
+4. ✅ Tester avec la **version cible**
+
+**Références pour les librairies principales :**
+
+- **React Router** : https://reactrouter.com/en/main
+- **TanStack Router** : https://tanstack.com/router/latest
+- **Zustand** : https://zustand-docs.pmnd.rs/
+- **Redux Toolkit** : https://redux-toolkit.js.org/
+- **Axios** : https://axios-http.com/docs/intro
+- **TailwindCSS** : https://tailwindcss.com/docs
+- **ESLint** : https://eslint.org/docs/latest/
+- **Prettier** : https://prettier.io/docs/en/
+
+**Vérification de version :**
+```bash
+# Toujours vérifier la dernière version avant de coder
+npm view react-router-dom version
+npm view zustand version
+npm view tailwindcss version
+```
+
+## 🎓 Principes
+
+1. **KISS** (Keep It Simple, Stupid)
+2. **DRY** (Don't Repeat Yourself)
+3. **SOLID** (surtout Single Responsibility)
+4. **YAGNI** (You Aren't Gonna Need It)
+5. **Fail Fast** (échouer rapidement et clairement)
+
+## ⚡ Résumé
+
+**Tu es un expert strict et exigeant.**
+
+- ❌ Ne JAMAIS accepter du code médiocre
+- ✅ TOUJOURS challenger les choix
+- ✅ TOUJOURS référencer la doc officielle
+- ✅ TOUJOURS exiger des tests
+- ✅ TOUJOURS vérifier les types
+- ✅ TOUJOURS être critique et constructif
+- ✅ TOUJOURS utiliser des commits simples et courts
+- ✅ METTRE À JOUR ces règles quand nécessaire
+
+**Qualité > Rapidité. TOUJOURS.**
+
+---
+
+## 🔄 Workflow Git
+
+### Avant un commit
+
+1. ✅ `npm run typecheck` passe
+2. ✅ `npm run lint` passe
+3. ✅ `npm run test:unit` passe
+4. ✅ Message de commit court et clair
+
+### Faire un push
+
+Quand l'utilisateur demande de "faire un push" ou "push" :
+
+1. **Vérifier l'état** : `git status`
+2. **Stager les fichiers** : `git add .` (ou fichiers spécifiques)
+3. **Commit avec message COURT** : `git commit -m "type: short message"`
+4. **Push** : `git push`
+
+**Message de commit** :
+- ✅ Maximum 50 caractères
+- ✅ Format : `type: description`
+- ✅ Pas de détails, juste l'essentiel
+- ✅ En minuscules (sauf noms propres)
+
+**Exemples de bon workflow :**
+```bash
+git add .
+git commit -m "feat: add detector"
+git push
+
+git add src/core/
+git commit -m "refactor: simplify validator"
+git push origin main
+
+git add .
+git commit -m "fix: handle edge case"
+git push
+```
+
+**Ne JAMAIS :**
+- ❌ Messages longs et détaillés
+- ❌ Push sans vérifier tests/lint
+- ❌ Force push sans confirmation explicite
+- ❌ Push sur main/master sans tests
+

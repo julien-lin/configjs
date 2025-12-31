@@ -1,0 +1,31 @@
+# Source
+src/
+tests/
+
+# Config
+tsconfig.json
+eslint.config.js
+.prettierrc.json
+vitest.config.ts
+
+# CI
+.github/
+
+# Docs (keep only README)
+CAHIER_DES_CHARGES.md
+NAMING_IDEAS.md
+docs/
+
+# Development
+*.test.ts
+*.spec.ts
+coverage/
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+.DS_Store
+*.log
+
