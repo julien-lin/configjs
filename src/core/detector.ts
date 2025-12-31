@@ -1,0 +1,442 @@
+import { resolve, join } from 'path'
+import { platform, version } from 'process'
+import type {
+  ProjectContext,
+  Framework,
+  Bundler,
+  PackageManager,
+} from '../types/index.js'
+import {
+  readPackageJson,
+  readTsConfig,
+  checkPathExists,
+} from '../utils/fs-helpers.js'
+import { detectPackageManager } from '../utils/package-manager.js'
+import { logger } from '../utils/logger.js'
+
+/**
+ * Cache pour les résultats de détection
+ */
+const detectionCache = new Map<string, ProjectContext>()
+
+/**
+ * Erreur personnalisée pour les erreurs de détection
+ */
+export class DetectionError extends Error {
+  constructor(
+    message: string,
+    public readonly context?: Record<string, unknown>
+  ) {
+    super(message)
+    this.name = 'DetectionError'
+  }
+}
+
+/**
+ * Détecte le framework utilisé dans le projet
+ *
+ * @param pkg - Objet package.json parsé
+ * @returns Framework détecté avec sa version
+ * @throws {DetectionError} Si aucun framework n'est détecté
+ *
+ * @internal
+ */
+function detectFramework(pkg: Record<string, unknown>): {
+  framework: Framework
+  version: string
+} {
+  const deps = {
+    ...((pkg['dependencies'] as Record<string, string>) || {}),
+    ...((pkg['devDependencies'] as Record<string, string>) || {}),
+  }
+
+  // Détection React
+  if (deps['react']) {
+    return {
+      framework: 'react',
+      version: deps['react'].replace(/[\^~]/, ''),
+    }
+  }
+
+  // Détection Vue
+  if (deps['vue']) {
+    return {
+      framework: 'vue',
+      version: deps['vue'].replace(/[\^~]/, ''),
+    }
+  }
+
+  // Détection Svelte
+  if (deps['svelte']) {
+    return {
+      framework: 'svelte',
+      version: deps['svelte'].replace(/[\^~]/, ''),
+    }
+  }
+
+  throw new DetectionError(
+    'No supported framework detected. Supported frameworks: React, Vue, Svelte',
+    { dependencies: Object.keys(deps) }
+  )
+}
+
+/**
+ * Détecte le bundler utilisé dans le projet
+ *
+ * @param projectRoot - Chemin racine du projet
+ * @param pkg - Objet package.json parsé
+ * @returns Bundler détecté avec sa version, ou null
+ *
+ * @internal
+ */
+async function detectBundler(
+  projectRoot: string,
+  pkg: Record<string, unknown>
+): Promise<{ bundler: Bundler; version: string | null }> {
+  const deps = {
+    ...((pkg['dependencies'] as Record<string, string>) || {}),
+    ...((pkg['devDependencies'] as Record<string, string>) || {}),
+  }
+
+  // Détection Vite
+  if (deps['vite']) {
+    const viteConfigExists =
+      (await checkPathExists(join(projectRoot, 'vite.config.js'))) ||
+      (await checkPathExists(join(projectRoot, 'vite.config.ts'))) ||
+      (await checkPathExists(join(projectRoot, 'vite.config.mjs'))) ||
+      (await checkPathExists(join(projectRoot, 'vite.config.cjs')))
+
+    if (viteConfigExists) {
+      return {
+        bundler: 'vite',
+        version: deps['vite'].replace(/[\^~]/, ''),
+      }
+    }
+  }
+
+  // Détection CRA (Create React App)
+  if (deps['react-scripts']) {
+    return {
+      bundler: 'cra',
+      version: deps['react-scripts'].replace(/[\^~]/, ''),
+    }
+  }
+
+  // Détection Webpack
+  if (deps['webpack']) {
+    const webpackConfigExists =
+      (await checkPathExists(join(projectRoot, 'webpack.config.js'))) ||
+      (await checkPathExists(join(projectRoot, 'webpack.config.ts')))
+
+    if (webpackConfigExists) {
+      return {
+        bundler: 'webpack',
+        version: deps['webpack'].replace(/[\^~]/, ''),
+      }
+    }
+  }
+
+  // Détection Rspack
+  if (deps['@rspack/core']) {
+    return {
+      bundler: 'rspack',
+      version: deps['@rspack/core'].replace(/[\^~]/, ''),
+    }
+  }
+
+  // Aucun bundler détecté
+  return {
+    bundler: null,
+    version: null,
+  }
+}
+
+/**
+ * Détecte si TypeScript est utilisé dans le projet
+ *
+ * @param projectRoot - Chemin racine du projet
+ * @returns Informations TypeScript détectées
+ *
+ * @internal
+ */
+async function detectTypeScript(
+  projectRoot: string
+): Promise<{ typescript: boolean; tsconfigPath?: string }> {
+  const tsConfig = await readTsConfig(projectRoot)
+
+  if (tsConfig) {
+    // Chercher le chemin exact du tsconfig
+    const possiblePaths = [
+      join(projectRoot, 'tsconfig.json'),
+      join(projectRoot, 'tsconfig.app.json'),
+      join(projectRoot, 'tsconfig.node.json'),
+    ]
+
+    for (const path of possiblePaths) {
+      if (await checkPathExists(path)) {
+        return {
+          typescript: true,
+          tsconfigPath: path,
+        }
+      }
+    }
+
+    return {
+      typescript: true,
+      tsconfigPath: join(projectRoot, 'tsconfig.json'),
+    }
+  }
+
+  return {
+    typescript: false,
+  }
+}
+
+/**
+ * Détecte le dossier source du projet
+ *
+ * @param projectRoot - Chemin racine du projet
+ * @returns Chemin du dossier source détecté
+ *
+ * @internal
+ */
+async function detectSrcDir(projectRoot: string): Promise<string> {
+  const possibleDirs = ['src', 'app', 'source', 'lib']
+
+  for (const dir of possibleDirs) {
+    const dirPath = join(projectRoot, dir)
+    if (await checkPathExists(dirPath)) {
+      return dir
+    }
+  }
+
+  // Par défaut, utiliser 'src'
+  return 'src'
+}
+
+/**
+ * Détecte le dossier public du projet
+ *
+ * @param projectRoot - Chemin racine du projet
+ * @returns Chemin du dossier public détecté
+ *
+ * @internal
+ */
+async function detectPublicDir(projectRoot: string): Promise<string> {
+  const possibleDirs = ['public', 'static', 'assets']
+
+  for (const dir of possibleDirs) {
+    const dirPath = join(projectRoot, dir)
+    if (await checkPathExists(dirPath)) {
+      return dir
+    }
+  }
+
+  // Par défaut, utiliser 'public'
+  return 'public'
+}
+
+/**
+ * Détecte si Git est utilisé dans le projet
+ *
+ * @param projectRoot - Chemin racine du projet
+ * @returns Informations Git détectées
+ *
+ * @internal
+ */
+async function detectGit(
+  projectRoot: string
+): Promise<{ hasGit: boolean; gitHooksPath?: string }> {
+  const gitDir = join(projectRoot, '.git')
+  const hasGit = await checkPathExists(gitDir)
+
+  if (!hasGit) {
+    return { hasGit: false }
+  }
+
+  // Chercher le dossier hooks
+  const hooksPath = join(gitDir, 'hooks')
+  const hasHooks = await checkPathExists(hooksPath)
+
+  return {
+    hasGit: true,
+    gitHooksPath: hasHooks ? hooksPath : undefined,
+  }
+}
+
+/**
+ * Détecte le lockfile utilisé dans le projet
+ *
+ * @param projectRoot - Chemin racine du projet
+ * @param packageManager - Package manager détecté
+ * @returns Nom du lockfile
+ *
+ * @internal
+ */
+async function detectLockfile(
+  projectRoot: string,
+  packageManager: PackageManager
+): Promise<string> {
+  const lockfiles: Record<PackageManager, string> = {
+    npm: 'package-lock.json',
+    yarn: 'yarn.lock',
+    pnpm: 'pnpm-lock.yaml',
+    bun: 'bun.lockb',
+  }
+
+  const lockfile = lockfiles[packageManager]
+  const lockfilePath = join(projectRoot, lockfile)
+
+  if (await checkPathExists(lockfilePath)) {
+    return lockfile
+  }
+
+  // Retourner le lockfile attendu même s'il n'existe pas encore
+  return lockfile
+}
+
+/**
+ * Détecte le contexte complet d'un projet frontend
+ *
+ * Cette fonction analyse un projet pour déterminer :
+ * - Le framework utilisé (React, Vue, Svelte)
+ * - Le bundler (Vite, Webpack, CRA, etc.)
+ * - Si TypeScript est utilisé
+ * - Le package manager (npm, yarn, pnpm, bun)
+ * - La structure du projet (dossiers src, public)
+ * - L'environnement (OS, Node version)
+ * - Les dépendances existantes
+ * - La présence de Git
+ *
+ * Les résultats sont mis en cache pour améliorer les performances.
+ *
+ * @param projectRoot - Chemin absolu vers la racine du projet
+ * @returns Contexte détecté contenant toutes les informations du projet
+ * @throws {DetectionError} Si le projet n'est pas valide ou si aucun framework n'est détecté
+ *
+ * @example
+ * ```typescript
+ * const ctx = await detectContext('/path/to/project')
+ * console.log(ctx.framework) // 'react'
+ * console.log(ctx.bundler) // 'vite'
+ * console.log(ctx.typescript) // true
+ * ```
+ */
+export async function detectContext(
+  projectRoot: string
+): Promise<ProjectContext> {
+  const fullPath = resolve(projectRoot)
+
+  // Vérifier le cache
+  if (detectionCache.has(fullPath)) {
+    logger.debug(`Using cached context for ${fullPath}`)
+    const cached = detectionCache.get(fullPath)
+    if (cached) {
+      return cached
+    }
+  }
+
+  logger.debug(`Detecting context for project: ${fullPath}`)
+
+  // Vérifier que package.json existe
+  let pkg: Record<string, unknown>
+  try {
+    pkg = await readPackageJson(fullPath)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    throw new DetectionError(
+      `Invalid project: package.json not found or invalid. ${errorMessage}`,
+      { projectRoot: fullPath }
+    )
+  }
+
+  // Détections parallèles pour optimiser les performances
+  const [
+    frameworkInfo,
+    typescriptInfo,
+    bundlerInfo,
+    packageManager,
+    srcDir,
+    publicDir,
+    gitInfo,
+  ] = await Promise.all([
+    Promise.resolve(detectFramework(pkg)),
+    detectTypeScript(fullPath),
+    detectBundler(fullPath, pkg),
+    detectPackageManager(fullPath),
+    detectSrcDir(fullPath),
+    detectPublicDir(fullPath),
+    detectGit(fullPath),
+  ])
+
+  // Détecter le lockfile
+  const lockfile = await detectLockfile(fullPath, packageManager)
+
+  // Extraire les dépendances
+  const dependencies = (pkg['dependencies'] as Record<string, string>) || {}
+  const devDependencies =
+    (pkg['devDependencies'] as Record<string, string>) || {}
+
+  // Construire le contexte
+  const context: ProjectContext = {
+    // Framework
+    framework: frameworkInfo.framework,
+    frameworkVersion: frameworkInfo.version,
+
+    // Bundler
+    bundler: bundlerInfo.bundler,
+    bundlerVersion: bundlerInfo.version,
+
+    // Language
+    typescript: typescriptInfo.typescript,
+    tsconfigPath: typescriptInfo.tsconfigPath,
+
+    // Package Manager
+    packageManager,
+    lockfile,
+
+    // Structure
+    projectRoot: fullPath,
+    srcDir,
+    publicDir,
+
+    // Environment
+    os: platform as 'darwin' | 'win32' | 'linux',
+    nodeVersion: version,
+
+    // Dependencies
+    dependencies,
+    devDependencies,
+
+    // Git
+    hasGit: gitInfo.hasGit,
+    gitHooksPath: gitInfo.gitHooksPath,
+  }
+
+  // Mettre en cache
+  detectionCache.set(fullPath, context)
+
+  logger.debug(`Context detected successfully for ${fullPath}`, {
+    framework: context.framework,
+    bundler: context.bundler,
+    typescript: context.typescript,
+  })
+
+  return context
+}
+
+/**
+ * Vide le cache de détection
+ *
+ * Utile pour les tests ou lors de modifications du projet
+ *
+ * @example
+ * ```typescript
+ * clearDetectionCache()
+ * const ctx = await detectContext('/path/to/project')
+ * ```
+ */
+export function clearDetectionCache(): void {
+  detectionCache.clear()
+  logger.debug('Detection cache cleared')
+}
