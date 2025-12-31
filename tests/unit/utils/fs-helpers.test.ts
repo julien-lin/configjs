@@ -32,7 +32,6 @@ vi.mock('fs-extra', () => ({
 const pathExistsMock = fsExtra.pathExists as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
   mockResolvedValue: (v: boolean) => void
-  mockReturnValue: (v: boolean) => void
   mockRejectedValue: (e: unknown) => void
 }
 
@@ -44,19 +43,19 @@ const readJsonMock = fsExtra.readJson as unknown as {
 
 const writeJsonMock = fsExtra.writeJson as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
-  mockResolvedValue: (v: void) => void
+  mockResolvedValue: (v: unknown) => void
   mockRejectedValue: (e: unknown) => void
 }
 
 const ensureDirMock = fsExtra.ensureDir as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
-  mockResolvedValue: (v: void) => void
+  mockResolvedValue: (v: unknown) => void
   mockRejectedValue: (e: unknown) => void
 }
 
 const copyFileMock = fsExtra.copyFile as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
-  mockResolvedValue: (v: void) => void
+  mockResolvedValue: (v: unknown) => void
   mockRejectedValue: (e: unknown) => void
 }
 
@@ -68,7 +67,7 @@ const readFileMock = fsExtra.readFile as unknown as {
 
 const writeFileMock = fsExtra.writeFile as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
-  mockResolvedValue: (v: void) => void
+  mockResolvedValue: (v: unknown) => void
   mockRejectedValue: (e: unknown) => void
 }
 
