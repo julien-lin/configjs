@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { platform, version } from 'process'
-import * as fsHelpers from '../../../src/utils/fs-helpers.js'
+import { fsMocks } from '../test-utils/fs-mocks'
 import * as packageManager from '../../../src/utils/package-manager.js'
 import {
   detectContext,
@@ -40,11 +40,9 @@ describe('detector', () => {
       }
 
       // Mock fs-helpers
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(mockTsConfig as never)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(mockTsConfig as never)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.ts') ||
@@ -84,11 +82,9 @@ describe('detector', () => {
         },
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('src') || pathStr.includes('public')
@@ -117,11 +113,9 @@ describe('detector', () => {
         },
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.js') ||
@@ -151,11 +145,9 @@ describe('detector', () => {
         },
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.js') ||
@@ -174,7 +166,7 @@ describe('detector', () => {
     })
 
     it('should throw error if package.json not found', async () => {
-      vi.mocked(fsHelpers.readPackageJson).mockRejectedValue(
+      fsMocks.readPackageJson.mockRejectedValue(
         new Error('package.json not found')
       )
 
@@ -193,9 +185,7 @@ describe('detector', () => {
         devDependencies: {},
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
 
       await expect(detectContext(mockProjectRoot)).rejects.toThrow(
         DetectionError
@@ -216,11 +206,9 @@ describe('detector', () => {
         },
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('webpack.config.js') ||
@@ -245,11 +233,9 @@ describe('detector', () => {
         devDependencies: {},
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('src') || pathStr.includes('public')
@@ -272,11 +258,9 @@ describe('detector', () => {
         devDependencies: {},
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('app') ||
@@ -300,11 +284,9 @@ describe('detector', () => {
         devDependencies: {},
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('src') ||
@@ -328,11 +310,9 @@ describe('detector', () => {
         devDependencies: {},
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('src') ||
@@ -358,11 +338,9 @@ describe('detector', () => {
         devDependencies: {},
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('src') || pathStr.includes('public')
@@ -375,7 +353,7 @@ describe('detector', () => {
 
       expect(context1).toEqual(context2)
       // readPackageJson should only be called once due to cache
-      expect(vi.mocked(fsHelpers.readPackageJson)).toHaveBeenCalledTimes(1)
+      expect(fsMocks.readPackageJson).toHaveBeenCalledTimes(1)
     })
 
     it('should extract dependencies correctly', async () => {
@@ -391,11 +369,9 @@ describe('detector', () => {
         },
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('src') || pathStr.includes('public')
@@ -423,11 +399,9 @@ describe('detector', () => {
         },
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('src') || pathStr.includes('public')
@@ -454,11 +428,9 @@ describe('detector', () => {
         devDependencies: {},
       }
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
-      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
-      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+      fsMocks.readPackageJson.mockResolvedValue(mockPackageJson as never)
+      fsMocks.readTsConfig.mockResolvedValue(null)
+      fsMocks.checkPathExists.mockImplementation((path) => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('src') || pathStr.includes('public')
@@ -471,7 +443,7 @@ describe('detector', () => {
       await detectContext(mockProjectRoot)
 
       // Should be called twice after cache clear
-      expect(vi.mocked(fsHelpers.readPackageJson)).toHaveBeenCalledTimes(2)
+      expect(fsMocks.readPackageJson).toHaveBeenCalledTimes(2)
     })
   })
 })

@@ -537,6 +537,70 @@ describe('detectContext', () => {
 
 ### Mocks
 
+**RÈGLE CRITIQUE : Centralisation des mocks typés**
+
+1. ✅ **Créer des fichiers de mocks centralisés** (`tests/test-utils/fs-mocks.ts`, etc.)
+2. ✅ **Utiliser des alias typés** pour éviter les `any` dangereux
+3. ✅ **Réutiliser les mocks** entre plusieurs fichiers de tests
+4. ✅ **S'assurer que les mocks retournent des Promise** quand nécessaire
+5. ✅ **Corriger les imports relatifs** cassés après refactoring
+6. ✅ **Utiliser les alias centralisés** (`fsMocks`) au lieu de `vi.mocked(fsHelpers.xxx)`
+
+```typescript
+// ✅ BON - Mocks centralisés et typés
+// tests/test-utils/fs-mocks.ts
+import * as fsExtra from 'fs-extra'
+import { vi } from 'vitest'
+
+export const fsMocks = {
+  checkPathExists: fsExtra.checkPathExists as unknown as {
+    mockResolvedValue: (v: boolean) => void
+    mockImplementation: (fn: (...args: unknown[]) => unknown) => void
+  },
+  readFileContent: fsExtra.readFileContent as unknown as {
+    mockResolvedValue: (v: string) => void
+    mockImplementation: (fn: (...args: unknown[]) => unknown) => void
+  },
+  writeFileContent: fsExtra.writeFileContent as unknown as {
+    mockResolvedValue: (v: void) => void
+    mockImplementation: (fn: (...args: unknown[]) => unknown) => void
+  },
+}
+
+// Dans les tests
+import { fsMocks } from '../test-utils/fs-mocks'
+
+fsMocks.checkPathExists.mockResolvedValue(true)
+fsMocks.readFileContent.mockResolvedValue('content')
+expect(fsMocks.writeFileContent).toHaveBeenCalledWith(path, content)
+
+// ❌ MAUVAIS - Mocks ad hoc avec any
+vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+  return Promise.resolve(true) // ❌ Type any, pas de typage
+})
+
+// ❌ MAUVAIS - Mocks inline répétés
+vi.mocked(fsHelpers.readFile).mockResolvedValue(content as any) // ❌ Cast any dangereux
+```
+
+**Pattern pour mocks de fs-extra :**
+
+```typescript
+// ✅ BON - Alias typés pour éviter any
+const pathExistsMock = fsExtra.pathExists as unknown as {
+  mockImplementation: (fn: (...args: unknown[]) => unknown) => void
+  mockResolvedValue: (v: boolean) => void
+  mockReturnValue: (v: boolean) => void
+  mockRejectedValue: (e: unknown) => void
+}
+
+// Utilisation
+pathExistsMock.mockResolvedValue(true)
+pathExistsMock.mockImplementation(() => Promise.resolve(true))
+```
+
+**Mock explicite pour autres modules :**
+
 ```typescript
 // ✅ BON - Mock explicite
 import { vi } from 'vitest'
