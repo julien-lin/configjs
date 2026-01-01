@@ -34,6 +34,7 @@ import { emotionPlugin } from './css/emotion.js'
 import { reactBootstrapPlugin } from './css/react-bootstrap.js'
 import { reactHookFormPlugin } from './forms/react-hook-form.js'
 import { shadcnUiPlugin } from './ui/shadcn-ui.js'
+import { radixUiPlugin } from './ui/radix-ui.js'
 import { eslintPlugin } from './tooling/eslint.js'
 import { prettierPlugin } from './tooling/prettier.js'
 import { huskyPlugin } from './tooling/husky.js'
@@ -69,6 +70,7 @@ export const pluginRegistry: Plugin[] = [
   reactHookFormPlugin,
   // UI
   shadcnUiPlugin,
+  radixUiPlugin,
   // Tooling
   eslintPlugin,
   prettierPlugin,
