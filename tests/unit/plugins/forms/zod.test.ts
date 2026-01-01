@@ -99,7 +99,7 @@ describe('Zod Plugin', () => {
       expect(result.success).toBe(true)
       expect(result.files.length).toBeGreaterThanOrEqual(2)
 
-      const userSchemaFile = result.files.find((f) =>
+      const userSchemaFile = result.files.find((f: { path?: string }) =>
         f.path?.endsWith('lib/schemas/user.ts')
       )
       expect(userSchemaFile).toBeDefined()
