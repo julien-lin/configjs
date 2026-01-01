@@ -3,7 +3,6 @@ import type { PackageJson } from 'type-fest'
 import { resolve } from 'path'
 import { ConfigWriter } from '../../../src/core/config-writer.js'
 import { BackupManager } from '../../../src/core/backup-manager.js'
-import { fsMocks } from '../test-utils/fs-mocks'
 import * as fsHelpers from '../../../src/utils/fs-helpers.js'
 
 // Mocks
@@ -25,48 +24,56 @@ describe('ConfigWriter', () => {
       const content = 'new content'
       const existingContent = 'old content'
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue(existingContent)
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingContent)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await configWriter.writeFile(filePath, content)
 
       expect(backupManager.hasBackup(filePath)).toBe(true)
-      expect(fsMocks.writeFileContent).toHaveBeenCalledWith(filePath, content)
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
+        filePath,
+        content
+      )
     })
 
     it('should write file without backup if file does not exist', async () => {
       const filePath = '/path/to/new-file.txt'
       const content = 'content'
 
-      fsMocks.checkPathExists.mockResolvedValue(false)
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await configWriter.writeFile(filePath, content, { backup: true })
 
       expect(backupManager.hasBackup(filePath)).toBe(false)
-      expect(fsMocks.writeFileContent).toHaveBeenCalledWith(filePath, content)
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
+        filePath,
+        content
+      )
     })
 
     it('should create parent directories if ensureDir is true', async () => {
       const filePath = '/path/to/deep/file.txt'
       const content = 'content'
 
-      fsMocks.checkPathExists.mockResolvedValue(false)
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await configWriter.writeFile(filePath, content, { ensureDir: true })
 
       // Vérifier que ensureDirectory a été appelé (via writeFileContent qui appelle ensureDir)
-      expect(fsMocks.writeFileContent).toHaveBeenCalled()
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalled()
     })
 
     it('should throw error if write fails', async () => {
       const filePath = '/path/to/file.txt'
       const content = 'content'
 
-      fsMocks.checkPathExists.mockResolvedValue(false)
-      fsMocks.writeFileContent.mockRejectedValue(new Error('Write failed'))
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+      vi.mocked(fsHelpers.writeFileContent).mockRejectedValue(
+        new Error('Write failed')
+      )
 
       await expect(configWriter.writeFile(filePath, content)).rejects.toThrow(
         'Failed to write file'
@@ -79,19 +86,22 @@ describe('ConfigWriter', () => {
       const filePath = '/path/to/new-file.txt'
       const content = 'content'
 
-      fsMocks.checkPathExists.mockResolvedValue(false)
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await configWriter.createFile(filePath, content)
 
-      expect(fsMocks.writeFileContent).toHaveBeenCalledWith(filePath, content)
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
+        filePath,
+        content
+      )
     })
 
     it('should throw error if file already exists', async () => {
       const filePath = '/path/to/existing-file.txt'
       const content = 'content'
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
 
       await expect(configWriter.createFile(filePath, content)).rejects.toThrow(
         'File already exists'
@@ -113,7 +123,9 @@ describe('ConfigWriter', () => {
       vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
         mockPackageJson as never
       )
-      fsMocks.readFileContent.mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(
+        JSON.stringify(mockPackageJson)
+      )
       vi.mocked(fsHelpers.writePackageJson).mockResolvedValue(undefined)
 
       await configWriter.modifyPackageJson(
@@ -144,7 +156,9 @@ describe('ConfigWriter', () => {
       vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
         mockPackageJson as never
       )
-      fsMocks.readFileContent.mockResolvedValue(JSON.stringify(mockPackageJson))
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(
+        JSON.stringify(mockPackageJson)
+      )
       vi.mocked(fsHelpers.writePackageJson).mockResolvedValue(undefined)
 
       await configWriter.modifyPackageJson(projectRoot, (pkg) => pkg)
@@ -172,13 +186,13 @@ describe('ConfigWriter', () => {
       const existingContent = 'existing'
       const newContent = '\nnew'
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue(existingContent)
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingContent)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await configWriter.appendToFile(filePath, newContent)
 
-      expect(fsMocks.writeFileContent).toHaveBeenCalledWith(
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
         filePath,
         existingContent + newContent
       )
@@ -188,12 +202,12 @@ describe('ConfigWriter', () => {
       const filePath = '/path/to/new-file.txt'
       const newContent = 'new content'
 
-      fsMocks.checkPathExists.mockResolvedValue(false)
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await configWriter.appendToFile(filePath, newContent)
 
-      expect(fsMocks.writeFileContent).toHaveBeenCalledWith(
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
         filePath,
         newContent
       )
@@ -204,9 +218,9 @@ describe('ConfigWriter', () => {
       const existingContent = 'existing'
       const newContent = '\nnew'
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue(existingContent)
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingContent)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await configWriter.appendToFile(filePath, newContent, { backup: true })
 
@@ -221,13 +235,13 @@ describe('ConfigWriter', () => {
       const existingContent =
         'const Component = () => null\nexport default Component'
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue(existingContent)
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingContent)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await configWriter.injectImport(filePath, importStatement)
 
-      expect(fsMocks.writeFileContent).toHaveBeenCalled()
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalled()
       // Vérifier que le contenu contient l'import
       const writeCalls = vi.mocked(fsHelpers.writeFileContent).mock.calls
       expect(writeCalls.length).toBeGreaterThan(0)
@@ -244,13 +258,13 @@ describe('ConfigWriter', () => {
       const existingContent =
         "import React from 'react'\nconst Component = () => null"
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue(existingContent)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingContent)
 
       await configWriter.injectImport(filePath, importStatement)
 
       // Ne devrait pas appeler writeFileContent car l'import existe déjà
-      expect(fsMocks.writeFileContent).not.toHaveBeenCalled()
+      expect(vi.mocked(fsHelpers.writeFileContent)).not.toHaveBeenCalled()
     })
 
     it('should inject import after existing imports', async () => {
@@ -259,13 +273,13 @@ describe('ConfigWriter', () => {
       const existingContent =
         "import React from 'react'\nimport './styles.css'\n\nconst Component = () => null"
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue(existingContent)
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingContent)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await configWriter.injectImport(filePath, importStatement)
 
-      expect(fsMocks.writeFileContent).toHaveBeenCalled()
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalled()
       // Vérifier que le contenu contient l'import
       const writeCalls = vi.mocked(fsHelpers.writeFileContent).mock.calls
       expect(writeCalls.length).toBeGreaterThan(0)
@@ -281,7 +295,7 @@ describe('ConfigWriter', () => {
       const filePath = '/path/to/nonexistent.tsx'
       const importStatement = "import React from 'react'"
 
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       await expect(
         configWriter.injectImport(filePath, importStatement)
@@ -293,9 +307,9 @@ describe('ConfigWriter', () => {
       const importStatement = "import React from 'react'"
       const existingContent = 'const Component = () => null'
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue(existingContent)
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingContent)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await configWriter.injectImport(filePath, importStatement)
 

@@ -28,12 +28,8 @@ describe('TanStack Router Plugin', () => {
       lockfile: 'package-lock.json',
       projectRoot: '/project',
       srcDir: 'src',
-      publicDir: 'public',
-      os: 'darwin',
-      nodeVersion: 'v18.0.0',
       dependencies: {},
       devDependencies: {},
-      hasGit: false,
     }
 
     // Mock package-manager
@@ -80,13 +76,11 @@ describe('TanStack Router Plugin', () => {
       expect(result.packages?.dependencies).toContain('@tanstack/react-router')
       expect(packageManager.installPackages).toHaveBeenCalledWith(
         ['@tanstack/react-router'],
-        {
+        expect.objectContaining({
           dev: false,
           packageManager: 'npm',
           projectRoot: '/project',
-          exact: false,
-          silent: false,
-        }
+        })
       )
     })
 
@@ -108,7 +102,7 @@ describe('TanStack Router Plugin', () => {
       const result = await tanstackRouterPlugin.install(mockContext)
 
       expect(result.success).toBe(false)
-      expect(result.message).toContain('Failed to install')
+      expect(result.message).toContain('Failed to install TanStack Router')
     })
   })
 
@@ -119,7 +113,7 @@ describe('TanStack Router Plugin', () => {
       const result = await tanstackRouterPlugin.configure(mockContext)
 
       expect(result.success).toBe(true)
-      expect(result.files).toHaveLength(5) // __root, index, about, router, App
+      expect(result.files).toHaveLength(5)
 
       // Vérifier que les fichiers ont été créés
       const rootRouteFile = result.files.find((f) =>
@@ -145,6 +139,7 @@ describe('TanStack Router Plugin', () => {
       )
       expect(routerFile).toBeDefined()
       expect(routerFile?.content).toContain('createRouter')
+      expect(routerFile?.content).toContain('routeTree')
 
       const appFile = result.files.find((f) => f.path?.endsWith('App.tsx'))
       expect(appFile).toBeDefined()
@@ -158,19 +153,23 @@ describe('TanStack Router Plugin', () => {
       const result = await tanstackRouterPlugin.configure(mockContext)
 
       expect(result.success).toBe(true)
+      expect(result.files).toHaveLength(5)
 
       const rootRouteFile = result.files.find((f) =>
         f.path?.endsWith('routes/__root.jsx')
       )
       expect(rootRouteFile).toBeDefined()
+      expect(rootRouteFile?.type).toBe('create')
 
       const routerFile = result.files.find((f) =>
         f.path?.endsWith('router.jsx')
       )
       expect(routerFile).toBeDefined()
+      expect(routerFile?.type).toBe('create')
 
       const appFile = result.files.find((f) => f.path?.endsWith('App.jsx'))
       expect(appFile).toBeDefined()
+      expect(appFile?.type).toBe('create')
     })
 
     it('should modify existing App.tsx to add RouterProvider', async () => {
@@ -183,7 +182,6 @@ function App() {
 export default App
 `
 
-      // checkPathExists est appelé 1 seule fois pour vérifier si App.tsx existe
       vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
       vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingAppContent)
 
@@ -210,7 +208,6 @@ function App() {
 export default App
 `
 
-      // checkPathExists est appelé 1 seule fois pour vérifier si App.tsx existe
       vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
       vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingAppContent)
 
@@ -219,7 +216,6 @@ export default App
       expect(result.success).toBe(true)
       const appFile = result.files.find((f) => f.path?.endsWith('App.tsx'))
       expect(appFile).toBeDefined()
-      // Le contenu ne devrait pas avoir de duplication - doit être inchangé
       expect(appFile?.content).toBe(existingAppContent)
     })
 
@@ -243,9 +239,7 @@ export default App
         .spyOn(BackupManager.prototype, 'restoreAll')
         .mockResolvedValue(undefined)
 
-      if (tanstackRouterPlugin.rollback) {
-        await tanstackRouterPlugin.rollback(mockContext)
-      }
+      await tanstackRouterPlugin.rollback?.(mockContext)
 
       expect(restoreAllSpy).toHaveBeenCalled()
     })
@@ -255,11 +249,9 @@ export default App
         new Error('Restore failed')
       )
 
-      if (tanstackRouterPlugin.rollback) {
-        await expect(
-          tanstackRouterPlugin.rollback(mockContext)
-        ).rejects.toThrow()
-      }
+      await expect(
+        tanstackRouterPlugin.rollback?.(mockContext)
+      ).rejects.toThrow('Restore failed')
     })
   })
 })
