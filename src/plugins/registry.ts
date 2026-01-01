@@ -30,6 +30,7 @@ import { axiosPlugin } from './http/axios.js'
 import { tanstackQueryPlugin } from './http/tanstack-query.js'
 import { tailwindcssPlugin } from './css/tailwindcss.js'
 import { styledComponentsPlugin } from './css/styled-components.js'
+import { emotionPlugin } from './css/emotion.js'
 // ... autres imports
 
 /**
@@ -56,6 +57,7 @@ export const pluginRegistry: Plugin[] = [
   // CSS
   tailwindcssPlugin,
   styledComponentsPlugin,
+  emotionPlugin,
   // etc.
 ]
 
