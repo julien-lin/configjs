@@ -9,10 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import {
-  checkPathExists,
-  readFileContent,
-} from '../../utils/fs-helpers.js'
+import { checkPathExists, readFileContent } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -266,12 +263,12 @@ function getCssContent(): string {
 /**
  * Injecte le plugin TailwindCSS dans vite.config.ts/js
  */
-function injectVitePlugin(
-  content: string,
-  isTypeScript: boolean
-): string {
+function injectVitePlugin(content: string, isTypeScript: boolean): string {
   // Vérifier si le plugin est déjà présent
-  if (content.includes('@tailwindcss/vite') || content.includes('tailwindcss()')) {
+  if (
+    content.includes('@tailwindcss/vite') ||
+    content.includes('tailwindcss()')
+  ) {
     logger.warn('TailwindCSS plugin already present in vite.config')
     return content
   }
@@ -313,19 +310,22 @@ function injectVitePlugin(
 
   if (pluginsRegex.test(modifiedContent)) {
     // Plugin array existe déjà
-    modifiedContent = modifiedContent.replace(pluginsRegex, (match, pluginsContent) => {
-      // Vérifier si tailwindcss() est déjà dans le tableau
-      if (pluginsContent.includes('tailwindcss()')) {
-        return match
-      }
+    modifiedContent = modifiedContent.replace(
+      pluginsRegex,
+      (match: string, pluginsContent: string) => {
+        // Vérifier si tailwindcss() est déjà dans le tableau
+        if (pluginsContent.includes('tailwindcss()')) {
+          return match
+        }
 
-      // Ajouter tailwindcss() au début du tableau
-      const trimmedContent = pluginsContent.trim()
-      if (trimmedContent.length === 0) {
-        return 'plugins: [\n    tailwindcss(),\n  ]'
+        // Ajouter tailwindcss() au début du tableau
+        const trimmedContent = pluginsContent.trim()
+        if (trimmedContent.length === 0) {
+          return 'plugins: [\n    tailwindcss(),\n  ]'
+        }
+        return `plugins: [\n    tailwindcss(),${trimmedContent ? `\n    ${trimmedContent}` : ''}\n  ]`
       }
-      return `plugins: [\n    tailwindcss(),${trimmedContent ? `\n    ${trimmedContent}` : ''}\n  ]`
-    })
+    )
   } else {
     // Pas de plugins array, l'ajouter
     const defineConfigRegex = /defineConfig\(\s*\{([\s\S]*?)\}\s*\)/m
@@ -333,7 +333,7 @@ function injectVitePlugin(
     if (defineConfigRegex.test(modifiedContent)) {
       modifiedContent = modifiedContent.replace(
         defineConfigRegex,
-        (_match, configContent) => {
+        (_match: string, configContent: string) => {
           // Ajouter plugins avant la fermeture de l'objet
           const trimmed = configContent.trim()
           const hasTrailingComma = trimmed.endsWith(',')
@@ -354,7 +354,10 @@ function injectVitePlugin(
  */
 function injectTailwindImport(content: string): string {
   // Vérifier si l'import est déjà présent
-  if (content.includes('@import "tailwindcss"') || content.includes("@import 'tailwindcss'")) {
+  if (
+    content.includes('@import "tailwindcss"') ||
+    content.includes("@import 'tailwindcss'")
+  ) {
     logger.warn('TailwindCSS import already present in CSS file')
     return content
   }
@@ -364,4 +367,3 @@ function injectTailwindImport(content: string): string {
 
 ${content}`
 }
-

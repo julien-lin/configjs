@@ -4,7 +4,7 @@ import { zustandPlugin } from '../../../../src/plugins/state/zustand.js'
 import * as packageManager from '../../../../src/utils/package-manager.js'
 import { ConfigWriter } from '../../../../src/core/config-writer.js'
 import { BackupManager } from '../../../../src/core/backup-manager.js'
-import { fsMocks } from '../../test-utils/fs-mocks.js'
+import * as fsHelpers from '../../../../src/utils/fs-helpers.js'
 
 // Mocks
 vi.mock('../../../../src/utils/package-manager.js')
@@ -37,9 +37,9 @@ describe('Zustand Plugin', () => {
     }
 
     // Mock fs-helpers
-    fsMocks.checkPathExists.mockResolvedValue(false)
-    fsMocks.readFileContent.mockResolvedValue('')
-    fsMocks.writeFileContent.mockResolvedValue(undefined)
+    vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+    vi.mocked(fsHelpers.readFileContent).mockResolvedValue('')
+    vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
   })
 
   describe('detect', () => {
@@ -111,9 +111,7 @@ describe('Zustand Plugin', () => {
       vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(
         undefined
       )
-      vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(
-        undefined
-      )
+      vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(undefined)
     })
 
     it('should create store/index.ts for TypeScript project', async () => {
@@ -128,7 +126,7 @@ describe('Zustand Plugin', () => {
       )
       expect(storeFile).toBeDefined()
       expect(storeFile?.type).toBe('create')
-      expect(storeFile?.content).toContain('import { create } from \'zustand\'')
+      expect(storeFile?.content).toContain("import { create } from 'zustand'")
       expect(storeFile?.content).toContain('useBearStore')
       expect(storeFile?.content).toContain('bears')
     })
@@ -146,7 +144,7 @@ describe('Zustand Plugin', () => {
         f.path?.endsWith('store/index.js')
       )
       expect(storeFile).toBeDefined()
-      expect(storeFile?.content).toContain('import { create } from \'zustand\'')
+      expect(storeFile?.content).toContain("import { create } from 'zustand'")
     })
 
     it('should create store/useStore.ts for TypeScript project', async () => {
@@ -246,4 +244,3 @@ describe('Zustand Plugin', () => {
     })
   })
 })
-

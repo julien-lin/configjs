@@ -4,6 +4,7 @@ export const fsMocks = {
   checkPathExists: fsHelpers.checkPathExists as unknown as {
     mockImplementation: (fn: (...args: unknown[]) => unknown) => void
     mockResolvedValue: (v: boolean) => void
+    mockResolvedValueOnce: (v: boolean) => void
     mockRejectedValue: (e: unknown) => void
   },
   readPackageJson: fsHelpers.readPackageJson as unknown as {
@@ -19,6 +20,7 @@ export const fsMocks = {
   readFileContent: fsHelpers.readFileContent as unknown as {
     mockImplementation: (fn: (...args: unknown[]) => unknown) => void
     mockResolvedValue: (v: string) => void
+    mockResolvedValueOnce: (v: string) => void
     mockRejectedValue: (e: unknown) => void
   },
   writeFileContent: fsHelpers.writeFileContent as unknown as {

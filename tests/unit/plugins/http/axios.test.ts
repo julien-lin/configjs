@@ -4,7 +4,7 @@ import { axiosPlugin } from '../../../../src/plugins/http/axios.js'
 import * as packageManager from '../../../../src/utils/package-manager.js'
 import { ConfigWriter } from '../../../../src/core/config-writer.js'
 import { BackupManager } from '../../../../src/core/backup-manager.js'
-import { fsMocks } from '../../test-utils/fs-mocks.js'
+import * as fsHelpers from '../../../../src/utils/fs-helpers.js'
 
 // Mocks
 vi.mock('../../../../src/utils/package-manager.js')
@@ -37,9 +37,9 @@ describe('Axios Plugin', () => {
     }
 
     // Mock fs-helpers
-    fsMocks.checkPathExists.mockResolvedValue(false)
-    fsMocks.readFileContent.mockResolvedValue('')
-    fsMocks.writeFileContent.mockResolvedValue(undefined)
+    vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+    vi.mocked(fsHelpers.readFileContent).mockResolvedValue('')
+    vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
   })
 
   describe('detect', () => {
@@ -111,9 +111,7 @@ describe('Axios Plugin', () => {
       vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(
         undefined
       )
-      vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(
-        undefined
-      )
+      vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(undefined)
     })
 
     it('should create lib/api.ts for TypeScript project', async () => {
@@ -267,4 +265,3 @@ describe('Axios Plugin', () => {
     })
   })
 })
-

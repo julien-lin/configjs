@@ -4,7 +4,7 @@ import { tailwindcssPlugin } from '../../../../src/plugins/css/tailwindcss.js'
 import * as packageManager from '../../../../src/utils/package-manager.js'
 import { ConfigWriter } from '../../../../src/core/config-writer.js'
 import { BackupManager } from '../../../../src/core/backup-manager.js'
-import { fsMocks } from '../../test-utils/fs-mocks.js'
+import * as fsHelpers from '../../../../src/utils/fs-helpers.js'
 
 // Mocks
 vi.mock('../../../../src/utils/package-manager.js')
@@ -37,9 +37,9 @@ describe('TailwindCSS Plugin', () => {
     }
 
     // Mock fs-helpers
-    fsMocks.checkPathExists.mockResolvedValue(false)
-    fsMocks.readFileContent.mockResolvedValue('')
-    fsMocks.writeFileContent.mockResolvedValue(undefined)
+    vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+    vi.mocked(fsHelpers.readFileContent).mockResolvedValue('')
+    vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
   })
 
   describe('detect', () => {
@@ -124,9 +124,7 @@ describe('TailwindCSS Plugin', () => {
       vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(
         undefined
       )
-      vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(
-        undefined
-      )
+      vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(undefined)
     })
 
     it('should modify existing vite.config.ts to add TailwindCSS plugin', async () => {
@@ -138,8 +136,8 @@ export default defineConfig({
 })
 `
 
-      fsMocks.checkPathExists.mockResolvedValue(true) // vite.config.ts exists
-      fsMocks.readFileContent.mockResolvedValue(existingViteConfig)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true) // vite.config.ts exists
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingViteConfig)
 
       const result = await tailwindcssPlugin.configure(mockContext)
 
@@ -154,7 +152,7 @@ export default defineConfig({
     })
 
     it('should create vite.config.ts if it does not exist', async () => {
-      fsMocks.checkPathExists.mockResolvedValue(false) // vite.config.ts doesn't exist
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false) // vite.config.ts doesn't exist
 
       const result = await tailwindcssPlugin.configure(mockContext)
 
@@ -181,8 +179,8 @@ export default defineConfig({
 })
 `
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue(existingViteConfig)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingViteConfig)
 
       const result = await tailwindcssPlugin.configure(ctx)
 
@@ -200,10 +198,10 @@ export default defineConfig({
 }
 `
 
-      fsMocks.checkPathExists
+      vi.mocked(fsHelpers.checkPathExists)
         .mockResolvedValueOnce(true) // vite.config.ts exists
         .mockResolvedValueOnce(true) // index.css exists
-      fsMocks.readFileContent
+      vi.mocked(fsHelpers.readFileContent)
         .mockResolvedValueOnce('import { defineConfig } from "vite"\n')
         .mockResolvedValueOnce(existingCss)
 
@@ -217,13 +215,13 @@ export default defineConfig({
     })
 
     it('should create index.css if no CSS file exists', async () => {
-      fsMocks.checkPathExists
+      vi.mocked(fsHelpers.checkPathExists)
         .mockResolvedValueOnce(true) // vite.config.ts exists
         .mockResolvedValueOnce(false) // index.css doesn't exist
         .mockResolvedValueOnce(false) // main.css doesn't exist
         .mockResolvedValueOnce(false) // app.css doesn't exist
         .mockResolvedValueOnce(false) // styles.css doesn't exist
-      fsMocks.readFileContent.mockResolvedValue(
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(
         'import { defineConfig } from "vite"\n'
       )
 
@@ -245,10 +243,10 @@ export default defineConfig({
 })
 `
 
-      fsMocks.checkPathExists
+      vi.mocked(fsHelpers.checkPathExists)
         .mockResolvedValueOnce(true) // vite.config.ts exists
         .mockResolvedValueOnce(false) // index.css doesn't exist
-      fsMocks.readFileContent
+      vi.mocked(fsHelpers.readFileContent)
         .mockResolvedValueOnce(existingViteConfig)
         .mockResolvedValueOnce('')
 
@@ -270,10 +268,10 @@ body {
 }
 `
 
-      fsMocks.checkPathExists
+      vi.mocked(fsHelpers.checkPathExists)
         .mockResolvedValueOnce(true) // vite.config.ts exists
         .mockResolvedValueOnce(true) // index.css exists
-      fsMocks.readFileContent
+      vi.mocked(fsHelpers.readFileContent)
         .mockResolvedValueOnce('import { defineConfig } from "vite"\n')
         .mockResolvedValueOnce(existingCss)
 
@@ -283,10 +281,12 @@ body {
       const cssFile = result.files.find((f) => f.path?.endsWith('index.css'))
       expect(cssFile).toBeDefined()
       // Le contenu ne devrait pas avoir de duplication
-      const importCount = (
-        cssFile?.content.match(/@import "tailwindcss"/g) || []
-      ).length
-      expect(importCount).toBeLessThanOrEqual(1)
+      if (cssFile?.content) {
+        const importCount = (
+          cssFile.content.match(/@import "tailwindcss"/g) || []
+        ).length
+        expect(importCount).toBeLessThanOrEqual(1)
+      }
     })
 
     it('should handle configuration errors gracefully', async () => {
@@ -294,8 +294,8 @@ body {
         new Error('File write failed')
       )
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue('')
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue('')
 
       const result = await tailwindcssPlugin.configure(mockContext)
 
@@ -346,4 +346,3 @@ body {
     })
   })
 })
-

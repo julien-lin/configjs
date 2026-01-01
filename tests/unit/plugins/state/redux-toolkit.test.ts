@@ -4,7 +4,7 @@ import { reduxToolkitPlugin } from '../../../../src/plugins/state/redux-toolkit.
 import * as packageManager from '../../../../src/utils/package-manager.js'
 import { ConfigWriter } from '../../../../src/core/config-writer.js'
 import { BackupManager } from '../../../../src/core/backup-manager.js'
-import { fsMocks } from '../../test-utils/fs-mocks.js'
+import * as fsHelpers from '../../../../src/utils/fs-helpers.js'
 
 // Mocks
 vi.mock('../../../../src/utils/package-manager.js')
@@ -37,9 +37,9 @@ describe('Redux Toolkit Plugin', () => {
     }
 
     // Mock fs-helpers
-    fsMocks.checkPathExists.mockResolvedValue(false)
-    fsMocks.readFileContent.mockResolvedValue('')
-    fsMocks.writeFileContent.mockResolvedValue(undefined)
+    vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+    vi.mocked(fsHelpers.readFileContent).mockResolvedValue('')
+    vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
   })
 
   describe('detect', () => {
@@ -149,13 +149,11 @@ describe('Redux Toolkit Plugin', () => {
       vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(
         undefined
       )
-      vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(
-        undefined
-      )
+      vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(undefined)
     })
 
     it('should create store/index.ts for TypeScript project', async () => {
-      fsMocks.checkPathExists.mockResolvedValue(false) // App.tsx doesn't exist
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false) // App.tsx doesn't exist
 
       const result = await reduxToolkitPlugin.configure(mockContext)
 
@@ -179,7 +177,7 @@ describe('Redux Toolkit Plugin', () => {
         ...mockContext,
         typescript: false,
       }
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await reduxToolkitPlugin.configure(ctx)
 
@@ -192,7 +190,7 @@ describe('Redux Toolkit Plugin', () => {
     })
 
     it('should create store/slices/counterSlice.ts for TypeScript project', async () => {
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await reduxToolkitPlugin.configure(mockContext)
 
@@ -213,7 +211,7 @@ describe('Redux Toolkit Plugin', () => {
         ...mockContext,
         typescript: false,
       }
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await reduxToolkitPlugin.configure(ctx)
 
@@ -226,7 +224,7 @@ describe('Redux Toolkit Plugin', () => {
     })
 
     it('should create store/hooks.ts for TypeScript project', async () => {
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await reduxToolkitPlugin.configure(mockContext)
 
@@ -246,7 +244,7 @@ describe('Redux Toolkit Plugin', () => {
         ...mockContext,
         typescript: false,
       }
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await reduxToolkitPlugin.configure(ctx)
 
@@ -271,8 +269,8 @@ function App() {
 export default App
 `
 
-      fsMocks.checkPathExists.mockResolvedValue(true) // App.tsx exists
-      fsMocks.readFileContent.mockResolvedValue(existingAppContent)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true) // App.tsx exists
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingAppContent)
 
       const result = await reduxToolkitPlugin.configure(mockContext)
 
@@ -286,7 +284,7 @@ export default App
     })
 
     it('should create App.tsx if it does not exist', async () => {
-      fsMocks.checkPathExists.mockResolvedValue(false) // App.tsx doesn't exist
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false) // App.tsx doesn't exist
 
       const result = await reduxToolkitPlugin.configure(mockContext)
 
@@ -313,8 +311,8 @@ function App() {
 export default App
 `
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue(existingAppContent)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingAppContent)
 
       const result = await reduxToolkitPlugin.configure(mockContext)
 
@@ -325,7 +323,7 @@ export default App
     })
 
     it('should create store with correct Redux Toolkit API', async () => {
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await reduxToolkitPlugin.configure(mockContext)
 
@@ -337,7 +335,7 @@ export default App
     })
 
     it('should create slice with correct Redux Toolkit API', async () => {
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await reduxToolkitPlugin.configure(mockContext)
 
@@ -406,4 +404,3 @@ export default App
     })
   })
 })
-
