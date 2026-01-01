@@ -28,8 +28,12 @@ describe('Emotion Plugin', () => {
       lockfile: 'package-lock.json',
       projectRoot: '/project',
       srcDir: 'src',
+      publicDir: 'public',
+      os: 'darwin',
+      nodeVersion: 'v18.0.0',
       dependencies: {},
       devDependencies: {},
+      hasGit: false,
     }
 
     vi.mocked(packageManager.installPackages).mockResolvedValue({

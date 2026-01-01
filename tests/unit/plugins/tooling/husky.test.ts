@@ -205,11 +205,15 @@ describe('Husky Plugin', () => {
 
   describe('rollback', () => {
     it('should restore all backups', async () => {
+      const restoreAllSpy = vi
+        .spyOn(BackupManager.prototype, 'restoreAll')
+        .mockResolvedValue(undefined)
+
       if (huskyPlugin.rollback) {
         await huskyPlugin.rollback(mockContext)
       }
 
-      expect(vi.mocked(BackupManager.prototype.restoreAll)).toHaveBeenCalled()
+      expect(restoreAllSpy).toHaveBeenCalled()
     })
 
     it('should handle rollback errors', async () => {
@@ -218,7 +222,9 @@ describe('Husky Plugin', () => {
       )
 
       if (huskyPlugin.rollback) {
-        await expect(huskyPlugin.rollback(mockContext)).rejects.toThrow('Restore failed')
+        await expect(huskyPlugin.rollback(mockContext)).rejects.toThrow(
+          'Restore failed'
+        )
       }
     })
   })

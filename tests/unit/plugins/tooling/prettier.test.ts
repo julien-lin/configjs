@@ -158,7 +158,7 @@ describe('Prettier Plugin', () => {
         const packageJson = JSON.parse(packageJsonFile.content) as {
           scripts?: Record<string, string>
         }
-        expect(packageJson.scripts?.format).toBe('prettier --write .')
+        expect(packageJson.scripts?.['format']).toBe('prettier --write .')
         expect(packageJson.scripts?.['format:check']).toBe('prettier --check .')
       }
     })
@@ -177,11 +177,15 @@ describe('Prettier Plugin', () => {
 
   describe('rollback', () => {
     it('should restore all backups', async () => {
+      const restoreAllSpy = vi
+        .spyOn(BackupManager.prototype, 'restoreAll')
+        .mockResolvedValue(undefined)
+
       if (prettierPlugin.rollback) {
         await prettierPlugin.rollback(mockContext)
       }
 
-      expect(vi.mocked(BackupManager.prototype.restoreAll)).toHaveBeenCalled()
+      expect(restoreAllSpy).toHaveBeenCalled()
     })
 
     it('should handle rollback errors', async () => {
@@ -190,7 +194,9 @@ describe('Prettier Plugin', () => {
       )
 
       if (prettierPlugin.rollback) {
-        await expect(prettierPlugin.rollback(mockContext)).rejects.toThrow('Restore failed')
+        await expect(prettierPlugin.rollback(mockContext)).rejects.toThrow(
+          'Restore failed'
+        )
       }
     })
   })
