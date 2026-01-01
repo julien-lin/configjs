@@ -20,6 +20,8 @@ function getCategoryName(category: Category, _lang: SupportedLanguage): string {
     [Category.TOOLING]: 'Tooling',
     [Category.TESTING]: 'Testing',
     [Category.I18N]: 'Internationalization',
+    [Category.ANIMATION]: 'Animation',
+    [Category.UTILS]: 'Utilities',
   }
   return categoryMap[category] || category
 }
