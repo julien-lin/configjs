@@ -27,6 +27,7 @@ import { zustandPlugin } from './state/zustand.js'
 import { jotaiPlugin } from './state/jotai.js'
 import { reduxToolkitPlugin } from './state/redux-toolkit.js'
 import { axiosPlugin } from './http/axios.js'
+import { tanstackQueryPlugin } from './http/tanstack-query.js'
 import { tailwindcssPlugin } from './css/tailwindcss.js'
 // ... autres imports
 
@@ -50,6 +51,7 @@ export const pluginRegistry: Plugin[] = [
   reduxToolkitPlugin,
   // HTTP
   axiosPlugin,
+  tanstackQueryPlugin,
   // CSS
   tailwindcssPlugin,
   // etc.
