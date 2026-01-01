@@ -40,6 +40,7 @@ import { reactIconsPlugin } from './ui/react-icons.js'
 import { eslintPlugin } from './tooling/eslint.js'
 import { prettierPlugin } from './tooling/prettier.js'
 import { huskyPlugin } from './tooling/husky.js'
+import { dateFnsPlugin } from './utils/date-fns.js'
 import { reactTestingLibraryPlugin } from './testing/react-testing-library.js'
 // ... autres imports
 
@@ -80,6 +81,7 @@ export const pluginRegistry: Plugin[] = [
   eslintPlugin,
   prettierPlugin,
   huskyPlugin,
+  dateFnsPlugin,
   // Testing
   reactTestingLibraryPlugin,
   // etc.
