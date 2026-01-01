@@ -235,10 +235,9 @@ export default App
 
   describe('rollback', () => {
     it('should restore all backups', async () => {
-      const restoreAllSpy = vi.spyOn(
-        BackupManager.prototype,
-        'restoreAll'
-      ).mockResolvedValue(undefined)
+      const restoreAllSpy = vi
+        .spyOn(BackupManager.prototype, 'restoreAll')
+        .mockResolvedValue(undefined)
 
       await tanstackRouterPlugin.rollback(mockContext)
 
