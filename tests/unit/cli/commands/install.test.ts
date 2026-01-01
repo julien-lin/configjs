@@ -13,12 +13,11 @@ import {
     cleanupTestProject,
     readPackageJson,
     fileExists,
-} from '../../integration/test-utils'
+} from '../../integration/test-utils.js'
 
-// Mock du CLI handler
-const mockInstallReact = vi.fn()
-const mockListLibraries = vi.fn()
-const mockCheckCompatibility = vi.fn()
+// Mocks du CLI handler (utilisés dans les tests futurs)
+// const mockInstallReact = vi.fn()
+// const mockListLibraries = vi.fn()
 
 describe('Unit: CLI Commands - Install', () => {
     let projectPath: string

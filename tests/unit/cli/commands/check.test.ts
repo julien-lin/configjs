@@ -6,7 +6,6 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { join } from 'path'
 import {
     createTestProject,
     cleanupTestProject,
@@ -109,7 +108,9 @@ describe('Unit: CLI Commands - Check', () => {
         ]
 
         // Versions should match
-        expect(packages[0].version).toBe(packages[1].version)
+        if (packages[0] && packages[1]) {
+            expect(packages[0].version).toBe(packages[1].version)
+        }
     })
 
     // ===== Output Formatting =====
@@ -209,7 +210,6 @@ Compatibility: ✓ All compatible
 
     it('should check Node.js version compatibility', () => {
         const nodeVersion = process.version
-        const minVersion = 'v16.0.0'
 
         expect(nodeVersion).toBeDefined()
     })

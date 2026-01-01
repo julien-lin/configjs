@@ -5,9 +5,7 @@
  * @group unit
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { join } from 'path'
-import { promises as fs } from 'fs'
+import { describe, it, expect } from 'vitest'
 
 // Mock des données de plugins
 const PLUGINS_DATABASE = {
@@ -122,6 +120,10 @@ describe('Unit: CLI Commands - List', () => {
 
     it('should show plugin details with --details flag', () => {
         const plugin = PLUGINS_DATABASE.routing[0]
+        
+        if (!plugin) {
+            throw new Error('Plugin not found')
+        }
 
         const details = `
 Name: ${plugin.name}
@@ -199,8 +201,6 @@ Examples:
     // ===== Compatibility Information =====
 
     it('should show compatible plugins for selection', () => {
-        const _selected = 'react-router-dom'
-
         const compatibility = {
             compatible: [
                 'zustand',

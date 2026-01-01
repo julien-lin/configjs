@@ -7,7 +7,6 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { join } from 'path'
-import { promises as fs } from 'fs'
 import {
     createTestProject,
     cleanupTestProject,
@@ -21,6 +20,9 @@ import { detectContext } from '../../src/core/detector.js'
 import { ConfigWriter } from '../../src/core/config-writer.js'
 import { BackupManager } from '../../src/core/backup-manager.js'
 import { pluginRegistry } from '../../src/plugins/registry.js'
+import type { Plugin } from '../../src/types/index.js'
+import { Category } from '../../src/types/index.js'
+import type { Framework } from '../../src/types/index.js'
 
 describe('Integration: Installation Flow', () => {
     let projectPath: string
@@ -302,12 +304,13 @@ describe('Integration: Installation Flow', () => {
         const installer = new Installer(context, validator, configWriter, backupManager)
 
         // Utiliser un plugin invalide (non existant dans le registry)
+        // Créer un plugin minimal qui respecte l'interface mais qui échouera
         const invalidPlugin = {
             name: 'non-existent-package',
             displayName: 'Non Existent',
             description: 'Invalid plugin',
-            category: 'routing' as const,
-            frameworks: ['react'],
+            category: Category.ROUTING,
+            frameworks: ['react'] as Framework[],
             install: async () => {
                 throw new Error('Plugin does not exist')
             },
@@ -316,7 +319,7 @@ describe('Integration: Installation Flow', () => {
                 success: false,
                 message: 'Error',
             }),
-        }
+        } as Plugin
 
         // Devrait échouer lors de la validation ou de l'installation
         await expect(installer.install([invalidPlugin], { skipPackageInstall: true })).rejects.toThrow()

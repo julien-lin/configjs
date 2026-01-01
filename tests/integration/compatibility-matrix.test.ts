@@ -9,7 +9,6 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import {
     createTestProject,
     cleanupTestProject,
-    readPackageJson,
 } from './test-utils.js'
 import { Installer } from '../../src/core/installer.js'
 import { CompatibilityValidator, compatibilityRules } from '../../src/core/validator.js'

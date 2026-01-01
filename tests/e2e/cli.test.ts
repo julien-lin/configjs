@@ -476,6 +476,7 @@ Next steps:
 
         const configExists = await fileExists(configPath)
         expect(configExists).toBe(true)
-        expect(process.env.CI || true).toBeDefined()
+        // Vérifier que l'environnement CI est défini ou non
+        expect(process.env['CI'] !== undefined || true).toBeDefined()
     })
 })
