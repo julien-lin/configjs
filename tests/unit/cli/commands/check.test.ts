@@ -10,7 +10,7 @@ import {
     createTestProject,
     cleanupTestProject,
     readPackageJson,
-} from '../../integration/test-utils.js'
+} from '../../integration/test-utils'
 
 describe('Unit: CLI Commands - Check', () => {
     let projectPath: string

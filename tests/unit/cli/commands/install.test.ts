@@ -13,7 +13,7 @@ import {
     cleanupTestProject,
     readPackageJson,
     fileExists,
-} from '../../integration/test-utils.js'
+} from '../../integration/test-utils'
 
 // Mocks du CLI handler (utilisés dans les tests futurs)
 // const mockInstallReact = vi.fn()
