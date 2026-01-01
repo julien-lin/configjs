@@ -59,7 +59,7 @@ export class Installer {
     // @ts-expect-error - writer will be used in future versions for plugin configuration
     private readonly writer: ConfigWriter,
     private readonly backupManager: BackupManager
-  ) { }
+  ) {}
 
   /**
    * Installe un ensemble de plugins

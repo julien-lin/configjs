@@ -13,6 +13,8 @@ import {
 } from '../../core/validator.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
+import { SpinnerManager } from '../ui/spinner.js'
+import { displayInstallationReport } from '../ui/report.js'
 
 /**
  * Commande d'installation pour React
@@ -97,13 +99,10 @@ export async function installReact(options: CLIOptions): Promise<void> {
       return
     }
 
-    console.log(`\n${t.installation.installing}`)
-
     // Créer les dépendances nécessaires pour Installer
     const backupManager = new BackupManager()
     const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
-
     const installer = new Installer(ctx, validator, configWriter, backupManager)
 
     // Mode --no-install : générer uniquement les configs
@@ -112,25 +111,27 @@ export async function installReact(options: CLIOptions): Promise<void> {
       console.log('Les packages ne seront PAS installés\n')
     }
 
-    const result = await installer.install(selectedPlugins, {
-      skipPackageInstall: options.install === false,
-    })
+    // Installation avec spinner
+    const spinner = new SpinnerManager(language)
+    spinner.start(t.installation.installing)
 
-    if (result.success) {
-      console.log(`\n${t.installation.success}`)
-      console.log(`\n${t.report.packagesInstalled}:`)
-      for (const pluginName of result.installed) {
-        console.log(`   ✓ ${pluginName}`)
+    try {
+      const result = await installer.install(selectedPlugins, {
+        skipPackageInstall: options.install === false,
+      })
+
+      spinner.succeed(t.installation.success)
+
+      if (result.success) {
+        // Afficher le rapport détaillé
+        displayInstallationReport(result, selectedPlugins, language)
+      } else {
+        console.error(`\n${t.installation.error}`)
+        process.exit(1)
       }
-      if (result.warnings.length > 0) {
-        console.log(`\n⚠️  ${result.warnings.length} warning(s):`)
-        for (const warning of result.warnings) {
-          console.log(`   ⚠ ${warning.message}`)
-        }
-      }
-    } else {
-      console.error(`\n${t.installation.error}`)
-      process.exit(1)
+    } catch (error) {
+      spinner.fail(t.installation.error)
+      throw error
     }
   } catch (error) {
     logger.error('Installation failed:', error)
