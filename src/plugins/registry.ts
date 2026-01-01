@@ -37,6 +37,8 @@ import { zodPlugin } from './forms/zod.js'
 import { shadcnUiPlugin } from './ui/shadcn-ui.js'
 import { radixUiPlugin } from './ui/radix-ui.js'
 import { reactIconsPlugin } from './ui/react-icons.js'
+import { reactHotToastPlugin } from './ui/react-hot-toast.js'
+import { framerMotionPlugin } from './animation/framer-motion.js'
 import { eslintPlugin } from './tooling/eslint.js'
 import { prettierPlugin } from './tooling/prettier.js'
 import { huskyPlugin } from './tooling/husky.js'
@@ -77,6 +79,8 @@ export const pluginRegistry: Plugin[] = [
   shadcnUiPlugin,
   radixUiPlugin,
   reactIconsPlugin,
+  reactHotToastPlugin,
+  framerMotionPlugin,
   // Tooling
   eslintPlugin,
   prettierPlugin,
