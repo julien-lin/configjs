@@ -2,6 +2,8 @@
 
 ## 🎯 Contexte du Projet
 
+**Date actuelle : 1er janvier 2026**
+
 Tu travailles sur **confjs**, un utilitaire CLI d'installation et configuration automatisée de bibliothèques frontend.
 
 **Technologies principales :**
@@ -862,6 +864,12 @@ npm view react-router-dom version
 npm view zustand version
 npm view tailwindcss version
 ```
+
+**⚠️ IMPORTANT - Date actuelle :**
+- Nous sommes le **1er janvier 2026**
+- Ne PAS faire de recherches web avec des dates 2024 ou antérieures
+- Toujours utiliser les dernières versions disponibles en janvier 2026
+- Les documentations et versions peuvent avoir évolué depuis 2024
 
 ## 🎓 Principes
 
