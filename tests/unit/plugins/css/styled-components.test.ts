@@ -73,7 +73,7 @@ describe('Styled Components Plugin', () => {
     it('should install Styled Components for TypeScript project', async () => {
       // Réinitialiser le mock pour ce test
       vi.mocked(packageManager.installPackages).mockReset()
-      
+
       // Mock les deux appels séparés
       vi.mocked(packageManager.installPackages)
         .mockResolvedValueOnce({
@@ -115,7 +115,7 @@ describe('Styled Components Plugin', () => {
 
     it('should install Styled Components for JavaScript project (no types)', async () => {
       mockContext.typescript = false
-      
+
       // Réinitialiser le mock pour ce test
       vi.mocked(packageManager.installPackages).mockReset()
       vi.mocked(packageManager.installPackages).mockResolvedValue({
