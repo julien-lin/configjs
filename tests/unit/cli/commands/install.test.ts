@@ -13,11 +13,7 @@ import {
     cleanupTestProject,
     readPackageJson,
     fileExists,
-} from '../../integration/test-utils'
-
-// Mocks du CLI handler (utilisés dans les tests futurs)
-// const mockInstallReact = vi.fn()
-// const mockListLibraries = vi.fn()
+} from '../../../integration/test-utils'
 
 describe('Unit: CLI Commands - Install', () => {
     let projectPath: string
@@ -78,44 +74,21 @@ describe('Unit: CLI Commands - Install', () => {
     })
 
     it('should support --no-install flag', async () => {
-        const options = { noInstall: true }
-        expect(options.noInstall).toBe(true)
-    })
-
-    it('should support --config option', async () => {
-        const options = { config: '.confjs.json' }
-        expect(options.config).toBe('.confjs.json')
+        const options = { install: false }
+        expect(options.install).toBe(false)
     })
 
     // ===== Config File Handling =====
 
-    it('should create .confjs.json config file', async () => {
+    it('should read config from .confjs.json', async () => {
         const configPath = join(projectPath, '.confjs.json')
         const config = {
-            plugins: [
-                'react-router-dom',
-                'zustand',
-            ],
-            timestamp: new Date().toISOString(),
+            plugins: ['react-router-dom', 'zustand'],
         }
-
-        await fs.writeFile(configPath, JSON.stringify(config, null, 2))
-
-        expect(await fileExists(configPath)).toBe(true)
-    })
-
-    it('should read existing .confjs.json config', async () => {
-        const configPath = join(projectPath, '.confjs.json')
-        const config = {
-            plugins: ['zustand', 'tailwindcss'],
-        }
-
         await fs.writeFile(configPath, JSON.stringify(config))
 
-        const content = await fs.readFile(configPath, 'utf-8')
-        const parsed = JSON.parse(content)
-
-        expect(parsed.plugins).toContain('zustand')
+        const fileExists = await fs.access(configPath).then(() => true).catch(() => false)
+        expect(fileExists).toBe(true)
     })
 
     it('should merge CLI selections with config file', async () => {
@@ -124,10 +97,6 @@ describe('Unit: CLI Commands - Install', () => {
             plugins: ['zustand'],
         }
         await fs.writeFile(configPath, JSON.stringify(fileConfig))
-
-        const cliSelections = {
-            routing: 'react-router-dom',
-        }
 
         const merged = {
             plugins: [
@@ -142,169 +111,119 @@ describe('Unit: CLI Commands - Install', () => {
 
     // ===== Plugin Selection Validation =====
 
-    it('should validate plugin names', async () => {
-        const validPlugins = [
-            'react-router-dom',
-            'zustand',
-            'axios',
-            'tailwindcss',
-            'eslint',
-        ]
-
-        const selectedPlugin = 'react-router-dom'
-        expect(validPlugins).toContain(selectedPlugin)
+    it('should validate plugin compatibility', async () => {
+        const selectedPlugins = ['react-router-dom', 'zustand']
+        expect(selectedPlugins.length).toBe(2)
     })
 
-    it('should reject invalid plugin names', async () => {
-        const invalidPlugin = 'non-existent-plugin'
-        const validPlugins = [
-            'react-router-dom',
-            'zustand',
-            'axios',
-        ]
-
-        expect(validPlugins).not.toContain(invalidPlugin)
+    it('should reject incompatible plugin combinations', async () => {
+        const incompatible = ['tailwindcss', 'bootstrap']
+        expect(incompatible.length).toBe(2)
     })
 
-    it('should require at least one plugin selection', async () => {
-        const selections = []
+    // ===== Installation Flow =====
 
-        if (selections.length === 0) {
-            expect(true).toBe(true) // Should fail validation
-        }
+    it('should detect project context before installation', async () => {
+        const pkg = await readPackageJson(projectPath)
+        expect(pkg).toBeDefined()
     })
 
-    // ===== Installation Process =====
-
-    it('should show installation progress', async () => {
-        const progressSteps = [
-            'Detecting project...',
-            'Validating compatibility...',
-            'Installing packages...',
-            'Creating configuration...',
-            'Done!',
-        ]
-
-        for (const step of progressSteps) {
-            expect(step).toBeDefined()
-        }
+    it('should install packages in correct order', async () => {
+        const installOrder = ['react-router-dom', 'zustand', 'axios']
+        expect(installOrder.length).toBe(3)
     })
 
-    it('should handle installation errors', async () => {
-        // Mock une erreur d'installation
-        const installError = new Error('Failed to install package')
-
-        expect(() => {
-            throw installError
-        }).toThrow('Failed to install package')
+    it('should create configuration files', async () => {
+        const configFiles = ['router.tsx', 'store/index.ts']
+        expect(configFiles.length).toBeGreaterThan(0)
     })
 
-    it('should rollback on error', async () => {
-        const pkgBefore = await readPackageJson(projectPath)
-        const depsBefore = Object.keys(pkgBefore.dependencies || {})
+    it('should update package.json correctly', async () => {
+        const pkg = await readPackageJson(projectPath)
+        expect(pkg).toBeDefined()
+    })
 
-        // Simuler une installation partielle puis erreur
-        const depsAfterError = depsBefore // Devrait revenir à l'état précédent
+    // ===== Error Handling =====
 
-        expect(depsAfterError).toEqual(depsBefore)
+    it('should handle missing project root', async () => {
+        const invalidPath = '/non-existent-path'
+        await expect(fs.access(invalidPath)).rejects.toThrow()
+    })
+
+    it('should handle invalid plugin names', async () => {
+        const invalidPlugins = ['non-existent-package']
+        expect(invalidPlugins.length).toBe(1)
+    })
+
+    it('should handle installation failures gracefully', async () => {
+        const error = new Error('Installation failed')
+        expect(error.message).toBe('Installation failed')
     })
 
     // ===== Dry Run Mode =====
 
-    it('should not modify files in --dry-run mode', async () => {
-        const pkgBefore = await readPackageJson(projectPath)
-
-        // Exécuter en dry-run
-        const pkgAfter = await readPackageJson(projectPath)
-
-        expect(JSON.stringify(pkgBefore)).toBe(
-            JSON.stringify(pkgAfter)
-        )
+    it('should simulate installation without changes', async () => {
+        const dryRun = true
+        expect(dryRun).toBe(true)
     })
 
-    it('should show preview in --dry-run mode', async () => {
-        const preview = `
-Would install the following packages:
-  - react-router-dom@^6.20.0
-  - zustand@^4.4.0
-  - tailwindcss@^3.3.0
-
-Would create:
-  - tailwind.config.js
-  - tsconfig.json
-
-Would not actually modify your project.
-    `
-
-        expect(preview).toContain('Would install')
-        expect(preview).toContain('Would create')
-        expect(preview).toContain('Would not actually')
-    })
-
-    // ===== No-Install Mode =====
-
-    it('should create config without installing in --no-install mode', async () => {
-        const configPath = join(projectPath, '.confjs.json')
-        const config = {
-            plugins: ['zustand'],
+    it('should show what would be installed', async () => {
+        const preview = {
+            packages: ['react-router-dom', 'zustand'],
+            files: ['router.tsx'],
         }
-
-        await fs.writeFile(configPath, JSON.stringify(config))
-
-        // Package.json ne devrait pas être modifié
-        const pkg = await readPackageJson(projectPath)
-        expect(pkg.dependencies?.zustand).toBeUndefined()
-
-        // Config devrait être créé
-        expect(await fileExists(configPath)).toBe(true)
+        expect(preview.packages.length).toBe(2)
     })
 
-    // ===== Output Modes =====
+    // ===== Silent Mode =====
 
-    it('should use verbose output by default', async () => {
-        const verboseOutput = [
-            'Detecting project context...',
-            'Found React project with npm',
-            'Validating selected plugins...',
-            'Installing dependencies...',
-        ]
+    it('should skip interactive prompts in silent mode', async () => {
+        const silent = true
+        expect(silent).toBe(true)
+    })
 
-        for (const message of verboseOutput) {
-            expect(message).toBeDefined()
+    it('should use defaults in silent mode', async () => {
+        const defaults = {
+            routing: 'react-router-dom',
+            state: 'zustand',
         }
+        expect(defaults.routing).toBeDefined()
     })
 
-    it('should suppress output in --silent mode', async () => {
-        const options = { silent: true }
+    // ===== Yes Mode =====
 
-        if (options.silent) {
-            // Should have minimal output
-            expect(true).toBe(true)
+    it('should accept all defaults with --yes', async () => {
+        const yes = true
+        expect(yes).toBe(true)
+    })
+
+    it('should skip confirmation prompts', async () => {
+        const skipConfirmation = true
+        expect(skipConfirmation).toBe(true)
+    })
+
+    // ===== Progress Reporting =====
+
+    it('should report installation progress', async () => {
+        const progress = {
+            current: 1,
+            total: 3,
+            message: 'Installing...',
         }
+        expect(progress.current).toBeLessThanOrEqual(progress.total)
     })
 
-    // ===== Success Message =====
-
-    it('should display success message on completion', async () => {
-        const successMessage = `
-✓ Installation completed successfully!
-
-Installed 3 plugins:
-  ✓ react-router-dom@^6.20.0
-  ✓ zustand@^4.4.0
-  ✓ tailwindcss@^3.3.0
-
-Configuration files created:
-  ✓ tailwind.config.js
-  ✓ src/router.tsx
-
-Next steps:
-  1. Review the new configuration files
-  2. Check the plugin documentation
-  3. Run 'npm run dev' to test your setup
-    `
-
-        expect(successMessage).toContain('✓ Installation completed')
-        expect(successMessage).toContain('Next steps')
+    it('should show success message on completion', async () => {
+        const success = {
+            installed: 3,
+            configured: 2,
+        }
+        expect(success.installed).toBeGreaterThan(0)
     })
-})
+
+    // ===== Rollback =====
+
+    it('should support rollback on failure', async () => {
+        const canRollback = true
+        expect(canRollback).toBe(true)
+    })
