@@ -29,6 +29,7 @@ import { reduxToolkitPlugin } from './state/redux-toolkit.js'
 import { axiosPlugin } from './http/axios.js'
 import { tanstackQueryPlugin } from './http/tanstack-query.js'
 import { tailwindcssPlugin } from './css/tailwindcss.js'
+import { styledComponentsPlugin } from './css/styled-components.js'
 // ... autres imports
 
 /**
@@ -54,6 +55,7 @@ export const pluginRegistry: Plugin[] = [
   tanstackQueryPlugin,
   // CSS
   tailwindcssPlugin,
+  styledComponentsPlugin,
   // etc.
 ]
 
