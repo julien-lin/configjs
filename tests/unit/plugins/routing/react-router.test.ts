@@ -4,7 +4,7 @@ import { reactRouterPlugin } from '../../../../src/plugins/routing/react-router.
 import * as packageManager from '../../../../src/utils/package-manager.js'
 import { ConfigWriter } from '../../../../src/core/config-writer.js'
 import { BackupManager } from '../../../../src/core/backup-manager.js'
-import { fsMocks } from '../../test-utils/fs-mocks.js'
+import * as fsHelpers from '../../../../src/utils/fs-helpers.js'
 
 // Mocks
 vi.mock('../../../../src/utils/package-manager.js')
@@ -28,20 +28,16 @@ describe('React Router Plugin', () => {
       lockfile: 'package-lock.json',
       projectRoot: '/project',
       srcDir: 'src',
-      publicDir: 'public',
-      os: 'darwin',
-      nodeVersion: 'v18.0.0',
       dependencies: {},
       devDependencies: {},
-      hasGit: false,
     }
 
     // ConfigWriter et BackupManager sont mockés, pas besoin de les instancier
 
     // Mock fs-helpers
-    fsMocks.checkPathExists.mockResolvedValue(false)
-    fsMocks.readFileContent.mockResolvedValue('')
-    fsMocks.writeFileContent.mockResolvedValue(undefined)
+    vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+    vi.mocked(fsHelpers.readFileContent).mockResolvedValue('')
+    vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
   })
 
   describe('detect', () => {
@@ -151,7 +147,7 @@ describe('React Router Plugin', () => {
     })
 
     it('should create router.tsx for TypeScript project', async () => {
-      fsMocks.checkPathExists.mockResolvedValue(false) // App.tsx doesn't exist
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false) // App.tsx doesn't exist
 
       const result = await reactRouterPlugin.configure(mockContext)
 
@@ -173,7 +169,7 @@ describe('React Router Plugin', () => {
         ...mockContext,
         typescript: false,
       }
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await reactRouterPlugin.configure(ctx)
 
@@ -186,7 +182,7 @@ describe('React Router Plugin', () => {
     })
 
     it('should create routes/Home.tsx for TypeScript project', async () => {
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await reactRouterPlugin.configure(mockContext)
 
@@ -204,7 +200,7 @@ describe('React Router Plugin', () => {
         ...mockContext,
         typescript: false,
       }
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await reactRouterPlugin.configure(ctx)
 
@@ -229,8 +225,8 @@ function App() {
 export default App
 `
 
-      fsMocks.checkPathExists.mockResolvedValue(true) // App.tsx exists
-      fsMocks.readFileContent.mockResolvedValue(existingAppContent)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true) // App.tsx exists
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingAppContent)
 
       const result = await reactRouterPlugin.configure(mockContext)
 
@@ -244,7 +240,7 @@ export default App
     })
 
     it('should create App.tsx if it does not exist', async () => {
-      fsMocks.checkPathExists.mockResolvedValue(false) // App.tsx doesn't exist
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false) // App.tsx doesn't exist
 
       const result = await reactRouterPlugin.configure(mockContext)
 
@@ -267,8 +263,8 @@ function App() {
 export default App
 `
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue(existingAppContent)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingAppContent)
 
       const result = await reactRouterPlugin.configure(mockContext)
 

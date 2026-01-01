@@ -28,21 +28,15 @@ describe('Jotai Plugin', () => {
       lockfile: 'package-lock.json',
       projectRoot: '/project',
       srcDir: 'src',
-      publicDir: 'public',
-      os: 'darwin',
-      nodeVersion: 'v18.0.0',
       dependencies: {},
       devDependencies: {},
-      hasGit: false,
     }
 
-    // Mock package-manager
     vi.mocked(packageManager.installPackages).mockResolvedValue({
       success: true,
       packages: ['jotai'],
     })
 
-    // Mock fs-helpers
     vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
     vi.mocked(fsHelpers.readFileContent).mockResolvedValue('')
     vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)

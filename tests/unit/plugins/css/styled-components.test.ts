@@ -28,24 +28,16 @@ describe('Styled Components Plugin', () => {
       lockfile: 'package-lock.json',
       projectRoot: '/project',
       srcDir: 'src',
-      publicDir: 'public',
-      os: 'darwin',
-      nodeVersion: 'v18.0.0',
       dependencies: {},
       devDependencies: {},
-      hasGit: false,
     }
 
-    // Mock package-manager (sera surchargé dans les tests spécifiques)
     vi.mocked(packageManager.installPackages).mockResolvedValue({
       success: true,
       packages: ['styled-components'],
     })
 
-    // Mock fs-helpers
     vi.mocked(fsHelpers.ensureDirectory).mockResolvedValue(undefined)
-
-    // Mock ConfigWriter
     vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(undefined)
     vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(undefined)
 
@@ -71,10 +63,7 @@ describe('Styled Components Plugin', () => {
 
   describe('install', () => {
     it('should install Styled Components for TypeScript project', async () => {
-      // Réinitialiser le mock pour ce test
       vi.mocked(packageManager.installPackages).mockReset()
-
-      // Mock les deux appels séparés
       vi.mocked(packageManager.installPackages)
         .mockResolvedValueOnce({
           success: true,
@@ -93,8 +82,7 @@ describe('Styled Components Plugin', () => {
         '@types/styled-components'
       )
       expect(packageManager.installPackages).toHaveBeenCalledTimes(2)
-      expect(packageManager.installPackages).toHaveBeenNthCalledWith(
-        1,
+      expect(packageManager.installPackages).toHaveBeenCalledWith(
         ['styled-components'],
         expect.objectContaining({
           dev: false,
@@ -102,8 +90,7 @@ describe('Styled Components Plugin', () => {
           projectRoot: '/project',
         })
       )
-      expect(packageManager.installPackages).toHaveBeenNthCalledWith(
-        2,
+      expect(packageManager.installPackages).toHaveBeenCalledWith(
         ['@types/styled-components'],
         expect.objectContaining({
           dev: true,
@@ -113,10 +100,9 @@ describe('Styled Components Plugin', () => {
       )
     })
 
-    it('should install Styled Components for JavaScript project (no types)', async () => {
+    it('should install Styled Components for JavaScript project', async () => {
       mockContext.typescript = false
 
-      // Réinitialiser le mock pour ce test
       vi.mocked(packageManager.installPackages).mockReset()
       vi.mocked(packageManager.installPackages).mockResolvedValue({
         success: true,
@@ -164,9 +150,7 @@ describe('Styled Components Plugin', () => {
       const result = await styledComponentsPlugin.configure(mockContext)
 
       expect(result.success).toBe(true)
-      expect(result.files).toHaveLength(3) // Button, Card, index
-
-      // Vérifier que les fichiers ont été créés
+      expect(result.files).toHaveLength(3)
       const buttonFile = result.files.find((f) =>
         f.path?.endsWith('components/styled/Button.tsx')
       )

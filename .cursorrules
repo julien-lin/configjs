@@ -488,51 +488,105 @@ function modifyFile(filePath, modifier) {
 4. **Pas de tests qui échouent en CI**
 
 ```typescript
-// ✅ BON - Test complet
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { detectContext } from '../src/core/detector'
-import { createTestProject, cleanupTestProject } from './helpers'
+// ✅ BON - Test de plugin complet et minimaliste
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import type { ProjectContext } from '../../../../src/types/index.js'
+import { reactBootstrapPlugin } from '../../../../src/plugins/css/react-bootstrap.js'
+import * as packageManager from '../../../../src/utils/package-manager.js'
+import { ConfigWriter } from '../../../../src/core/config-writer.js'
+import { BackupManager } from '../../../../src/core/backup-manager.js'
+import * as fsHelpers from '../../../../src/utils/fs-helpers.js'
 
-describe('detectContext', () => {
-  let testProjectPath: string
-  
-  beforeEach(async () => {
-    testProjectPath = await createTestProject({
+// Mocks
+vi.mock('../../../../src/utils/package-manager.js')
+vi.mock('../../../../src/utils/fs-helpers.js')
+vi.mock('../../../../src/core/config-writer.js')
+vi.mock('../../../../src/core/backup-manager.js')
+
+describe('React Bootstrap Plugin', () => {
+  let mockContext: ProjectContext
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    // mockContext minimaliste : seulement les champs nécessaires
+    mockContext = {
       framework: 'react',
+      frameworkVersion: '18.2.0',
+      bundler: 'vite',
+      bundlerVersion: '5.0.0',
       typescript: true,
+      packageManager: 'npm',
+      lockfile: 'package-lock.json',
+      projectRoot: '/project',
+      srcDir: 'src',
+      dependencies: {},
+      devDependencies: {},
+    }
+
+    // Mocks simplifiés sans commentaires redondants
+    vi.mocked(packageManager.installPackages).mockResolvedValue({
+      success: true,
+      packages: ['react-bootstrap', 'bootstrap'],
+    })
+
+    vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+    vi.mocked(fsHelpers.readFileContent).mockResolvedValue('')
+    vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(undefined)
+    vi.spyOn(BackupManager.prototype, 'restoreAll').mockResolvedValue(undefined)
+  })
+
+  describe('detect', () => {
+    it('should detect React Bootstrap if react-bootstrap is installed', () => {
+      mockContext.dependencies['react-bootstrap'] = '^2.10.10'
+      expect(reactBootstrapPlugin.detect?.(mockContext)).toBe(true)
     })
   })
-  
-  afterEach(async () => {
-    await cleanupTestProject(testProjectPath)
-  })
-  
-  it('should detect React framework', async () => {
-    const ctx = await detectContext(testProjectPath)
-    
-    expect(ctx.framework).toBe('react')
-    expect(ctx.typescript).toBe(true)
-  })
-  
-  it('should throw error if not a valid project', async () => {
-    await expect(
-      detectContext('/invalid/path')
-    ).rejects.toThrow('Not a valid project')
-  })
-  
-  it('should detect package manager from lockfile', async () => {
-    const ctx = await detectContext(testProjectPath)
-    
-    expect(ctx.packageManager).toBeDefined()
-    expect(['npm', 'yarn', 'pnpm', 'bun']).toContain(ctx.packageManager)
+
+  describe('install', () => {
+    it('should install React Bootstrap and Bootstrap', async () => {
+      const result = await reactBootstrapPlugin.install(mockContext)
+
+      expect(result.success).toBe(true)
+      expect(result.packages?.dependencies).toContain('react-bootstrap')
+      // Utilise objectContaining pour les assertions
+      expect(packageManager.installPackages).toHaveBeenCalledWith(
+        ['react-bootstrap', 'bootstrap'],
+        expect.objectContaining({
+          dev: false,
+          packageManager: 'npm',
+          projectRoot: '/project',
+        })
+      )
+    })
   })
 })
 
-// ❌ MAUVAIS - Tests incomplets
-describe('detectContext', () => {
-  it('works', async () => {
-    const ctx = await detectContext('/some/path')
-    expect(ctx).toBeDefined() // Test trop vague
+// ❌ MAUVAIS - Tests avec mockContext trop verbeux
+describe('React Bootstrap Plugin', () => {
+  let mockContext: ProjectContext
+
+  beforeEach(() => {
+    mockContext = {
+      framework: 'react',
+      frameworkVersion: '18.2.0',
+      bundler: 'vite',
+      bundlerVersion: '5.0.0',
+      typescript: true,
+      packageManager: 'npm',
+      lockfile: 'package-lock.json',
+      projectRoot: '/project',
+      srcDir: 'src',
+      publicDir: 'public', // ❌ Non nécessaire
+      os: 'darwin', // ❌ Non nécessaire
+      nodeVersion: 'v18.0.0', // ❌ Non nécessaire
+      dependencies: {},
+      devDependencies: {},
+      hasGit: false, // ❌ Non nécessaire
+    }
+    // Commentaires redondants
+    // Mock package-manager
+    vi.mocked(packageManager.installPackages).mockResolvedValue({...})
   })
 })
 ```
@@ -547,6 +601,129 @@ describe('detectContext', () => {
 4. ✅ **S'assurer que les mocks retournent des Promise** quand nécessaire
 5. ✅ **Corriger les imports relatifs** cassés après refactoring
 6. ✅ **Utiliser les alias centralisés** (`fsMocks`) au lieu de `vi.mocked(fsHelpers.xxx)`
+
+### Pattern de Tests pour Plugins
+
+**RÈGLE CRITIQUE : Tests minimalistes et cohérents**
+
+1. ✅ **mockContext minimaliste** : Seulement les champs nécessaires
+   - Champs de base obligatoires : `framework`, `frameworkVersion`, `bundler`, `bundlerVersion`, `typescript`, `packageManager`, `lockfile`, `projectRoot`, `srcDir`, `dependencies`, `devDependencies`
+   - ❌ **NE PAS inclure** : `publicDir`, `os`, `nodeVersion`, `hasGit` sauf si vraiment nécessaires pour le test
+   - ✅ **Utiliser `as ProjectContext`** pour le cast TypeScript si nécessaire
+   - ✅ **Ajouter des champs uniquement** si le test les utilise explicitement
+   ```typescript
+   // ✅ BON - mockContext minimaliste avec cast
+   let mockContext: ProjectContext
+   
+   mockContext = {
+     framework: 'react',
+     frameworkVersion: '18.2.0',
+     bundler: 'vite',
+     bundlerVersion: '5.0.0',
+     typescript: true,
+     packageManager: 'npm',
+     lockfile: 'package-lock.json',
+     projectRoot: '/project',
+     srcDir: 'src',
+     dependencies: {},
+     devDependencies: {},
+   } as ProjectContext
+   
+   // ❌ MAUVAIS - Tous les champs même non nécessaires
+   let mockContext: ProjectContext
+   mockContext = {
+     framework: 'react',
+     frameworkVersion: '18.2.0',
+     bundler: 'vite',
+     bundlerVersion: '5.0.0',
+     typescript: true,
+     packageManager: 'npm',
+     lockfile: 'package-lock.json',
+     projectRoot: '/project',
+     srcDir: 'src',
+     publicDir: 'public', // ❌ Non nécessaire
+     os: 'darwin', // ❌ Non nécessaire
+     nodeVersion: 'v18.0.0', // ❌ Non nécessaire
+     dependencies: {},
+     devDependencies: {},
+     hasGit: false, // ❌ Non nécessaire
+   }
+   ```
+
+2. ✅ **Mocks simplifiés** : Pas de commentaires redondants
+   ```typescript
+   // ✅ BON - Concis et clair
+   vi.mocked(packageManager.installPackages).mockResolvedValue({
+     success: true,
+     packages: ['react-bootstrap', 'bootstrap'],
+   })
+   
+   vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+   vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(undefined)
+   
+   // ❌ MAUVAIS - Commentaires redondants
+   // Mock package-manager
+   vi.mocked(packageManager.installPackages).mockResolvedValue({...})
+   // Mock fs-helpers
+   vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
+   ```
+
+3. ✅ **expect.objectContaining()** : Pour les assertions sur les appels
+   ```typescript
+   // ✅ BON - Utilise objectContaining pour les champs importants
+   expect(packageManager.installPackages).toHaveBeenCalledWith(
+     ['react-bootstrap', 'bootstrap'],
+     expect.objectContaining({
+       dev: false,
+       packageManager: 'npm',
+       projectRoot: '/project',
+     })
+   )
+   
+   // ❌ MAUVAIS - Spécifie tous les champs (fragile et verbeux)
+   expect(packageManager.installPackages).toHaveBeenCalledWith(
+     ['react-bootstrap', 'bootstrap'],
+     {
+       dev: false,
+       packageManager: 'npm',
+       projectRoot: '/project',
+       exact: false,
+       silent: false,
+     }
+   )
+   ```
+
+4. ✅ **Assertions simplifiées** : Conditions simples et claires
+   ```typescript
+   // ✅ BON - Condition simple et claire
+   const indexFile = result.files.find((f) => f.path?.endsWith('index.tsx'))
+   if (indexFile) {
+     expect(indexFile.content).toBe(existingIndexContent)
+   }
+   
+   // ✅ BON - Optional chaining quand approprié
+   expect(indexFile?.content).toContain("'bootstrap/dist/css/bootstrap.min.css'")
+   
+   // ❌ MAUVAIS - Commentaires redondants
+   // Le fichier ne devrait pas être modifié si l'import existe déjà
+   // Le contenu devrait être inchangé
+   const indexFile = result.files.find((f) => f.path?.endsWith('index.tsx'))
+   if (indexFile?.content) {
+     expect(indexFile.content).toBe(existingIndexContent)
+   }
+   ```
+
+5. ✅ **Cohérence** : Tous les tests de plugins suivent le même pattern
+   - Structure identique : `describe` > `beforeEach` > `describe('detect')` > `describe('install')` > `describe('configure')` > `describe('rollback')`
+   - Même organisation des mocks dans `beforeEach`
+   - Même style d'assertions
+
+**Bénéfices de ce pattern :**
+- ✅ **Cohérence** : Tous les tests utilisent le même pattern de mocking
+- ✅ **Clarté** : Les mockContext ne contiennent que les champs nécessaires
+- ✅ **Maintenabilité** : Moins de bruit, plus facile à comprendre
+- ✅ **Performance** : Tests plus légers et rapides
+- ✅ **Standards** : Suit les best practices Vitest
 
 ```typescript
 // ✅ BON - Mocks centralisés et typés

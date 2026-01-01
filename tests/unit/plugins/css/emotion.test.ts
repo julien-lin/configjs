@@ -28,21 +28,15 @@ describe('Emotion Plugin', () => {
       lockfile: 'package-lock.json',
       projectRoot: '/project',
       srcDir: 'src',
-      publicDir: 'public',
-      os: 'darwin',
-      nodeVersion: 'v18.0.0',
       dependencies: {},
       devDependencies: {},
-      hasGit: false,
     }
 
-    // Mock package-manager (sera surchargé dans les tests spécifiques)
     vi.mocked(packageManager.installPackages).mockResolvedValue({
       success: true,
       packages: ['@emotion/react'],
     })
 
-    // Mock fs-helpers
     vi.mocked(fsHelpers.ensureDirectory).mockResolvedValue(undefined)
 
     // Mock ConfigWriter
@@ -76,10 +70,7 @@ describe('Emotion Plugin', () => {
 
   describe('install', () => {
     it('should install Emotion packages', async () => {
-      // Réinitialiser le mock pour ce test
       vi.mocked(packageManager.installPackages).mockReset()
-
-      // Mock les deux appels séparés
       vi.mocked(packageManager.installPackages)
         .mockResolvedValueOnce({
           success: true,
@@ -96,8 +87,7 @@ describe('Emotion Plugin', () => {
       expect(result.packages?.dependencies).toContain('@emotion/react')
       expect(result.packages?.dependencies).toContain('@emotion/styled')
       expect(packageManager.installPackages).toHaveBeenCalledTimes(2)
-      expect(packageManager.installPackages).toHaveBeenNthCalledWith(
-        1,
+      expect(packageManager.installPackages).toHaveBeenCalledWith(
         ['@emotion/react'],
         expect.objectContaining({
           dev: false,
@@ -105,8 +95,7 @@ describe('Emotion Plugin', () => {
           projectRoot: '/project',
         })
       )
-      expect(packageManager.installPackages).toHaveBeenNthCalledWith(
-        2,
+      expect(packageManager.installPackages).toHaveBeenCalledWith(
         ['@emotion/styled'],
         expect.objectContaining({
           dev: false,
@@ -144,9 +133,7 @@ describe('Emotion Plugin', () => {
       const result = await emotionPlugin.configure(mockContext)
 
       expect(result.success).toBe(true)
-      expect(result.files).toHaveLength(3) // Button, Card, index
-
-      // Vérifier que les fichiers ont été créés
+      expect(result.files).toHaveLength(3)
       const buttonFile = result.files.find((f) =>
         f.path?.endsWith('components/emotion/Button.tsx')
       )

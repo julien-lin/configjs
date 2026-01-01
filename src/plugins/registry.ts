@@ -31,6 +31,8 @@ import { tanstackQueryPlugin } from './http/tanstack-query.js'
 import { tailwindcssPlugin } from './css/tailwindcss.js'
 import { styledComponentsPlugin } from './css/styled-components.js'
 import { emotionPlugin } from './css/emotion.js'
+import { reactBootstrapPlugin } from './css/react-bootstrap.js'
+import { reactHookFormPlugin } from './forms/react-hook-form.js'
 // ... autres imports
 
 /**
@@ -58,6 +60,9 @@ export const pluginRegistry: Plugin[] = [
   tailwindcssPlugin,
   styledComponentsPlugin,
   emotionPlugin,
+  reactBootstrapPlugin,
+  // Forms
+  reactHookFormPlugin,
   // etc.
 ]
 

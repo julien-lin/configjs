@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { resolve } from 'path'
-import { fsMocks } from '../test-utils/fs-mocks'
+import * as fsHelpers from '../../../src/utils/fs-helpers.js'
 import { BackupManager } from '../../../src/core/backup-manager.js'
 
 // Mocks
@@ -52,21 +52,25 @@ describe('BackupManager', () => {
       const filePath = '/path/to/file.txt'
       const content = 'file content'
 
-      fsMocks.checkPathExists.mockResolvedValue(true)
-      fsMocks.readFileContent.mockResolvedValue(content)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
+      vi.mocked(fsHelpers.readFileContent).mockResolvedValue(content)
 
       await backupManager.backupFromDisk(filePath)
 
       expect(backupManager.hasBackup(filePath)).toBe(true)
       expect(backupManager.getBackup(filePath)).toBe(content)
-      expect(fsMocks.checkPathExists).toHaveBeenCalledWith(resolve(filePath))
-      expect(fsMocks.readFileContent).toHaveBeenCalledWith(filePath)
+      expect(vi.mocked(fsHelpers.checkPathExists)).toHaveBeenCalledWith(
+        resolve(filePath)
+      )
+      expect(vi.mocked(fsHelpers.readFileContent)).toHaveBeenCalledWith(
+        filePath
+      )
     })
 
     it('should throw error if file does not exist', async () => {
       const filePath = '/path/to/nonexistent.txt'
 
-      fsMocks.checkPathExists.mockResolvedValue(false)
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       await expect(backupManager.backupFromDisk(filePath)).rejects.toThrow(
         'File not found for backup'
@@ -80,11 +84,14 @@ describe('BackupManager', () => {
       const content = 'backup content'
 
       backupManager.backup(filePath, content)
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await backupManager.restore(filePath)
 
-      expect(fsMocks.writeFileContent).toHaveBeenCalledWith(filePath, content)
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
+        filePath,
+        content
+      )
     })
 
     it('should throw error if no backup exists', async () => {
@@ -100,7 +107,9 @@ describe('BackupManager', () => {
       const content = 'backup content'
 
       backupManager.backup(filePath, content)
-      fsMocks.writeFileContent.mockRejectedValue(new Error('Write failed'))
+      vi.mocked(fsHelpers.writeFileContent).mockRejectedValue(
+        new Error('Write failed')
+      )
 
       await expect(backupManager.restore(filePath)).rejects.toThrow(
         'Failed to restore file'
@@ -118,19 +127,25 @@ describe('BackupManager', () => {
       backupManager.backup(file1, content1)
       backupManager.backup(file2, content2)
 
-      fsMocks.writeFileContent.mockResolvedValue(undefined)
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
 
       await backupManager.restoreAll()
 
-      expect(fsMocks.writeFileContent).toHaveBeenCalledWith(file1, content1)
-      expect(fsMocks.writeFileContent).toHaveBeenCalledWith(file2, content2)
-      expect(fsMocks.writeFileContent).toHaveBeenCalledTimes(2)
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
+        file1,
+        content1
+      )
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
+        file2,
+        content2
+      )
+      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledTimes(2)
     })
 
     it('should do nothing if no backups exist', async () => {
       await backupManager.restoreAll()
 
-      expect(fsMocks.writeFileContent).not.toHaveBeenCalled()
+      expect(vi.mocked(fsHelpers.writeFileContent)).not.toHaveBeenCalled()
     })
 
     it('should throw error if some restores fail', async () => {
@@ -142,8 +157,10 @@ describe('BackupManager', () => {
       backupManager.backup(file1, content1)
       backupManager.backup(file2, content2)
 
-      fsMocks.writeFileContent.mockResolvedValueOnce(undefined)
-      fsMocks.writeFileContent.mockRejectedValueOnce(new Error('Write failed'))
+      vi.mocked(fsHelpers.writeFileContent).mockResolvedValueOnce(undefined)
+      vi.mocked(fsHelpers.writeFileContent).mockRejectedValueOnce(
+        new Error('Write failed')
+      )
 
       await expect(backupManager.restoreAll()).rejects.toThrow(
         'Failed to restore'
