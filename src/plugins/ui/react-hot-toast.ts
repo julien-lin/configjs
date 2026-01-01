@@ -125,7 +125,10 @@ export const reactHotToastPlugin: Plugin = {
 
       if (targetPath && targetContent) {
         // Vérifier si Toaster est déjà présent
-        if (!targetContent.includes('react-hot-toast')) {
+        const hasImport = targetContent.includes('react-hot-toast')
+        const hasToaster = targetContent.includes('<Toaster />')
+
+        if (!hasImport || !hasToaster) {
           const updatedContent = injectToaster(targetContent, ctx.typescript)
           await writer.writeFile(targetPath, updatedContent, { backup: true })
           files.push({
@@ -195,42 +198,44 @@ function injectToaster(content: string, typescript: boolean): string {
     ? "import { Toaster } from 'react-hot-toast'\n"
     : "import { Toaster } from 'react-hot-toast'\n"
 
-  // Vérifier si l'import existe déjà
-  if (content.includes("from 'react-hot-toast'")) {
+  // Vérifier si l'import et le composant existent déjà
+  const hasImport = content.includes("from 'react-hot-toast'")
+  const hasToaster = content.includes('<Toaster />')
+  if (hasImport && hasToaster) {
     return content
   }
 
-  // Trouver le dernier import
-  const importRegex = /^import .+$/m
+  // Trouver le dernier import (sinon on préfixe)
   const imports = content.match(/^import .+$/gm) || []
-  const lastImportIndex = imports.length > 0
-    ? content.lastIndexOf(imports[imports.length - 1])
-    : 0
+  const lastImport = imports[imports.length - 1]
+  const lastImportIndex = lastImport ? content.lastIndexOf(lastImport) : -1
 
-  // Insérer l'import après le dernier import
-  const beforeImports = content.substring(0, lastImportIndex)
-  const afterImports = content.substring(lastImportIndex)
-  const lastImportEnd = afterImports.indexOf('\n')
   const newContent =
-    beforeImports +
-    afterImports.substring(0, lastImportEnd + 1) +
-    importStatement +
-    afterImports.substring(lastImportEnd + 1)
+    lastImportIndex >= 0 && lastImport
+      ? `${content.slice(0, lastImportIndex + lastImport.length)}\n${importStatement}${content.slice(lastImportIndex + lastImport.length + 1)}`
+      : `${importStatement}${content}`
 
-  // Ajouter <Toaster /> avant la fermeture du composant principal
-  if (newContent.includes('</div>')) {
-    return newContent.replace(
-      /(\s*)<\/div>\s*$/m,
-      `$1  <Toaster />\n$1</div>\n`
+  // Ajouter <Toaster /> avant la dernière fermeture de div si trouvée
+  const lastClosingDiv = newContent.lastIndexOf('</div>')
+  if (lastClosingDiv !== -1) {
+    return (
+      newContent.slice(0, lastClosingDiv) +
+      '  <Toaster />\n' +
+      newContent.slice(lastClosingDiv)
     )
   }
 
   // Si pas de </div>, ajouter avant le return
   if (newContent.includes('return (')) {
-    return newContent.replace(
-      /(return \([\s\S]*?)(<\/[^>]+>)/,
-      `$1  <Toaster />\n$2`
-    )
+    const returnIndex = newContent.indexOf('return (')
+    const closingParen = newContent.indexOf(')', returnIndex)
+    if (closingParen !== -1) {
+      return (
+        newContent.slice(0, closingParen) +
+        '  <Toaster />\n' +
+        newContent.slice(closingParen)
+      )
+    }
   }
 
   return newContent + '\n  <Toaster />\n'
@@ -273,4 +278,3 @@ function App() {
 export default App
 `
 }
-

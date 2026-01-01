@@ -128,7 +128,10 @@ export const zodPlugin: Plugin = {
       logger.info(`Created user schema: ${userSchemaPath}`)
 
       // 3. Créer src/lib/schemas/index.ts (export centralisé)
-      const indexPath = join(schemasDir, `index.${ctx.typescript ? 'ts' : 'js'}`)
+      const indexPath = join(
+        schemasDir,
+        `index.${ctx.typescript ? 'ts' : 'js'}`
+      )
       const indexContent = ctx.typescript
         ? getIndexContentTS()
         : getIndexContentJS()
@@ -255,4 +258,3 @@ function getIndexContentJS(): string {
   return `export { userSchema } from './user'
 `
 }
-

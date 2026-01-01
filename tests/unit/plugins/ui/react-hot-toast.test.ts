@@ -106,6 +106,7 @@ describe('React Hot Toast Plugin', () => {
     })
 
     it('should create App.tsx if no app file exists', async () => {
+      vi.mocked(fsHelpers.checkPathExists).mockReset()
       vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await reactHotToastPlugin.configure(mockContext)
@@ -132,4 +133,3 @@ describe('React Hot Toast Plugin', () => {
     })
   })
 })
-
