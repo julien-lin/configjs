@@ -128,7 +128,10 @@ export const framerMotionPlugin: Plugin = {
       logger.info(`Created animated box example: ${animatedBoxPath}`)
 
       // 3. Créer src/components/animation/index.ts (export centralisé)
-      const indexPath = join(animationDir, `index.${ctx.typescript ? 'ts' : 'js'}`)
+      const indexPath = join(
+        animationDir,
+        `index.${ctx.typescript ? 'ts' : 'js'}`
+      )
       const indexContent = ctx.typescript
         ? getIndexContentTS()
         : getIndexContentJS()
@@ -294,4 +297,3 @@ function getIndexContentJS(): string {
   return `export { AnimatedBox } from './AnimatedBox'
 `
 }
-

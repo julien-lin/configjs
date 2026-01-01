@@ -28,7 +28,7 @@ import { logger } from '../../utils/logger.js'
 export const reactIconsPlugin: Plugin = {
   name: 'react-icons',
   displayName: 'React Icons',
-  description: 'Bibliothèque d\'icônes pour React',
+  description: "Bibliothèque d'icônes pour React",
   category: Category.UI,
   version: '^5.3.0',
 
@@ -264,4 +264,3 @@ export { SiTypescript, SiJavascript, SiReact } from 'react-icons/si'
 export { MdHome, MdSettings, MdSearch } from 'react-icons/md'
 `
 }
-

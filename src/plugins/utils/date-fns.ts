@@ -108,7 +108,10 @@ export const dateFnsPlugin: Plugin = {
       await ensureDirectory(utilsDir)
 
       // 2. Créer src/lib/utils/date.ts (utilitaires de dates)
-      const dateUtilsPath = join(utilsDir, `date.${ctx.typescript ? 'ts' : 'js'}`)
+      const dateUtilsPath = join(
+        utilsDir,
+        `date.${ctx.typescript ? 'ts' : 'js'}`
+      )
       const dateUtilsContent = ctx.typescript
         ? getDateUtilsContentTS()
         : getDateUtilsContentJS()
@@ -205,7 +208,7 @@ export function formatDate(date: Date | string, formatStr = 'd MMMM yyyy'): stri
 export function formatRelativeDate(date: Date | string): string {
   const dateObj = typeof date === 'string' ? parseISO(date) : date
   
-  if (isToday(dateObj)) return 'aujourd\'hui'
+  if (isToday(dateObj)) return "aujourd'hui"
   if (isYesterday(dateObj)) return 'hier'
   if (isTomorrow(dateObj)) return 'demain'
   
@@ -290,7 +293,7 @@ export function formatDate(date, formatStr = 'd MMMM yyyy') {
 export function formatRelativeDate(date) {
   const dateObj = typeof date === 'string' ? parseISO(date) : date
   
-  if (isToday(dateObj)) return 'aujourd\'hui'
+  if (isToday(dateObj)) return "aujourd'hui"
   if (isYesterday(dateObj)) return 'hier'
   if (isTomorrow(dateObj)) return 'demain'
   
@@ -333,4 +336,3 @@ export function getMinutesDifference(date1, date2) {
 }
 `
 }
-

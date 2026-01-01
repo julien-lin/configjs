@@ -110,4 +110,3 @@ describe('date-fns Plugin', () => {
     })
   })
 })
-
