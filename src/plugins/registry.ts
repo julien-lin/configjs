@@ -38,6 +38,7 @@ import { radixUiPlugin } from './ui/radix-ui.js'
 import { eslintPlugin } from './tooling/eslint.js'
 import { prettierPlugin } from './tooling/prettier.js'
 import { huskyPlugin } from './tooling/husky.js'
+import { reactTestingLibraryPlugin } from './testing/react-testing-library.js'
 // ... autres imports
 
 /**
@@ -75,6 +76,8 @@ export const pluginRegistry: Plugin[] = [
   eslintPlugin,
   prettierPlugin,
   huskyPlugin,
+  // Testing
+  reactTestingLibraryPlugin,
   // etc.
 ]
 
