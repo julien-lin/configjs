@@ -78,13 +78,22 @@ export async function installReact(options: CLIOptions): Promise<void> {
       }
     }
 
-    // 5. Installation
+    // 5. Mode Dry-Run (simulation détaillée)
     if (options.dryRun) {
-      console.log('\n🔍 Dry-run mode: No changes will be made')
-      console.log(`Would install ${selectedPlugins.length} plugins:`)
+      console.log('\n🔍 MODE DRY-RUN (simulation uniquement)')
+      console.log('━'.repeat(50))
+      console.log('\n📦 Packages à installer :')
       for (const plugin of selectedPlugins) {
-        console.log(`  - ${plugin.displayName}`)
+        console.log(
+          `   ${plugin.name}${plugin.version ? `@${plugin.version}` : ''}`
+        )
       }
+      console.log('\n📝 Fichiers qui seraient créés/modifiés :')
+      for (const plugin of selectedPlugins) {
+        console.log(`   ${plugin.displayName} configuration`)
+      }
+      console.log("\n⚠️  Aucune modification n'a été effectuée (dry-run)")
+      console.log('💡 Exécutez sans --dry-run pour appliquer les changements')
       return
     }
 
@@ -96,7 +105,16 @@ export async function installReact(options: CLIOptions): Promise<void> {
     const validator = new CompatibilityValidator(compatibilityRules)
 
     const installer = new Installer(ctx, validator, configWriter, backupManager)
-    const result = await installer.install(selectedPlugins)
+
+    // Mode --no-install : générer uniquement les configs
+    if (options.install === false) {
+      console.log('\n⚙️  Mode configuration uniquement (--no-install)')
+      console.log('Les packages ne seront PAS installés\n')
+    }
+
+    const result = await installer.install(selectedPlugins, {
+      skipPackageInstall: options.install === false,
+    })
 
     if (result.success) {
       console.log(`\n${t.installation.success}`)

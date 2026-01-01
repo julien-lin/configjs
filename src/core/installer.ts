@@ -59,12 +59,13 @@ export class Installer {
     // @ts-expect-error - writer will be used in future versions for plugin configuration
     private readonly writer: ConfigWriter,
     private readonly backupManager: BackupManager
-  ) {}
+  ) { }
 
   /**
    * Installe un ensemble de plugins
    *
    * @param plugins - Liste des plugins à installer
+   * @param options - Options d'installation (skipPackageInstall pour --no-install)
    * @returns Rapport d'installation avec détails
    * @throws {Error} Si l'installation échoue (après rollback)
    *
@@ -74,7 +75,10 @@ export class Installer {
    * console.log(`Installed ${report.installed.length} plugin(s)`)
    * ```
    */
-  async install(plugins: Plugin[]): Promise<InstallationReport> {
+  async install(
+    plugins: Plugin[],
+    options?: { skipPackageInstall?: boolean }
+  ): Promise<InstallationReport> {
     const startTime = Date.now()
     logger.info(`Starting installation of ${plugins.length} plugin(s)`)
 
@@ -114,16 +118,20 @@ export class Installer {
       logger.debug('Running pre-install hooks...')
       await this.runPreInstallHooks(allPlugins)
 
-      // 4. Installation des packages
-      logger.debug('Installing packages...')
-      const installResults = await this.installPackages(allPlugins)
+      // 4. Installation des packages (sauf si skipPackageInstall)
+      if (options?.skipPackageInstall) {
+        logger.info('Skipping package installation (--no-install mode)')
+      } else {
+        logger.debug('Installing packages...')
+        const installResults = await this.installPackages(allPlugins)
 
-      // Vérifier les échecs d'installation
-      const failedInstalls = installResults.filter((r) => !r.success)
-      if (failedInstalls.length > 0) {
-        throw new Error(
-          `Failed to install packages for ${failedInstalls.length} plugin(s)`
-        )
+        // Vérifier les échecs d'installation
+        const failedInstalls = installResults.filter((r) => !r.success)
+        if (failedInstalls.length > 0) {
+          throw new Error(
+            `Failed to install packages for ${failedInstalls.length} plugin(s)`
+          )
+        }
       }
 
       // 5. Configuration (séquentielle pour respecter l'ordre)

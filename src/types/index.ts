@@ -16,6 +16,8 @@ export enum Category {
   TOOLING = 'tooling',
   TESTING = 'testing',
   I18N = 'i18n',
+  ANIMATION = 'animation',
+  UTILS = 'utils',
 }
 
 export interface ProjectContext {
@@ -163,4 +165,5 @@ export interface CLIOptions {
   debug?: boolean
   config?: string
   force?: boolean
+  install?: boolean // --no-install flag
 }

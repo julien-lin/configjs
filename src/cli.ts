@@ -19,54 +19,53 @@ program
   .option('--debug', 'Enable debug logs')
   .option('-c, --config <file>', 'Use configuration file')
   .option('-f, --force', 'Force installation (overwrite configs)')
-  .action(async (options: {
-    yes?: boolean
-    dryRun?: boolean
-    silent?: boolean
-    debug?: boolean
-    config?: string
-    force?: boolean
-  }) => {
+  .option('--no-install', 'Generate configs only, skip package installation')
+  .action(
+    async (options: {
+      yes?: boolean
+      dryRun?: boolean
+      silent?: boolean
+      debug?: boolean
+      config?: string
+      force?: boolean
+      install?: boolean
+    }) => {
+      try {
+        const { installReact } = await import('./cli/commands/install.js')
+        await installReact(options)
+      } catch (error) {
+        console.error('Error:', error)
+        process.exit(1)
+      }
+    }
+  )
+
+program
+  .command('list')
+  .description('List available libraries')
+  .option('-c, --category <category>', 'Filter by category')
+  .action(async (options: { category?: string }) => {
     try {
-      const { installReact } = await import('./cli/commands/install.js')
-      await installReact(options)
+      const { listLibraries } = await import('./cli/commands/list.js')
+      await listLibraries(options)
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Error:', error)
       process.exit(1)
     }
   })
 
 program
-  .command('list')
-  .description('List available libraries')
-  .option('-c, --category <category>', 'Filter by category')
-  .action((options) => {
-    // eslint-disable-next-line no-console
-    console.log('📦 Available libraries')
-    // eslint-disable-next-line no-console
-    console.log('Options:', options)
-    // eslint-disable-next-line no-console
-    console.log('\n⚠️  Implementation coming soon...')
-
-    // TODO: Implement
-    // const { listLibraries } = await import('./cli/commands/list')
-    // await listLibraries(options)
-  })
-
-program
   .command('check')
   .description('Check compatibility without installing')
   .option('-c, --config <file>', 'Configuration file to check')
-  .action(() => {
-    // eslint-disable-next-line no-console
-    console.log('🔍 Checking compatibility')
-    // eslint-disable-next-line no-console
-    console.log('\n⚠️  Implementation coming soon...')
-
-    // TODO: Implement
-    // const { checkCompatibility } = await import('./cli/commands/check')
-    // await checkCompatibility(options)
+  .action(async (options: { config?: string }) => {
+    try {
+      const { checkCompatibility } = await import('./cli/commands/check.js')
+      await checkCompatibility(options)
+    } catch (error) {
+      console.error('Error:', error)
+      process.exit(1)
+    }
   })
 
 program.parse()
