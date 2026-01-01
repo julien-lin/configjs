@@ -227,3 +227,4 @@ describe('Unit: CLI Commands - Install', () => {
         const canRollback = true
         expect(canRollback).toBe(true)
     })
+})
