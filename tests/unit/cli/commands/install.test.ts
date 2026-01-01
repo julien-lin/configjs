@@ -12,7 +12,6 @@ import {
     createTestProject,
     cleanupTestProject,
     readPackageJson,
-    fileExists,
 } from '../../../integration/test-utils'
 
 describe('Unit: CLI Commands - Install', () => {
