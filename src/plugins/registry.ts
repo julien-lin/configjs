@@ -22,6 +22,7 @@ import { logger } from '../utils/logger.js'
 
 // Import des plugins (seront ajoutés progressivement)
 import { reactRouterPlugin } from './routing/react-router.js'
+import { tanstackRouterPlugin } from './routing/tanstack-router.js'
 import { zustandPlugin } from './state/zustand.js'
 import { reduxToolkitPlugin } from './state/redux-toolkit.js'
 import { axiosPlugin } from './http/axios.js'
@@ -41,6 +42,7 @@ import { tailwindcssPlugin } from './css/tailwindcss.js'
 export const pluginRegistry: Plugin[] = [
   // Routing
   reactRouterPlugin,
+  tanstackRouterPlugin,
   // State
   zustandPlugin,
   reduxToolkitPlugin,
