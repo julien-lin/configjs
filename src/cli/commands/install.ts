@@ -112,7 +112,7 @@ export async function installReact(options: CLIOptions): Promise<void> {
     }
 
     // Installation avec spinner
-    const spinner = new SpinnerManager(language)
+    const spinner = new SpinnerManager()
     spinner.start(t.installation.installing)
 
     try {
