@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import type { ProjectContext } from '../../../../src/types/index.js'
-import { tanstackRouterPlugin } from '../../../../src/plugins/routing/tanstack-router.js'
+import { jotaiPlugin } from '../../../../src/plugins/state/jotai.js'
 import * as packageManager from '../../../../src/utils/package-manager.js'
 import { ConfigWriter } from '../../../../src/core/config-writer.js'
 import { BackupManager } from '../../../../src/core/backup-manager.js'
@@ -12,7 +12,7 @@ vi.mock('../../../../src/utils/fs-helpers.js')
 vi.mock('../../../../src/core/config-writer.js')
 vi.mock('../../../../src/core/backup-manager.js')
 
-describe('TanStack Router Plugin', () => {
+describe('Jotai Plugin', () => {
   let mockContext: ProjectContext
 
   beforeEach(() => {
@@ -39,7 +39,7 @@ describe('TanStack Router Plugin', () => {
     // Mock package-manager
     vi.mocked(packageManager.installPackages).mockResolvedValue({
       success: true,
-      packages: ['@tanstack/react-router'],
+      packages: ['jotai'],
     })
 
     // Mock fs-helpers
@@ -57,43 +57,40 @@ describe('TanStack Router Plugin', () => {
   })
 
   describe('detect', () => {
-    it('should detect TanStack Router if installed in dependencies', () => {
-      mockContext.dependencies['@tanstack/react-router'] = '^1.144.0'
-      expect(tanstackRouterPlugin.detect?.(mockContext)).toBe(true)
+    it('should detect Jotai if installed in dependencies', () => {
+      mockContext.dependencies['jotai'] = '^2.16.1'
+      expect(jotaiPlugin.detect?.(mockContext)).toBe(true)
     })
 
-    it('should detect TanStack Router if installed in devDependencies', () => {
-      mockContext.devDependencies['@tanstack/react-router'] = '^1.144.0'
-      expect(tanstackRouterPlugin.detect?.(mockContext)).toBe(true)
+    it('should detect Jotai if installed in devDependencies', () => {
+      mockContext.devDependencies['jotai'] = '^2.16.1'
+      expect(jotaiPlugin.detect?.(mockContext)).toBe(true)
     })
 
-    it('should not detect TanStack Router if not installed', () => {
-      expect(tanstackRouterPlugin.detect?.(mockContext)).toBe(false)
+    it('should not detect Jotai if not installed', () => {
+      expect(jotaiPlugin.detect?.(mockContext)).toBe(false)
     })
   })
 
   describe('install', () => {
-    it('should install TanStack Router', async () => {
-      const result = await tanstackRouterPlugin.install(mockContext)
+    it('should install Jotai', async () => {
+      const result = await jotaiPlugin.install(mockContext)
 
       expect(result.success).toBe(true)
-      expect(result.packages?.dependencies).toContain('@tanstack/react-router')
-      expect(packageManager.installPackages).toHaveBeenCalledWith(
-        ['@tanstack/react-router'],
-        {
-          dev: false,
-          packageManager: 'npm',
-          projectRoot: '/project',
-          exact: false,
-          silent: false,
-        }
-      )
+      expect(result.packages?.dependencies).toContain('jotai')
+      expect(packageManager.installPackages).toHaveBeenCalledWith(['jotai'], {
+        dev: false,
+        packageManager: 'npm',
+        projectRoot: '/project',
+        exact: false,
+        silent: false,
+      })
     })
 
     it('should skip installation if already installed', async () => {
-      mockContext.dependencies['@tanstack/react-router'] = '^1.144.0'
+      mockContext.dependencies['jotai'] = '^2.16.1'
 
-      const result = await tanstackRouterPlugin.install(mockContext)
+      const result = await jotaiPlugin.install(mockContext)
 
       expect(result.success).toBe(true)
       expect(result.packages).toEqual({})
@@ -105,7 +102,7 @@ describe('TanStack Router Plugin', () => {
         new Error('Installation failed')
       )
 
-      const result = await tanstackRouterPlugin.install(mockContext)
+      const result = await jotaiPlugin.install(mockContext)
 
       expect(result.success).toBe(false)
       expect(result.message).toContain('Failed to install')
@@ -113,67 +110,58 @@ describe('TanStack Router Plugin', () => {
   })
 
   describe('configure', () => {
-    it('should create router files for TypeScript project', async () => {
+    it('should create store files for TypeScript project', async () => {
       vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
-      const result = await tanstackRouterPlugin.configure(mockContext)
+      const result = await jotaiPlugin.configure(mockContext)
 
       expect(result.success).toBe(true)
-      expect(result.files).toHaveLength(5) // __root, index, about, router, App
+      expect(result.files).toHaveLength(3) // atoms.ts, index.ts, App.tsx
 
       // Vérifier que les fichiers ont été créés
-      const rootRouteFile = result.files.find((f) =>
-        f.path?.endsWith('routes/__root.tsx')
+      const atomsFile = result.files.find((f) =>
+        f.path?.endsWith('store/atoms.ts')
       )
-      expect(rootRouteFile).toBeDefined()
-      expect(rootRouteFile?.type).toBe('create')
-      expect(rootRouteFile?.content).toContain('createRootRoute')
+      expect(atomsFile).toBeDefined()
+      expect(atomsFile?.type).toBe('create')
+      expect(atomsFile?.content).toContain('atom')
+      expect(atomsFile?.content).toContain('countAtom')
 
-      const indexRouteFile = result.files.find((f) =>
-        f.path?.endsWith('routes/index.tsx')
+      const indexFile = result.files.find((f) =>
+        f.path?.endsWith('store/index.ts')
       )
-      expect(indexRouteFile).toBeDefined()
-      expect(indexRouteFile?.content).toContain('createRoute')
-
-      const aboutRouteFile = result.files.find((f) =>
-        f.path?.endsWith('routes/about.tsx')
-      )
-      expect(aboutRouteFile).toBeDefined()
-
-      const routerFile = result.files.find((f) =>
-        f.path?.endsWith('router.tsx')
-      )
-      expect(routerFile).toBeDefined()
-      expect(routerFile?.content).toContain('createRouter')
+      expect(indexFile).toBeDefined()
+      expect(indexFile?.content).toContain("from './atoms'")
 
       const appFile = result.files.find((f) => f.path?.endsWith('App.tsx'))
       expect(appFile).toBeDefined()
-      expect(appFile?.content).toContain('RouterProvider')
+      expect(appFile?.content).toContain('Provider')
+      expect(appFile?.content).toContain("from 'jotai'")
     })
 
-    it('should create router files for JavaScript project', async () => {
+    it('should create store files for JavaScript project', async () => {
       mockContext.typescript = false
       vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
-      const result = await tanstackRouterPlugin.configure(mockContext)
+      const result = await jotaiPlugin.configure(mockContext)
 
       expect(result.success).toBe(true)
 
-      const rootRouteFile = result.files.find((f) =>
-        f.path?.endsWith('routes/__root.jsx')
+      const atomsFile = result.files.find((f) =>
+        f.path?.endsWith('store/atoms.js')
       )
-      expect(rootRouteFile).toBeDefined()
+      expect(atomsFile).toBeDefined()
 
-      const routerFile = result.files.find((f) =>
-        f.path?.endsWith('router.jsx')
+      const indexFile = result.files.find((f) =>
+        f.path?.endsWith('store/index.js')
       )
-      expect(routerFile).toBeDefined()
+      expect(indexFile).toBeDefined()
 
       const appFile = result.files.find((f) => f.path?.endsWith('App.jsx'))
       expect(appFile).toBeDefined()
     })
 
-    it('should modify existing App.tsx to add RouterProvider', async () => {
+    it('should modify existing App.tsx to add Provider', async () => {
       const existingAppContent = `import './App.css'
 
 function App() {
@@ -183,38 +171,38 @@ function App() {
 export default App
 `
 
-      // checkPathExists est appelé 1 seule fois pour vérifier si App.tsx existe
       vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
       vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingAppContent)
 
-      const result = await tanstackRouterPlugin.configure(mockContext)
+      const result = await jotaiPlugin.configure(mockContext)
 
       expect(result.success).toBe(true)
       const appFile = result.files.find((f) => f.path?.endsWith('App.tsx'))
       expect(appFile).toBeDefined()
       expect(appFile?.type).toBe('modify')
-      expect(appFile?.content).toContain('RouterProvider')
-      expect(appFile?.content).toContain("from '@tanstack/react-router'")
-      expect(appFile?.content).toContain("from './router'")
+      expect(appFile?.content).toContain('Provider')
+      expect(appFile?.content).toContain("from 'jotai'")
     })
 
-    it('should not duplicate RouterProvider if already present', async () => {
-      const existingAppContent = `import { RouterProvider } from '@tanstack/react-router'
-import { router } from './router'
+    it('should not duplicate Provider if already present', async () => {
+      const existingAppContent = `import { Provider } from 'jotai'
 import './App.css'
 
 function App() {
-  return <RouterProvider router={router} />
+  return (
+    <Provider>
+      <div>Hello</div>
+    </Provider>
+  )
 }
 
 export default App
 `
 
-      // checkPathExists est appelé 1 seule fois pour vérifier si App.tsx existe
       vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(true)
       vi.mocked(fsHelpers.readFileContent).mockResolvedValue(existingAppContent)
 
-      const result = await tanstackRouterPlugin.configure(mockContext)
+      const result = await jotaiPlugin.configure(mockContext)
 
       expect(result.success).toBe(true)
       const appFile = result.files.find((f) => f.path?.endsWith('App.tsx'))
@@ -230,7 +218,7 @@ export default App
 
       vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
-      const result = await tanstackRouterPlugin.configure(mockContext)
+      const result = await jotaiPlugin.configure(mockContext)
 
       expect(result.success).toBe(false)
       expect(result.message).toContain('Failed to configure')
@@ -243,8 +231,8 @@ export default App
         .spyOn(BackupManager.prototype, 'restoreAll')
         .mockResolvedValue(undefined)
 
-      if (tanstackRouterPlugin.rollback) {
-        await tanstackRouterPlugin.rollback(mockContext)
+      if (jotaiPlugin.rollback) {
+        await jotaiPlugin.rollback(mockContext)
       }
 
       expect(restoreAllSpy).toHaveBeenCalled()
@@ -255,10 +243,8 @@ export default App
         new Error('Restore failed')
       )
 
-      if (tanstackRouterPlugin.rollback) {
-        await expect(
-          tanstackRouterPlugin.rollback(mockContext)
-        ).rejects.toThrow()
+      if (jotaiPlugin.rollback) {
+        await expect(jotaiPlugin.rollback(mockContext)).rejects.toThrow()
       }
     })
   })
