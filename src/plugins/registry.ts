@@ -25,6 +25,7 @@ import { reactRouterPlugin } from './routing/react-router.js'
 import { zustandPlugin } from './state/zustand.js'
 import { reduxToolkitPlugin } from './state/redux-toolkit.js'
 import { axiosPlugin } from './http/axios.js'
+import { tailwindcssPlugin } from './css/tailwindcss.js'
 // ... autres imports
 
 /**
@@ -46,7 +47,7 @@ export const pluginRegistry: Plugin[] = [
   // HTTP
   axiosPlugin,
   // CSS
-  // tailwindcssPlugin,
+  tailwindcssPlugin,
   // etc.
 ]
 
