@@ -108,9 +108,7 @@ export const axiosPlugin: Plugin = {
 
       // 2. Créer src/lib/api.ts (instance axios configurée)
       const apiPath = join(libDir, `api.${extension}`)
-      const apiContent = ctx.typescript
-        ? getApiContentTS()
-        : getApiContentJS()
+      const apiContent = ctx.typescript ? getApiContentTS() : getApiContentJS()
 
       await writer.createFile(apiPath, apiContent)
       files.push({
@@ -394,4 +392,3 @@ export interface ApiError {
  */
 `
 }
-

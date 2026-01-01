@@ -180,10 +180,7 @@ export const reduxToolkitPlugin: Plugin = {
 
       if (appExists) {
         const appContent = await readFileContent(appPath)
-        const modifiedAppContent = injectProvider(
-          appContent,
-          ctx.typescript
-        )
+        const modifiedAppContent = injectProvider(appContent, ctx.typescript)
 
         await writer.writeFile(appPath, modifiedAppContent, { backup: true })
         files.push({
@@ -193,7 +190,9 @@ export const reduxToolkitPlugin: Plugin = {
           backup: true,
         })
 
-        logger.info(`Updated App.${ctx.typescript ? 'tsx' : 'jsx'} with Provider`)
+        logger.info(
+          `Updated App.${ctx.typescript ? 'tsx' : 'jsx'} with Provider`
+        )
       } else {
         // Créer App.tsx si il n'existe pas
         const appContent = ctx.typescript
@@ -208,7 +207,9 @@ export const reduxToolkitPlugin: Plugin = {
           backup: false,
         })
 
-        logger.info(`Created App.${ctx.typescript ? 'tsx' : 'jsx'} with Provider`)
+        logger.info(
+          `Created App.${ctx.typescript ? 'tsx' : 'jsx'} with Provider`
+        )
       }
 
       return {
@@ -576,4 +577,3 @@ function injectProvider(content: string, isTypeScript: boolean): string {
 
   return modifiedContent
 }
-
