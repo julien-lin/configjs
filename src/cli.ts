@@ -19,17 +19,22 @@ program
   .option('--debug', 'Enable debug logs')
   .option('-c, --config <file>', 'Use configuration file')
   .option('-f, --force', 'Force installation (overwrite configs)')
-  .action((options) => {
-    // eslint-disable-next-line no-console
-    console.log('🚀 confjs - Configure your React project')
-    // eslint-disable-next-line no-console
-    console.log('Options:', options)
-    // eslint-disable-next-line no-console
-    console.log('\n⚠️  Implementation coming soon...')
-
-    // TODO: Implement
-    // const { installReact } = await import('./cli/commands/install')
-    // await installReact(options)
+  .action(async (options: {
+    yes?: boolean
+    dryRun?: boolean
+    silent?: boolean
+    debug?: boolean
+    config?: string
+    force?: boolean
+  }) => {
+    try {
+      const { installReact } = await import('./cli/commands/install.js')
+      await installReact(options)
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error:', error)
+      process.exit(1)
+    }
   })
 
 program
@@ -53,11 +58,9 @@ program
   .command('check')
   .description('Check compatibility without installing')
   .option('-c, --config <file>', 'Configuration file to check')
-  .action((options) => {
+  .action(() => {
     // eslint-disable-next-line no-console
     console.log('🔍 Checking compatibility')
-    // eslint-disable-next-line no-console
-    console.log('Options:', options)
     // eslint-disable-next-line no-console
     console.log('\n⚠️  Implementation coming soon...')
 
