@@ -48,7 +48,8 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "tests/fixtures"
   ]
 }
 
