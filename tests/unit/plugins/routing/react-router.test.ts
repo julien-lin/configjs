@@ -28,8 +28,12 @@ describe('React Router Plugin', () => {
       lockfile: 'package-lock.json',
       projectRoot: '/project',
       srcDir: 'src',
+      publicDir: 'public',
+      os: 'darwin',
+      nodeVersion: 'v18.0.0',
       dependencies: {},
       devDependencies: {},
+      hasGit: false,
     }
 
     // ConfigWriter et BackupManager sont mockés, pas besoin de les instancier

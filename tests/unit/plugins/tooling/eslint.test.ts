@@ -171,7 +171,7 @@ describe('ESLint Plugin', () => {
         const packageJson = JSON.parse(packageJsonFile.content) as {
           scripts?: Record<string, string>
         }
-        expect(packageJson.scripts?.lint).toBe('eslint .')
+        expect(packageJson.scripts?.['lint']).toBe('eslint .')
         expect(packageJson.scripts?.['lint:fix']).toBe('eslint . --fix')
       }
     })
@@ -190,11 +190,15 @@ describe('ESLint Plugin', () => {
 
   describe('rollback', () => {
     it('should restore all backups', async () => {
+      const restoreAllSpy = vi
+        .spyOn(BackupManager.prototype, 'restoreAll')
+        .mockResolvedValue(undefined)
+
       if (eslintPlugin.rollback) {
         await eslintPlugin.rollback(mockContext)
       }
 
-      expect(vi.mocked(BackupManager.prototype.restoreAll)).toHaveBeenCalled()
+      expect(restoreAllSpy).toHaveBeenCalled()
     })
 
     it('should handle rollback errors', async () => {
@@ -203,7 +207,9 @@ describe('ESLint Plugin', () => {
       )
 
       if (eslintPlugin.rollback) {
-        await expect(eslintPlugin.rollback(mockContext)).rejects.toThrow('Restore failed')
+        await expect(eslintPlugin.rollback(mockContext)).rejects.toThrow(
+          'Restore failed'
+        )
       }
     })
   })

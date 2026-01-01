@@ -33,6 +33,7 @@ import { styledComponentsPlugin } from './css/styled-components.js'
 import { emotionPlugin } from './css/emotion.js'
 import { reactBootstrapPlugin } from './css/react-bootstrap.js'
 import { reactHookFormPlugin } from './forms/react-hook-form.js'
+import { shadcnUiPlugin } from './ui/shadcn-ui.js'
 import { eslintPlugin } from './tooling/eslint.js'
 import { prettierPlugin } from './tooling/prettier.js'
 import { huskyPlugin } from './tooling/husky.js'
@@ -66,6 +67,8 @@ export const pluginRegistry: Plugin[] = [
   reactBootstrapPlugin,
   // Forms
   reactHookFormPlugin,
+  // UI
+  shadcnUiPlugin,
   // Tooling
   eslintPlugin,
   prettierPlugin,
