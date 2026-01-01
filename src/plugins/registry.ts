@@ -36,6 +36,7 @@ import { reactHookFormPlugin } from './forms/react-hook-form.js'
 import { zodPlugin } from './forms/zod.js'
 import { shadcnUiPlugin } from './ui/shadcn-ui.js'
 import { radixUiPlugin } from './ui/radix-ui.js'
+import { reactIconsPlugin } from './ui/react-icons.js'
 import { eslintPlugin } from './tooling/eslint.js'
 import { prettierPlugin } from './tooling/prettier.js'
 import { huskyPlugin } from './tooling/husky.js'
@@ -74,6 +75,7 @@ export const pluginRegistry: Plugin[] = [
   // UI
   shadcnUiPlugin,
   radixUiPlugin,
+  reactIconsPlugin,
   // Tooling
   eslintPlugin,
   prettierPlugin,
