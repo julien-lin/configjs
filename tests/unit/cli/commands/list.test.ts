@@ -183,7 +183,9 @@ Examples:
             a.name.localeCompare(b.name)
         )
 
-        expect(plugins[0].name).toBeLessThan(plugins[1].name)
+        if (plugins[0] && plugins[1]) {
+            expect(plugins[0].name.localeCompare(plugins[1].name)).toBeLessThanOrEqual(0)
+        }
     })
 
     it('should sort plugins by category', () => {
@@ -197,7 +199,7 @@ Examples:
     // ===== Compatibility Information =====
 
     it('should show compatible plugins for selection', () => {
-        const selected = 'react-router-dom'
+        const _selected = 'react-router-dom'
 
         const compatibility = {
             compatible: [
