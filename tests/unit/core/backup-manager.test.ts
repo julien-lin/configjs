@@ -142,10 +142,11 @@ describe('BackupManager', () => {
       )
       const normalizedFile1 = file1.replace(/\\/g, '/')
       const normalizedFile2 = file2.replace(/\\/g, '/')
-      expect(normalizedCalls[0][0]).toBe(normalizedFile1)
-      expect(normalizedCalls[0][1]).toBe(content1)
-      expect(normalizedCalls[1][0]).toBe(normalizedFile2)
-      expect(normalizedCalls[1][1]).toBe(content2)
+      // Type guard for array access
+      expect(normalizedCalls[0]?.at(0)).toBe(normalizedFile1)
+      expect(normalizedCalls[0]?.at(1)).toBe(content1)
+      expect(normalizedCalls[1]?.at(0)).toBe(normalizedFile2)
+      expect(normalizedCalls[1]?.at(1)).toBe(content2)
       expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledTimes(2)
     })
 
