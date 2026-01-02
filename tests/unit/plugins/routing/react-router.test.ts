@@ -42,7 +42,9 @@ describe('React Router Plugin', () => {
     vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
     vi.mocked(fsHelpers.readFileContent).mockResolvedValue('')
     vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
-    vi.mocked(fsHelpers.normalizePath).mockImplementation((p) => p)
+    vi.mocked(fsHelpers.normalizePath).mockImplementation((p) =>
+      p.replace(/\\/g, '/')
+    )
   })
 
   describe('detect', () => {

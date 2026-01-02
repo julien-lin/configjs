@@ -50,7 +50,9 @@ describe('Radix UI Plugin', () => {
 
     vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
     vi.mocked(fsHelpers.ensureDirectory).mockResolvedValue(undefined)
-    vi.mocked(fsHelpers.normalizePath).mockImplementation((p) => p)
+    vi.mocked(fsHelpers.normalizePath).mockImplementation((p) =>
+      p.replace(/\\/g, '/')
+    )
 
     vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(undefined)
     vi.spyOn(BackupManager.prototype, 'restoreAll').mockResolvedValue(undefined)

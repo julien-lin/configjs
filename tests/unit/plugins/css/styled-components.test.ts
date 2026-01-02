@@ -42,7 +42,9 @@ describe('Styled Components Plugin', () => {
     })
 
     vi.mocked(fsHelpers.ensureDirectory).mockResolvedValue(undefined)
-    vi.mocked(fsHelpers.normalizePath).mockImplementation((p) => p)
+    vi.mocked(fsHelpers.normalizePath).mockImplementation((p) =>
+      p.replace(/\\/g, '/')
+    )
     vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(undefined)
     vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(undefined)
 
