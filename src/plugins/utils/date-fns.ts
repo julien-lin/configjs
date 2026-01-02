@@ -9,7 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import { ensureDirectory } from '../../utils/fs-helpers.js'
+import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -119,7 +119,7 @@ export const dateFnsPlugin: Plugin = {
       await writer.createFile(dateUtilsPath, dateUtilsContent)
       files.push({
         type: 'create',
-        path: dateUtilsPath,
+        path: normalizePath(dateUtilsPath),
         content: dateUtilsContent,
         backup: false,
       })

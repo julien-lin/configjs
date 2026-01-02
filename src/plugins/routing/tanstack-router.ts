@@ -13,6 +13,7 @@ import {
   checkPathExists,
   ensureDirectory,
   readFileContent,
+  normalizePath,
 } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
@@ -128,7 +129,7 @@ export const tanstackRouterPlugin: Plugin = {
       await writer.createFile(rootRoutePath, rootRouteContent)
       files.push({
         type: 'create',
-        path: rootRoutePath,
+        path: normalizePath(rootRoutePath),
         content: rootRouteContent,
         backup: false,
       })
@@ -144,7 +145,7 @@ export const tanstackRouterPlugin: Plugin = {
       await writer.createFile(indexRoutePath, indexRouteContent)
       files.push({
         type: 'create',
-        path: indexRoutePath,
+        path: normalizePath(indexRoutePath),
         content: indexRouteContent,
         backup: false,
       })
@@ -160,7 +161,7 @@ export const tanstackRouterPlugin: Plugin = {
       await writer.createFile(aboutRoutePath, aboutRouteContent)
       files.push({
         type: 'create',
-        path: aboutRoutePath,
+        path: normalizePath(aboutRoutePath),
         content: aboutRouteContent,
         backup: false,
       })
@@ -176,7 +177,7 @@ export const tanstackRouterPlugin: Plugin = {
       await writer.createFile(routerPath, routerContent)
       files.push({
         type: 'create',
-        path: routerPath,
+        path: normalizePath(routerPath),
         content: routerContent,
         backup: false,
       })
@@ -197,7 +198,7 @@ export const tanstackRouterPlugin: Plugin = {
         await writer.writeFile(appPath, modifiedAppContent, { backup: true })
         files.push({
           type: 'modify',
-          path: appPath,
+          path: normalizePath(appPath),
           content: modifiedAppContent,
           backup: true,
         })
@@ -212,7 +213,7 @@ export const tanstackRouterPlugin: Plugin = {
         await writer.createFile(appPath, appContent)
         files.push({
           type: 'create',
-          path: appPath,
+          path: normalizePath(appPath),
           content: appContent,
           backup: false,
         })

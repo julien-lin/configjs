@@ -12,6 +12,23 @@ import type { PackageJson } from 'type-fest'
 import { logger } from './logger.js'
 
 /**
+ * Normalise un chemin pour utiliser des slashes POSIX (/)
+ * Nécessaire pour la compatibilité Windows/Unix dans les tests
+ *
+ * @param path - Chemin à normaliser
+ * @returns Chemin avec des slashes POSIX
+ *
+ * @example
+ * ```typescript
+ * normalizePath('C:\\Users\\file.txt') // 'C:/Users/file.txt'
+ * normalizePath('src\\components\\App.tsx') // 'src/components/App.tsx'
+ * ```
+ */
+export function normalizePath(path: string): string {
+  return path.replace(/\\/g, '/')
+}
+
+/**
  * Type pour tsconfig.json
  */
 export interface TsConfig {

@@ -9,7 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import { checkPathExists, readFileContent } from '../../utils/fs-helpers.js'
+import { checkPathExists, readFileContent, normalizePath } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -114,7 +114,7 @@ export const prettierPlugin: Plugin = {
         await writer.createFile(prettierrcPath, prettierrcContent)
         files.push({
           type: 'create',
-          path: prettierrcPath,
+          path: normalizePath(prettierrcPath),
           content: prettierrcContent,
           backup: false,
         })
@@ -134,7 +134,7 @@ export const prettierPlugin: Plugin = {
         await writer.createFile(prettierignorePath, prettierignoreContent)
         files.push({
           type: 'create',
-          path: prettierignorePath,
+          path: normalizePath(prettierignorePath),
           content: prettierignoreContent,
           backup: false,
         })
@@ -176,7 +176,7 @@ export const prettierPlugin: Plugin = {
           })
           files.push({
             type: 'modify',
-            path: packageJsonPath,
+            path: normalizePath(packageJsonPath),
             content: updatedContent,
             backup: true,
           })

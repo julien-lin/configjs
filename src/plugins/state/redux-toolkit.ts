@@ -13,6 +13,7 @@ import {
   checkPathExists,
   ensureDirectory,
   readFileContent,
+  normalizePath,
 } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
@@ -135,7 +136,7 @@ export const reduxToolkitPlugin: Plugin = {
       await writer.createFile(slicePath, sliceContent)
       files.push({
         type: 'create',
-        path: slicePath,
+        path: normalizePath(slicePath),
         content: sliceContent,
         backup: false,
       })
@@ -151,7 +152,7 @@ export const reduxToolkitPlugin: Plugin = {
       await writer.createFile(storePath, storeContent)
       files.push({
         type: 'create',
-        path: storePath,
+        path: normalizePath(storePath),
         content: storeContent,
         backup: false,
       })
@@ -166,7 +167,7 @@ export const reduxToolkitPlugin: Plugin = {
         await writer.createFile(hooksPath, hooksContent)
         files.push({
           type: 'create',
-          path: hooksPath,
+          path: normalizePath(hooksPath),
           content: hooksContent,
           backup: false,
         })
@@ -185,7 +186,7 @@ export const reduxToolkitPlugin: Plugin = {
         await writer.writeFile(appPath, modifiedAppContent, { backup: true })
         files.push({
           type: 'modify',
-          path: appPath,
+          path: normalizePath(appPath),
           content: modifiedAppContent,
           backup: true,
         })
@@ -202,7 +203,7 @@ export const reduxToolkitPlugin: Plugin = {
         await writer.createFile(appPath, appContent)
         files.push({
           type: 'create',
-          path: appPath,
+          path: normalizePath(appPath),
           content: appContent,
           backup: false,
         })

@@ -9,7 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import { ensureDirectory } from '../../utils/fs-helpers.js'
+import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -116,7 +116,7 @@ export const zustandPlugin: Plugin = {
       await writer.createFile(storePath, storeContent)
       files.push({
         type: 'create',
-        path: storePath,
+        path: normalizePath(storePath),
         content: storeContent,
         backup: false,
       })
@@ -131,7 +131,7 @@ export const zustandPlugin: Plugin = {
         await writer.createFile(hookPath, hookContent)
         files.push({
           type: 'create',
-          path: hookPath,
+          path: normalizePath(hookPath),
           content: hookContent,
           backup: false,
         })

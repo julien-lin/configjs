@@ -13,6 +13,7 @@ import {
   checkPathExists,
   readFileContent,
   ensureDirectory,
+  normalizePath,
 } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 import { execa } from 'execa'
@@ -137,7 +138,7 @@ export const huskyPlugin: Plugin = {
         await writer.createFile(preCommitPath, preCommitContent)
         files.push({
           type: 'create',
-          path: preCommitPath,
+          path: normalizePath(preCommitPath),
           content: preCommitContent,
           backup: false,
         })
@@ -185,7 +186,7 @@ export const huskyPlugin: Plugin = {
           })
           files.push({
             type: 'modify',
-            path: packageJsonPath,
+            path: normalizePath(packageJsonPath),
             content: updatedContent,
             backup: true,
           })

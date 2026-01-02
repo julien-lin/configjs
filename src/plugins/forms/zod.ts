@@ -9,7 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import { ensureDirectory } from '../../utils/fs-helpers.js'
+import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -120,7 +120,7 @@ export const zodPlugin: Plugin = {
       await writer.createFile(userSchemaPath, userSchemaContent)
       files.push({
         type: 'create',
-        path: userSchemaPath,
+        path: normalizePath(userSchemaPath),
         content: userSchemaContent,
         backup: false,
       })
@@ -139,7 +139,7 @@ export const zodPlugin: Plugin = {
       await writer.createFile(indexPath, indexContent)
       files.push({
         type: 'create',
-        path: indexPath,
+        path: normalizePath(indexPath),
         content: indexContent,
         backup: false,
       })

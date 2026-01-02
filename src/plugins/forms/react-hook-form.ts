@@ -9,7 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import { ensureDirectory } from '../../utils/fs-helpers.js'
+import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -116,7 +116,7 @@ export const reactHookFormPlugin: Plugin = {
       await writer.createFile(exampleFormPath, exampleFormContent)
       files.push({
         type: 'create',
-        path: exampleFormPath,
+        path: normalizePath(exampleFormPath),
         content: exampleFormContent,
         backup: false,
       })
@@ -132,7 +132,7 @@ export const reactHookFormPlugin: Plugin = {
       await writer.createFile(validatedFormPath, validatedFormContent)
       files.push({
         type: 'create',
-        path: validatedFormPath,
+        path: normalizePath(validatedFormPath),
         content: validatedFormContent,
         backup: false,
       })
@@ -148,7 +148,7 @@ export const reactHookFormPlugin: Plugin = {
       await writer.createFile(indexPath, indexContent)
       files.push({
         type: 'create',
-        path: indexPath,
+        path: normalizePath(indexPath),
         content: indexContent,
         backup: false,
       })

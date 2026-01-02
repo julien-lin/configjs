@@ -9,7 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import { checkPathExists, ensureDirectory } from '../../utils/fs-helpers.js'
+import { checkPathExists, ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -124,7 +124,7 @@ export const reactTestingLibraryPlugin: Plugin = {
         await writer.createFile(setupTestsPath, setupTestsContent)
         files.push({
           type: 'create',
-          path: setupTestsPath,
+          path: normalizePath(setupTestsPath),
           content: setupTestsContent,
           backup: false,
         })
@@ -150,7 +150,7 @@ export const reactTestingLibraryPlugin: Plugin = {
         await writer.createFile(exampleTestPath, exampleTestContent)
         files.push({
           type: 'create',
-          path: exampleTestPath,
+          path: normalizePath(exampleTestPath),
           content: exampleTestContent,
           backup: false,
         })

@@ -13,6 +13,7 @@ import {
   checkPathExists,
   readFileContent,
   ensureDirectory,
+  normalizePath,
 } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
@@ -164,7 +165,7 @@ export const shadcnUiPlugin: Plugin = {
         await writer.createFile(componentsJsonPath, componentsJsonContent)
         files.push({
           type: 'create',
-          path: componentsJsonPath,
+          path: normalizePath(componentsJsonPath),
           content: componentsJsonContent,
           backup: false,
         })
@@ -193,7 +194,7 @@ export const shadcnUiPlugin: Plugin = {
           await writer.writeFile(utilsPath, updatedContent, { backup: true })
           files.push({
             type: 'modify',
-            path: utilsPath,
+            path: normalizePath(utilsPath),
             content: updatedContent,
             backup: true,
           })
@@ -207,7 +208,7 @@ export const shadcnUiPlugin: Plugin = {
         await writer.createFile(utilsPath, utilsContent)
         files.push({
           type: 'create',
-          path: utilsPath,
+          path: normalizePath(utilsPath),
           content: utilsContent,
           backup: false,
         })
@@ -230,7 +231,7 @@ export const shadcnUiPlugin: Plugin = {
         await writer.createFile(buttonPath, buttonContent)
         files.push({
           type: 'create',
-          path: buttonPath,
+          path: normalizePath(buttonPath),
           content: buttonContent,
           backup: false,
         })
@@ -250,7 +251,7 @@ export const shadcnUiPlugin: Plugin = {
           await writer.writeFile(cssPath, updatedCss, { backup: true })
           files.push({
             type: 'modify',
-            path: cssPath,
+            path: normalizePath(cssPath),
             content: updatedCss,
             backup: true,
           })

@@ -13,6 +13,7 @@ import {
   checkPathExists,
   ensureDirectory,
   readFileContent,
+  normalizePath,
 } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
@@ -126,7 +127,7 @@ export const jotaiPlugin: Plugin = {
       await writer.createFile(atomsPath, atomsContent)
       files.push({
         type: 'create',
-        path: atomsPath,
+        path: normalizePath(atomsPath),
         content: atomsContent,
         backup: false,
       })
@@ -142,7 +143,7 @@ export const jotaiPlugin: Plugin = {
       await writer.createFile(indexPath, indexContent)
       files.push({
         type: 'create',
-        path: indexPath,
+        path: normalizePath(indexPath),
         content: indexContent,
         backup: false,
       })
@@ -160,7 +161,7 @@ export const jotaiPlugin: Plugin = {
         await writer.writeFile(appPath, modifiedAppContent, { backup: true })
         files.push({
           type: 'modify',
-          path: appPath,
+          path: normalizePath(appPath),
           content: modifiedAppContent,
           backup: true,
         })
@@ -177,7 +178,7 @@ export const jotaiPlugin: Plugin = {
         await writer.createFile(appPath, appContent)
         files.push({
           type: 'create',
-          path: appPath,
+          path: normalizePath(appPath),
           content: appContent,
           backup: false,
         })
