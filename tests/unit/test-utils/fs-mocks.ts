@@ -1,5 +1,13 @@
 import * as fsHelpers from '../../../src/utils/fs-helpers.js'
 
+/**
+ * Normalise un chemin pour la comparaison dans les tests
+ * Convertit les backslashes Windows en slashes POSIX
+ */
+export function normalizePath(path: string): string {
+  return path.replace(/\\/g, '/')
+}
+
 export const fsMocks = {
   checkPathExists: fsHelpers.checkPathExists as unknown as {
     mockImplementation: (fn: (...args: unknown[]) => unknown) => void
