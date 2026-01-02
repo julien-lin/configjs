@@ -34,7 +34,8 @@ describe('ConfigWriter', () => {
       const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
-      expect(actualPath).toBe(filePath)
+      const normalizedFilePath = filePath.replace(/\\/g, '/')
+      expect(actualPath).toBe(normalizedFilePath)
       expect(calls[0]![1]).toBe(content)
     })
 
@@ -51,7 +52,8 @@ describe('ConfigWriter', () => {
       const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
-      expect(actualPath).toBe(filePath)
+      const normalizedFilePath = filePath.replace(/\\/g, '/')
+      expect(actualPath).toBe(normalizedFilePath)
       expect(calls[0]![1]).toBe(content)
     })
 
@@ -96,7 +98,8 @@ describe('ConfigWriter', () => {
       const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
-      expect(actualPath).toBe(filePath)
+      const normalizedFilePath = filePath.replace(/\\/g, '/')
+      expect(actualPath).toBe(normalizedFilePath)
       expect(calls[0]![1]).toBe(content)
     })
 
@@ -198,7 +201,8 @@ describe('ConfigWriter', () => {
       const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
-      expect(actualPath).toBe(filePath)
+      const normalizedFilePath = filePath.replace(/\\/g, '/')
+      expect(actualPath).toBe(normalizedFilePath)
       expect(calls[0]![1]).toBe(existingContent + newContent)
     })
 
@@ -214,7 +218,8 @@ describe('ConfigWriter', () => {
       const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
-      expect(actualPath).toBe(filePath)
+      const normalizedFilePath = filePath.replace(/\\/g, '/')
+      expect(actualPath).toBe(normalizedFilePath)
       expect(calls[0]![1]).toBe(newContent)
     })
 

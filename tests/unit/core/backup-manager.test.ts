@@ -60,9 +60,12 @@ describe('BackupManager', () => {
       expect(backupManager.hasBackup(filePath)).toBe(true)
       expect(backupManager.getBackup(filePath)).toBe(content)
       expect(vi.mocked(fsHelpers.checkPathExists)).toHaveBeenCalled()
-      expect(vi.mocked(fsHelpers.readFileContent)).toHaveBeenCalledWith(
-        filePath
-      )
+      // Check mock was called - normalize the path for cross-platform compatibility
+      const calls = vi.mocked(fsHelpers.readFileContent).mock.calls
+      expect(calls.length).toBeGreaterThan(0)
+      const normalizedCall = calls[0]![0].replace(/\\/g, '/')
+      const normalizedInput = filePath.replace(/\\/g, '/')
+      expect(normalizedCall).toBe(normalizedInput)
     })
 
     it('should throw error if file does not exist', async () => {
@@ -89,7 +92,8 @@ describe('BackupManager', () => {
       const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
-      expect(actualPath).toBe(filePath)
+      const normalizedFilePath = filePath.replace(/\\/g, '/')
+      expect(actualPath).toBe(normalizedFilePath)
       expect(calls[0]![1]).toBe(content)
     })
 
@@ -130,14 +134,18 @@ describe('BackupManager', () => {
 
       await backupManager.restoreAll()
 
-      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
-        file1,
-        content1
+      const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
+      expect(calls.length).toBe(2)
+      // Normalize paths for Windows compatibility
+      const normalizedCalls = calls.map(
+        (call) => [String(call[0]).replace(/\\/g, '/'), call[1]] as const
       )
-      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
-        file2,
-        content2
-      )
+      const normalizedFile1 = file1.replace(/\\/g, '/')
+      const normalizedFile2 = file2.replace(/\\/g, '/')
+      expect(normalizedCalls[0][0]).toBe(normalizedFile1)
+      expect(normalizedCalls[0][1]).toBe(content1)
+      expect(normalizedCalls[1][0]).toBe(normalizedFile2)
+      expect(normalizedCalls[1][1]).toBe(content2)
       expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledTimes(2)
     })
 
