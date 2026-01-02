@@ -65,7 +65,8 @@ describe('BackupManager', () => {
       expect(calls.length).toBeGreaterThan(0)
       const normalizedCall = calls[0]![0].replace(/\\/g, '/')
       const normalizedInput = filePath.replace(/\\/g, '/')
-      expect(normalizedCall).toBe(normalizedInput)
+      // Use endsWith to ignore Windows drive letter prefix (D:)
+      expect(normalizedCall.endsWith(normalizedInput)).toBe(true)
     })
 
     it('should throw error if file does not exist', async () => {
@@ -93,7 +94,8 @@ describe('BackupManager', () => {
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
       const normalizedFilePath = filePath.replace(/\\/g, '/')
-      expect(actualPath).toBe(normalizedFilePath)
+      // Use endsWith to ignore Windows drive letter prefix (D:)
+      expect(actualPath.endsWith(normalizedFilePath)).toBe(true)
       expect(calls[0]![1]).toBe(content)
     })
 
@@ -142,10 +144,14 @@ describe('BackupManager', () => {
       )
       const normalizedFile1 = file1.replace(/\\/g, '/')
       const normalizedFile2 = file2.replace(/\\/g, '/')
-      // Type guard for array access
-      expect(normalizedCalls[0]?.at(0)).toBe(normalizedFile1)
+      // Use endsWith to ignore Windows drive letter prefix (D:)
+      expect(String(normalizedCalls[0]?.at(0)).endsWith(normalizedFile1)).toBe(
+        true
+      )
       expect(normalizedCalls[0]?.at(1)).toBe(content1)
-      expect(normalizedCalls[1]?.at(0)).toBe(normalizedFile2)
+      expect(String(normalizedCalls[1]?.at(0)).endsWith(normalizedFile2)).toBe(
+        true
+      )
       expect(normalizedCalls[1]?.at(1)).toBe(content2)
       expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledTimes(2)
     })
