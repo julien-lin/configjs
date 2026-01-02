@@ -45,7 +45,9 @@ describe('Jotai Plugin', () => {
     vi.mocked(fsHelpers.readFileContent).mockResolvedValue('')
     vi.mocked(fsHelpers.writeFileContent).mockResolvedValue(undefined)
     vi.mocked(fsHelpers.ensureDirectory).mockResolvedValue(undefined)
-    vi.mocked(fsHelpers.normalizePath).mockImplementation((p) => p)
+    vi.mocked(fsHelpers.normalizePath).mockImplementation((p) =>
+      p.replace(/\\/g, '/')
+    )
 
     // Mock ConfigWriter
     vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(undefined)
