@@ -96,7 +96,7 @@ describe('package-manager', () => {
         const normalizedPath = String(path).replace(/\\/g, '/')
         return Promise.resolve(
           normalizedPath.includes('pnpm-lock.yaml') ||
-          normalizedPath.includes('yarn.lock')
+            normalizedPath.includes('yarn.lock')
         )
       })
 
