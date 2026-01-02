@@ -1,5 +1,5 @@
 {
-  "name": "confjs",
+  "name": "@configjs/cli",
   "version": "1.0.0",
   "type": "module",
   "description": "Configure your frontend stack, instantly - Utilitaire CLI d'installation modulaire de bibliothèques frontend",
