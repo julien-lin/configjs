@@ -5,6 +5,8 @@
 **Configure your frontend stack, instantly**
 
 [![npm version](https://img.shields.io/npm/v/confjs.svg)](https://www.npmjs.com/package/confjs)
+[![CI Tests](https://github.com/julien-lin/configjs/actions/workflows/test.yml/badge.svg)](https://github.com/julien-lin/configjs/actions/workflows/test.yml)
+[![Publish](https://github.com/julien-lin/configjs/actions/workflows/publish.yml/badge.svg)](https://github.com/julien-lin/configjs/actions/workflows/publish.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node version](https://img.shields.io/node/v/confjs.svg)](https://nodejs.org)
 

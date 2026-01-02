@@ -1,0 +1,94 @@
+name: CI - Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test:
+    name: Test on Node ${{ matrix.node-version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Type check
+        run: npm run typecheck
+
+      - name: 🎨 Lint check
+        run: npm run lint
+
+      - name: 🧪 Run unit tests
+        run: npm run test:unit
+
+      - name: 🔨 Build
+        run: npm run build
+
+      - name: 🔍 Verify build
+        run: |
+          node -e "const fs = require('fs'); if (!fs.existsSync('dist/cli.js')) process.exit(1);"
+        shell: bash
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Run integration tests
+        run: npm run test:integration
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔨 Build
+        run: npm run build
+
+      - name: 🧪 Run E2E tests
+        run: npm run test:e2e
