@@ -45,6 +45,7 @@ describe('React Hot Toast Plugin', () => {
     vi.mocked(fsHelpers.readFileContent).mockResolvedValue(
       'function App() { return <div>Hello</div> }'
     )
+    vi.mocked(fsHelpers.normalizePath).mockImplementation((p) => p)
 
     vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(undefined)
     vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(undefined)
