@@ -1,6 +1,6 @@
 {
   "name": "confjs",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "Configure your frontend stack, instantly - Utilitaire CLI d'installation modulaire de bibliothèques frontend",
   "keywords": [
@@ -19,12 +19,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/julien/confjs"
+    "url": "https://github.com/julien-lin/configjs.git"
   },
   "bugs": {
-    "url": "https://github.com/julien/confjs/issues"
+    "url": "https://github.com/julien-lin/configjs/issues"
   },
-  "homepage": "https://github.com/julien/confjs#readme",
+  "homepage": "https://github.com/julien-lin/configjs#readme",
   "bin": {
     "confjs": "./dist/cli.js"
   },

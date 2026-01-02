@@ -9,93 +9,91 @@ import { describe, it, expect } from 'vitest'
 
 // Mock des données de plugins
 const PLUGINS_DATABASE = {
-    routing: [
-        {
-            name: 'react-router-dom',
-            description: 'Declarative routing for React',
-            version: '^6.20.0',
-            category: 'routing',
-        },
-        {
-            name: 'tanstack-router',
-            description: 'Headless routing library',
-            version: '^1.0.0',
-            category: 'routing',
-        },
-    ],
-    state: [
-        {
-            name: 'zustand',
-            description: 'Small, fast state management',
-            version: '^4.4.0',
-            category: 'state',
-        },
-        {
-            name: 'redux-toolkit',
-            description: 'Redux with more power',
-            version: '^1.9.0',
-            category: 'state',
-        },
-    ],
-    http: [
-        {
-            name: 'axios',
-            description: 'Promise based HTTP client',
-            version: '^1.6.0',
-            category: 'http',
-        },
-        {
-            name: 'tanstack-query',
-            description: 'Powerful async state management',
-            version: '^5.28.0',
-            category: 'http',
-        },
-    ],
+  routing: [
+    {
+      name: 'react-router-dom',
+      description: 'Declarative routing for React',
+      version: '^6.20.0',
+      category: 'routing',
+    },
+    {
+      name: 'tanstack-router',
+      description: 'Headless routing library',
+      version: '^1.0.0',
+      category: 'routing',
+    },
+  ],
+  state: [
+    {
+      name: 'zustand',
+      description: 'Small, fast state management',
+      version: '^4.4.0',
+      category: 'state',
+    },
+    {
+      name: 'redux-toolkit',
+      description: 'Redux with more power',
+      version: '^1.9.0',
+      category: 'state',
+    },
+  ],
+  http: [
+    {
+      name: 'axios',
+      description: 'Promise based HTTP client',
+      version: '^1.6.0',
+      category: 'http',
+    },
+    {
+      name: 'tanstack-query',
+      description: 'Powerful async state management',
+      version: '^5.28.0',
+      category: 'http',
+    },
+  ],
 }
 
 describe('Unit: CLI Commands - List', () => {
-    // ===== Basic Listing =====
+  // ===== Basic Listing =====
 
-    it('should list all plugins', () => {
-        const allPlugins = Object.values(PLUGINS_DATABASE).flat()
-        expect(allPlugins.length).toBeGreaterThan(0)
-    })
+  it('should list all plugins', () => {
+    const allPlugins = Object.values(PLUGINS_DATABASE).flat()
+    expect(allPlugins.length).toBeGreaterThan(0)
+  })
 
-    it('should list plugins by category', () => {
-        const routingPlugins = PLUGINS_DATABASE.routing
-        expect(routingPlugins).toHaveLength(2)
+  it('should list plugins by category', () => {
+    const routingPlugins = PLUGINS_DATABASE.routing
+    expect(routingPlugins).toHaveLength(2)
 
-        const statePlugins = PLUGINS_DATABASE.state
-        expect(statePlugins).toHaveLength(2)
-    })
+    const statePlugins = PLUGINS_DATABASE.state
+    expect(statePlugins).toHaveLength(2)
+  })
 
-    it('should filter plugins by name pattern', () => {
-        const allPlugins = Object.values(PLUGINS_DATABASE).flat()
-        const filtered = allPlugins.filter((p) =>
-            p.name.includes('react')
-        )
+  it('should filter plugins by name pattern', () => {
+    const allPlugins = Object.values(PLUGINS_DATABASE).flat()
+    const filtered = allPlugins.filter((p) => p.name.includes('react'))
 
-        expect(filtered.length).toBeGreaterThan(0)
-    })
+    expect(filtered.length).toBeGreaterThan(0)
+  })
 
-    // ===== Category Filtering =====
+  // ===== Category Filtering =====
 
-    it('should accept --category option', () => {
-        const options = { category: 'routing' }
-        expect(options.category).toBe('routing')
-    })
+  it('should accept --category option', () => {
+    const options = { category: 'routing' }
+    expect(options.category).toBe('routing')
+  })
 
-    it('should handle invalid category', () => {
-        const validCategories = Object.keys(PLUGINS_DATABASE)
-        const invalidCategory = 'non-existent'
+  it('should handle invalid category', () => {
+    const validCategories = Object.keys(PLUGINS_DATABASE)
+    const invalidCategory = 'non-existent'
 
-        expect(validCategories).not.toContain(invalidCategory)
-    })
+    expect(validCategories).not.toContain(invalidCategory)
+  })
 
-    // ===== Output Formatting =====
+  // ===== Output Formatting =====
 
-    it('should format output as table', () => {
-        const tableOutput = `
+  it('should format output as table', () => {
+    const tableOutput = `
 ┌─────────────────────────┬─────────────────────────────────┬──────────┐
 │ Name                    │ Description                     │ Version  │
 ├─────────────────────────┼─────────────────────────────────┼──────────┤
@@ -104,28 +102,28 @@ describe('Unit: CLI Commands - List', () => {
 └─────────────────────────┴─────────────────────────────────┴──────────┘
     `
 
-        expect(tableOutput).toContain('Name')
-        expect(tableOutput).toContain('Description')
-        expect(tableOutput).toContain('Version')
-    })
+    expect(tableOutput).toContain('Name')
+    expect(tableOutput).toContain('Description')
+    expect(tableOutput).toContain('Version')
+  })
 
-    it('should format output as JSON', () => {
-        const jsonOutput = JSON.stringify(PLUGINS_DATABASE.routing, null, 2)
+  it('should format output as JSON', () => {
+    const jsonOutput = JSON.stringify(PLUGINS_DATABASE.routing, null, 2)
 
-        expect(jsonOutput).toContain('react-router-dom')
-        expect(jsonOutput).toContain('description')
-    })
+    expect(jsonOutput).toContain('react-router-dom')
+    expect(jsonOutput).toContain('description')
+  })
 
-    // ===== Detailed Information =====
+  // ===== Detailed Information =====
 
-    it('should show plugin details with --details flag', () => {
-        const plugin = PLUGINS_DATABASE.routing[0]
-        
-        if (!plugin) {
-            throw new Error('Plugin not found')
-        }
+  it('should show plugin details with --details flag', () => {
+    const plugin = PLUGINS_DATABASE.routing[0]
 
-        const details = `
+    if (!plugin) {
+      throw new Error('Plugin not found')
+    }
+
+    const details = `
 Name: ${plugin.name}
 Version: ${plugin.version}
 Category: ${plugin.category}
@@ -137,12 +135,12 @@ Compatible with:
   - CSS frameworks (any)
     `
 
-        expect(details).toContain(plugin.name)
-        expect(details).toContain('Compatible with')
-    })
+    expect(details).toContain(plugin.name)
+    expect(details).toContain('Compatible with')
+  })
 
-    it('should show usage examples', () => {
-        const example = `
+  it('should show usage examples', () => {
+    const example = `
 Examples:
   confjs list                          # List all plugins
   confjs list --category routing       # List routing plugins
@@ -150,123 +148,120 @@ Examples:
   confjs list --format json            # Output as JSON
     `
 
-        expect(example).toContain('confjs list')
-        expect(example).toContain('Examples')
-    })
+    expect(example).toContain('confjs list')
+    expect(example).toContain('Examples')
+  })
 
-    // ===== Searching =====
+  // ===== Searching =====
 
-    it('should search plugins by name', () => {
-        const allPlugins = Object.values(PLUGINS_DATABASE).flat()
-        const searchTerm = 'react'
+  it('should search plugins by name', () => {
+    const allPlugins = Object.values(PLUGINS_DATABASE).flat()
+    const searchTerm = 'react'
 
-        const results = allPlugins.filter((p) =>
-            p.name.toLowerCase().includes(searchTerm)
-        )
+    const results = allPlugins.filter((p) =>
+      p.name.toLowerCase().includes(searchTerm)
+    )
 
-        expect(results.length).toBeGreaterThan(0)
-    })
+    expect(results.length).toBeGreaterThan(0)
+  })
 
-    it('should search plugins by description', () => {
-        const allPlugins = Object.values(PLUGINS_DATABASE).flat()
-        const searchTerm = 'state'
+  it('should search plugins by description', () => {
+    const allPlugins = Object.values(PLUGINS_DATABASE).flat()
+    const searchTerm = 'state'
 
-        const results = allPlugins.filter((p) =>
-            p.description.toLowerCase().includes(searchTerm)
-        )
+    const results = allPlugins.filter((p) =>
+      p.description.toLowerCase().includes(searchTerm)
+    )
 
-        expect(results.length).toBeGreaterThan(0)
-    })
+    expect(results.length).toBeGreaterThan(0)
+  })
 
-    // ===== Sorting =====
+  // ===== Sorting =====
 
-    it('should sort plugins by name', () => {
-        const plugins = [...PLUGINS_DATABASE.routing].sort((a, b) =>
-            a.name.localeCompare(b.name)
-        )
+  it('should sort plugins by name', () => {
+    const plugins = [...PLUGINS_DATABASE.routing].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    )
 
-        if (plugins[0] && plugins[1]) {
-            expect(plugins[0].name.localeCompare(plugins[1].name)).toBeLessThanOrEqual(0)
-        }
-    })
+    if (plugins[0] && plugins[1]) {
+      expect(
+        plugins[0].name.localeCompare(plugins[1].name)
+      ).toBeLessThanOrEqual(0)
+    }
+  })
 
-    it('should sort plugins by category', () => {
-        const plugins = Object.entries(PLUGINS_DATABASE).sort(
-            (a, b) => a[0].localeCompare(b[0])
-        )
+  it('should sort plugins by category', () => {
+    const plugins = Object.entries(PLUGINS_DATABASE).sort((a, b) =>
+      a[0].localeCompare(b[0])
+    )
 
-        expect(plugins).toBeDefined()
-    })
+    expect(plugins).toBeDefined()
+  })
 
-    // ===== Compatibility Information =====
+  // ===== Compatibility Information =====
 
-    it('should show compatible plugins for selection', () => {
-        const compatibility = {
-            compatible: [
-                'zustand',
-                'redux-toolkit',
-                'axios',
-                'tailwindcss',
-            ],
-            conflicting: [],
-        }
+  it('should show compatible plugins for selection', () => {
+    const compatibility = {
+      compatible: ['zustand', 'redux-toolkit', 'axios', 'tailwindcss'],
+      conflicting: [],
+    }
 
-        expect(compatibility.compatible).toContain('zustand')
-        expect(compatibility.conflicting).toHaveLength(0)
-    })
+    expect(compatibility.compatible).toContain('zustand')
+    expect(compatibility.conflicting).toHaveLength(0)
+  })
 
-    // ===== Count and Stats =====
+  // ===== Count and Stats =====
 
-    it('should show total count of plugins', () => {
-        const allPlugins = Object.values(PLUGINS_DATABASE).flat()
-        const totalCount = allPlugins.length
+  it('should show total count of plugins', () => {
+    const allPlugins = Object.values(PLUGINS_DATABASE).flat()
+    const totalCount = allPlugins.length
 
-        const output = `Total plugins available: ${totalCount}`
-        expect(output).toContain(String(totalCount))
-    })
+    const output = `Total plugins available: ${totalCount}`
+    expect(output).toContain(String(totalCount))
+  })
 
-    it('should show count per category', () => {
-        const stats = Object.entries(PLUGINS_DATABASE)
-            .map(([cat, plugins]) => `${cat}: ${plugins.length}`)
-            .join('\n')
+  it('should show count per category', () => {
+    const stats = Object.entries(PLUGINS_DATABASE)
+      .map(([cat, plugins]) => `${cat}: ${plugins.length}`)
+      .join('\n')
 
-        expect(stats).toContain('routing')
-        expect(stats).toContain('state')
-    })
+    expect(stats).toContain('routing')
+    expect(stats).toContain('state')
+  })
 
-    // ===== Pagination =====
+  // ===== Pagination =====
 
-    it('should support pagination with --limit', () => {
-        const limit = 5
-        const allPlugins = Object.values(PLUGINS_DATABASE).flat()
-        const paginated = allPlugins.slice(0, limit)
+  it('should support pagination with --limit', () => {
+    const limit = 5
+    const allPlugins = Object.values(PLUGINS_DATABASE).flat()
+    const paginated = allPlugins.slice(0, limit)
 
-        expect(paginated.length).toBeLessThanOrEqual(limit)
-    })
+    expect(paginated.length).toBeLessThanOrEqual(limit)
+  })
 
-    it('should support offset with --offset', () => {
-        const offset = 2
-        const limit = 3
-        const allPlugins = Object.values(PLUGINS_DATABASE).flat()
-        const page = allPlugins.slice(offset, offset + limit)
+  it('should support offset with --offset', () => {
+    const offset = 2
+    const limit = 3
+    const allPlugins = Object.values(PLUGINS_DATABASE).flat()
+    const page = allPlugins.slice(offset, offset + limit)
 
-        expect(page.length).toBeLessThanOrEqual(limit)
-    })
+    expect(page.length).toBeLessThanOrEqual(limit)
+  })
 
-    // ===== Version Information =====
+  // ===== Version Information =====
 
-    it('should display latest versions', () => {
-        const plugins = Object.values(PLUGINS_DATABASE).flat()
+  it('should display latest versions', () => {
+    const plugins = Object.values(PLUGINS_DATABASE).flat()
 
-        for (const plugin of plugins) {
-            expect(plugin.version).toMatch(/^\^?\d+/)
-        }
-    })
+    for (const plugin of plugins) {
+      expect(plugin.version).toMatch(/^\^?\d+/)
+    }
+  })
 
-    // ===== Help Text =====
+  // ===== Help Text =====
 
-    it('should show help for list command', () => {
-        const help = `
+  it('should show help for list command', () => {
+    const help = `
 Usage:
   confjs list [options]
 
@@ -279,7 +274,7 @@ Options:
   --help             Show this help
     `
 
-        expect(help).toContain('confjs list')
-        expect(help).toContain('Options')
-    })
+    expect(help).toContain('confjs list')
+    expect(help).toContain('Options')
+  })
 })

@@ -47,7 +47,7 @@ program
   .action(async (options: { category?: string }) => {
     try {
       const { listLibraries } = await import('./cli/commands/list.js')
-      await listLibraries(options)
+      listLibraries(options)
     } catch (error) {
       console.error('Error:', error)
       process.exit(1)
@@ -68,4 +68,4 @@ program
     }
   })
 
-program.parse()
+program.parse(process.argv)
