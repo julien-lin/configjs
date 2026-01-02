@@ -9,7 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import { checkPathExists, readFileContent } from '../../utils/fs-helpers.js'
+import { checkPathExists, readFileContent, normalizePath } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -124,7 +124,7 @@ export const tailwindcssPlugin: Plugin = {
         })
         files.push({
           type: 'modify',
-          path: viteConfigPath,
+          path: normalizePath(viteConfigPath),
           content: modifiedViteConfig,
           backup: true,
         })
@@ -139,7 +139,7 @@ export const tailwindcssPlugin: Plugin = {
         await writer.createFile(viteConfigPath, viteConfigContent)
         files.push({
           type: 'create',
-          path: viteConfigPath,
+          path: normalizePath(viteConfigPath),
           content: viteConfigContent,
           backup: false,
         })
@@ -165,7 +165,7 @@ export const tailwindcssPlugin: Plugin = {
           await writer.writeFile(cssPath, modifiedCss, { backup: true })
           files.push({
             type: 'modify',
-            path: cssPath,
+            path: normalizePath(cssPath),
             content: modifiedCss,
             backup: true,
           })
@@ -184,7 +184,7 @@ export const tailwindcssPlugin: Plugin = {
         await writer.createFile(cssPath, cssContent)
         files.push({
           type: 'create',
-          path: cssPath,
+          path: normalizePath(cssPath),
           content: cssContent,
           backup: false,
         })

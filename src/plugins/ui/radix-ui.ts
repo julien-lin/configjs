@@ -9,7 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import { ensureDirectory } from '../../utils/fs-helpers.js'
+import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -136,7 +136,7 @@ export const radixUiPlugin: Plugin = {
       await writer.createFile(dialogPath, dialogContent)
       files.push({
         type: 'create',
-        path: dialogPath,
+        path: normalizePath(dialogPath),
         content: dialogContent,
         backup: false,
       })
@@ -152,7 +152,7 @@ export const radixUiPlugin: Plugin = {
       await writer.createFile(dropdownMenuPath, dropdownMenuContent)
       files.push({
         type: 'create',
-        path: dropdownMenuPath,
+        path: normalizePath(dropdownMenuPath),
         content: dropdownMenuContent,
         backup: false,
       })
@@ -168,7 +168,7 @@ export const radixUiPlugin: Plugin = {
       await writer.createFile(indexPath, indexContent)
       files.push({
         type: 'create',
-        path: indexPath,
+        path: normalizePath(indexPath),
         content: indexContent,
         backup: false,
       })

@@ -13,6 +13,7 @@ import {
   checkPathExists,
   ensureDirectory,
   readFileContent,
+  normalizePath,
 } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
@@ -129,7 +130,7 @@ export const reactRouterPlugin: Plugin = {
       await writer.createFile(routerPath, routerContent)
       files.push({
         type: 'create',
-        path: routerPath,
+        path: normalizePath(routerPath),
         content: routerContent,
         backup: false,
       })
@@ -145,7 +146,7 @@ export const reactRouterPlugin: Plugin = {
       await writer.createFile(homeRoutePath, homeRouteContent)
       files.push({
         type: 'create',
-        path: homeRoutePath,
+        path: normalizePath(homeRoutePath),
         content: homeRouteContent,
         backup: false,
       })
@@ -166,7 +167,7 @@ export const reactRouterPlugin: Plugin = {
         await writer.writeFile(appPath, modifiedAppContent, { backup: true })
         files.push({
           type: 'modify',
-          path: appPath,
+          path: normalizePath(appPath),
           content: modifiedAppContent,
           backup: true,
         })
@@ -181,7 +182,7 @@ export const reactRouterPlugin: Plugin = {
         await writer.createFile(appPath, appContent)
         files.push({
           type: 'create',
-          path: appPath,
+          path: normalizePath(appPath),
           content: appContent,
           backup: false,
         })

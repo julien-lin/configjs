@@ -13,6 +13,7 @@ import {
   checkPathExists,
   ensureDirectory,
   readFileContent,
+  normalizePath,
 } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
@@ -126,7 +127,7 @@ export const tanstackQueryPlugin: Plugin = {
       await writer.createFile(queryClientPath, queryClientContent)
       files.push({
         type: 'create',
-        path: queryClientPath,
+        path: normalizePath(queryClientPath),
         content: queryClientContent,
         backup: false,
       })
@@ -145,7 +146,7 @@ export const tanstackQueryPlugin: Plugin = {
       await writer.createFile(exampleQueryPath, exampleQueryContent)
       files.push({
         type: 'create',
-        path: exampleQueryPath,
+        path: normalizePath(exampleQueryPath),
         content: exampleQueryContent,
         backup: false,
       })
@@ -164,7 +165,7 @@ export const tanstackQueryPlugin: Plugin = {
       await writer.createFile(exampleMutationPath, exampleMutationContent)
       files.push({
         type: 'create',
-        path: exampleMutationPath,
+        path: normalizePath(exampleMutationPath),
         content: exampleMutationContent,
         backup: false,
       })
@@ -185,7 +186,7 @@ export const tanstackQueryPlugin: Plugin = {
         await writer.writeFile(appPath, modifiedAppContent, { backup: true })
         files.push({
           type: 'modify',
-          path: appPath,
+          path: normalizePath(appPath),
           content: modifiedAppContent,
           backup: true,
         })
@@ -202,7 +203,7 @@ export const tanstackQueryPlugin: Plugin = {
         await writer.createFile(appPath, appContent)
         files.push({
           type: 'create',
-          path: appPath,
+          path: normalizePath(appPath),
           content: appContent,
           backup: false,
         })

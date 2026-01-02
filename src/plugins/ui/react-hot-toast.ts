@@ -9,7 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import { checkPathExists, readFileContent } from '../../utils/fs-helpers.js'
+import { checkPathExists, readFileContent, normalizePath } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -133,7 +133,7 @@ export const reactHotToastPlugin: Plugin = {
           await writer.writeFile(targetPath, updatedContent, { backup: true })
           files.push({
             type: 'modify',
-            path: targetPath,
+            path: normalizePath(targetPath),
             content: updatedContent,
             backup: true,
           })
@@ -151,7 +151,7 @@ export const reactHotToastPlugin: Plugin = {
         await writer.createFile(newAppPath, newAppContent)
         files.push({
           type: 'create',
-          path: newAppPath,
+          path: normalizePath(newAppPath),
           content: newAppContent,
           backup: false,
         })

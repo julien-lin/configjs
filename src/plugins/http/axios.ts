@@ -9,7 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import { ensureDirectory } from '../../utils/fs-helpers.js'
+import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -113,7 +113,7 @@ export const axiosPlugin: Plugin = {
       await writer.createFile(apiPath, apiContent)
       files.push({
         type: 'create',
-        path: apiPath,
+        path: normalizePath(apiPath),
         content: apiContent,
         backup: false,
       })
@@ -128,7 +128,7 @@ export const axiosPlugin: Plugin = {
         await writer.createFile(typesPath, typesContent)
         files.push({
           type: 'create',
-          path: typesPath,
+          path: normalizePath(typesPath),
           content: typesContent,
           backup: false,
         })

@@ -13,6 +13,7 @@ import {
   checkPathExists,
   readFileContent,
   ensureDirectory,
+  normalizePath,
 } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
@@ -127,7 +128,7 @@ export const reactBootstrapPlugin: Plugin = {
       await writer.createFile(examplePath, exampleContent)
       files.push({
         type: 'create',
-        path: examplePath,
+        path: normalizePath(examplePath),
         content: exampleContent,
         backup: false,
       })
@@ -148,7 +149,7 @@ export const reactBootstrapPlugin: Plugin = {
           })
           files.push({
             type: 'modify',
-            path: indexPath,
+            path: normalizePath(indexPath),
             content: modifiedIndexContent,
             backup: true,
           })

@@ -9,7 +9,7 @@ import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
-import { ensureDirectory } from '../../utils/fs-helpers.js'
+import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
 import { logger } from '../../utils/logger.js'
 
 /**
@@ -130,7 +130,7 @@ export const emotionPlugin: Plugin = {
       await writer.createFile(buttonPath, buttonContent)
       files.push({
         type: 'create',
-        path: buttonPath,
+        path: normalizePath(buttonPath),
         content: buttonContent,
         backup: false,
       })
@@ -146,7 +146,7 @@ export const emotionPlugin: Plugin = {
       await writer.createFile(cardPath, cardContent)
       files.push({
         type: 'create',
-        path: cardPath,
+        path: normalizePath(cardPath),
         content: cardContent,
         backup: false,
       })
@@ -163,7 +163,7 @@ export const emotionPlugin: Plugin = {
       await writer.createFile(indexPath, indexContent)
       files.push({
         type: 'create',
-        path: indexPath,
+        path: normalizePath(indexPath),
         content: indexContent,
         backup: false,
       })
