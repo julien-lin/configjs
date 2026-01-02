@@ -42,6 +42,7 @@ describe('Emotion Plugin', () => {
     })
 
     vi.mocked(fsHelpers.ensureDirectory).mockResolvedValue(undefined)
+    vi.mocked(fsHelpers.normalizePath).mockImplementation((p) => p)
 
     // Mock ConfigWriter
     vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(undefined)

@@ -156,7 +156,7 @@ export const huskyPlugin: Plugin = {
         await writer.createFile(prePushPath, prePushContent)
         files.push({
           type: 'create',
-          path: prePushPath,
+          path: normalizePath(prePushPath),
           content: prePushContent,
           backup: false,
         })

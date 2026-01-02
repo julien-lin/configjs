@@ -39,6 +39,7 @@ describe('Prettier Plugin', () => {
 
     vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
     vi.mocked(fsHelpers.readFileContent).mockResolvedValue('{}')
+    vi.mocked(fsHelpers.normalizePath).mockImplementation((p) => p)
 
     vi.spyOn(ConfigWriter.prototype, 'createFile').mockResolvedValue(undefined)
     vi.spyOn(ConfigWriter.prototype, 'writeFile').mockResolvedValue(undefined)
