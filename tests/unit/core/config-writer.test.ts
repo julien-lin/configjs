@@ -31,10 +31,10 @@ describe('ConfigWriter', () => {
       await configWriter.writeFile(filePath, content)
 
       expect(backupManager.hasBackup(filePath)).toBe(true)
-      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
-        filePath,
-        content
-      )
+      const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
+      const actualPath = (calls[0][0] as unknown as string).replace(/\\/g, '/')
+      expect(actualPath).toBe(filePath)
+      expect(calls[0][1]).toBe(content)
     })
 
     it('should write file without backup if file does not exist', async () => {
@@ -47,10 +47,10 @@ describe('ConfigWriter', () => {
       await configWriter.writeFile(filePath, content, { backup: true })
 
       expect(backupManager.hasBackup(filePath)).toBe(false)
-      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
-        filePath,
-        content
-      )
+      const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
+      const actualPath = (calls[0][0] as unknown as string).replace(/\\/g, '/')
+      expect(actualPath).toBe(filePath)
+      expect(calls[0][1]).toBe(content)
     })
 
     it('should create parent directories if ensureDir is true', async () => {
@@ -91,10 +91,10 @@ describe('ConfigWriter', () => {
 
       await configWriter.createFile(filePath, content)
 
-      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
-        filePath,
-        content
-      )
+      const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
+      const actualPath = (calls[0][0] as unknown as string).replace(/\\/g, '/')
+      expect(actualPath).toBe(filePath)
+      expect(calls[0][1]).toBe(content)
     })
 
     it('should throw error if file already exists', async () => {
@@ -192,10 +192,10 @@ describe('ConfigWriter', () => {
 
       await configWriter.appendToFile(filePath, newContent)
 
-      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
-        filePath,
-        existingContent + newContent
-      )
+      const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
+      const actualPath = (calls[0][0] as unknown as string).replace(/\\/g, '/')
+      expect(actualPath).toBe(filePath)
+      expect(calls[0][1]).toBe(existingContent + newContent)
     })
 
     it('should create file if it does not exist', async () => {
@@ -207,10 +207,10 @@ describe('ConfigWriter', () => {
 
       await configWriter.appendToFile(filePath, newContent)
 
-      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
-        filePath,
-        newContent
-      )
+      const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
+      const actualPath = (calls[0][0] as unknown as string).replace(/\\/g, '/')
+      expect(actualPath).toBe(filePath)
+      expect(calls[0][1]).toBe(newContent)
     })
 
     it('should backup file before append if backup is true', async () => {

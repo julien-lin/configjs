@@ -59,9 +59,12 @@ describe('BackupManager', () => {
 
       expect(backupManager.hasBackup(filePath)).toBe(true)
       expect(backupManager.getBackup(filePath)).toBe(content)
-      expect(vi.mocked(fsHelpers.checkPathExists)).toHaveBeenCalledWith(
-        resolve(filePath)
-      )
+      const expectedPath = resolve(filePath).replace(/\\/g, '/')
+      const actualPath = (
+        vi.mocked(fsHelpers.checkPathExists).mock
+          .calls[0][0] as unknown as string
+      ).replace(/\\/g, '/')
+      expect(actualPath).toBe(expectedPath)
       expect(vi.mocked(fsHelpers.readFileContent)).toHaveBeenCalledWith(
         filePath
       )
@@ -88,10 +91,10 @@ describe('BackupManager', () => {
 
       await backupManager.restore(filePath)
 
-      expect(vi.mocked(fsHelpers.writeFileContent)).toHaveBeenCalledWith(
-        filePath,
-        content
-      )
+      const calls = vi.mocked(fsHelpers.writeFileContent).mock.calls
+      const actualPath = (calls[0][0] as unknown as string).replace(/\\/g, '/')
+      expect(actualPath).toBe(filePath)
+      expect(calls[0][1]).toBe(content)
     })
 
     it('should throw error if no backup exists', async () => {

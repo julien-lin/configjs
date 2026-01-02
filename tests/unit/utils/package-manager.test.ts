@@ -25,7 +25,12 @@ describe('package-manager', () => {
     it('should detect pnpm from pnpm-lock.yaml', async () => {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       vi.mocked(pathExists).mockImplementation((path: string) => {
-        if (path === join(mockProjectRoot, 'pnpm-lock.yaml')) {
+        const normalizedPath = path.replace(/\\/g, '/')
+        const expectedPath = join(mockProjectRoot, 'pnpm-lock.yaml').replace(
+          /\\/g,
+          '/'
+        )
+        if (normalizedPath === expectedPath) {
           return Promise.resolve(true)
         }
         return Promise.resolve(false)
@@ -39,7 +44,12 @@ describe('package-manager', () => {
     it('should detect yarn from yarn.lock', async () => {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       vi.mocked(pathExists).mockImplementation((path: string) => {
-        if (path === join(mockProjectRoot, 'yarn.lock')) {
+        const normalizedPath = path.replace(/\\/g, '/')
+        const expectedPath = join(mockProjectRoot, 'yarn.lock').replace(
+          /\\/g,
+          '/'
+        )
+        if (normalizedPath === expectedPath) {
           return Promise.resolve(true)
         }
         return Promise.resolve(false)
@@ -67,7 +77,12 @@ describe('package-manager', () => {
     it('should detect bun from bun.lockb', async () => {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       vi.mocked(pathExists).mockImplementation((path: string) => {
-        if (path === join(mockProjectRoot, 'bun.lockb')) {
+        const normalizedPath = path.replace(/\\/g, '/')
+        const expectedPath = join(mockProjectRoot, 'bun.lockb').replace(
+          /\\/g,
+          '/'
+        )
+        if (normalizedPath === expectedPath) {
           return Promise.resolve(true)
         }
         return Promise.resolve(false)
@@ -90,9 +105,15 @@ describe('package-manager', () => {
     it('should prioritize pnpm over yarn when both exist', async () => {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       vi.mocked(pathExists).mockImplementation((path: string) => {
-        const pnpmPath = join(mockProjectRoot, 'pnpm-lock.yaml')
-        const yarnPath = join(mockProjectRoot, 'yarn.lock')
-        return Promise.resolve(path === pnpmPath || path === yarnPath)
+        const normalizedPath = path.replace(/\\/g, '/')
+        const pnpmPath = join(mockProjectRoot, 'pnpm-lock.yaml').replace(
+          /\\/g,
+          '/'
+        )
+        const yarnPath = join(mockProjectRoot, 'yarn.lock').replace(/\\/g, '/')
+        return Promise.resolve(
+          normalizedPath === pnpmPath || normalizedPath === yarnPath
+        )
       })
 
       const result = await detectPackageManager(mockProjectRoot)
