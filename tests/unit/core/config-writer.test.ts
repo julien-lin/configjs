@@ -35,7 +35,8 @@ describe('ConfigWriter', () => {
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
       const normalizedFilePath = filePath.replace(/\\/g, '/')
-      expect(actualPath).toBe(normalizedFilePath)
+      // Use endsWith to ignore Windows drive letter prefix (D:)
+      expect(actualPath.endsWith(normalizedFilePath)).toBe(true)
       expect(calls[0]![1]).toBe(content)
     })
 
@@ -53,7 +54,8 @@ describe('ConfigWriter', () => {
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
       const normalizedFilePath = filePath.replace(/\\/g, '/')
-      expect(actualPath).toBe(normalizedFilePath)
+      // Use endsWith to ignore Windows drive letter prefix (D:)
+      expect(actualPath.endsWith(normalizedFilePath)).toBe(true)
       expect(calls[0]![1]).toBe(content)
     })
 
@@ -99,7 +101,8 @@ describe('ConfigWriter', () => {
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
       const normalizedFilePath = filePath.replace(/\\/g, '/')
-      expect(actualPath).toBe(normalizedFilePath)
+      // Use endsWith to ignore Windows drive letter prefix (D:)
+      expect(actualPath.endsWith(normalizedFilePath)).toBe(true)
       expect(calls[0]![1]).toBe(content)
     })
 
@@ -202,7 +205,8 @@ describe('ConfigWriter', () => {
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
       const normalizedFilePath = filePath.replace(/\\/g, '/')
-      expect(actualPath).toBe(normalizedFilePath)
+      // Use endsWith to ignore Windows drive letter prefix (D:)
+      expect(actualPath.endsWith(normalizedFilePath)).toBe(true)
       expect(calls[0]![1]).toBe(existingContent + newContent)
     })
 
@@ -219,7 +223,8 @@ describe('ConfigWriter', () => {
       expect(calls.length).toBeGreaterThan(0)
       const actualPath = (calls[0]![0] as unknown as string).replace(/\\/g, '/')
       const normalizedFilePath = filePath.replace(/\\/g, '/')
-      expect(actualPath).toBe(normalizedFilePath)
+      // Use endsWith to ignore Windows drive letter prefix (D:)
+      expect(actualPath.endsWith(normalizedFilePath)).toBe(true)
       expect(calls[0]![1]).toBe(newContent)
     })
 
