@@ -1,6 +1,6 @@
 {
   "name": "@configjs/cli",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "type": "module",
   "description": "Configure your frontend stack, instantly - Utilitaire CLI d'installation modulaire de bibliothèques frontend",
   "keywords": [
@@ -26,7 +26,8 @@
   },
   "homepage": "https://github.com/julien-lin/configjs#readme",
   "bin": {
-    "confjs": "./dist/cli.js"
+    "confjs": "./dist/cli.js",
+    "configjs": "./dist/cli.js"
   },
   "files": [
     "dist",

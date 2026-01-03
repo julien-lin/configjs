@@ -283,17 +283,6 @@ export const compatibilityRules: CompatibilityRule[] = [
     allowOverride: true,
   },
 
-  // Dépendances - TailwindCSS
-  {
-    type: 'REQUIRES',
-    plugin: 'tailwindcss',
-    requires: ['postcss', 'autoprefixer'],
-    reason: 'PostCSS et Autoprefixer sont nécessaires pour TailwindCSS',
-    severity: 'error',
-    autoInstall: true,
-    allowOverride: false,
-  },
-
   // Recommandations - React Router
   {
     type: 'RECOMMENDS',

@@ -68,4 +68,30 @@ program
     }
   })
 
+program
+  .command('installed')
+  .description('List installed plugins')
+  .action(async () => {
+    try {
+      const { installedCommand } = await import('./cli/commands/installed.js')
+      await installedCommand()
+    } catch (error) {
+      console.error('Error:', error)
+      process.exit(1)
+    }
+  })
+
+program
+  .command('remove <plugin>')
+  .description('Remove an installed plugin')
+  .action(async (plugin: string) => {
+    try {
+      const { removeCommand } = await import('./cli/commands/remove.js')
+      await removeCommand(plugin)
+    } catch (error) {
+      console.error('Error:', error)
+      process.exit(1)
+    }
+  })
+
 program.parse(process.argv)

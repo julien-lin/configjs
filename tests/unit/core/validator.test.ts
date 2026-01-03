@@ -61,11 +61,9 @@ describe('CompatibilityValidator', () => {
       const validator = new CompatibilityValidator(compatibilityRules)
       const plugins = [
         createMockPlugin('tailwindcss'),
+        createMockPlugin('@tailwindcss/vite'),
         createMockPlugin('bootstrap'),
       ]
-      // Add required PostCSS deps so the test focuses on conflict (warning)
-      plugins.push(createMockPlugin('postcss'))
-      plugins.push(createMockPlugin('autoprefixer'))
 
       const result = validator.validate(plugins)
 
@@ -77,31 +75,16 @@ describe('CompatibilityValidator', () => {
       expect(conflictWarning?.plugins).toContain('bootstrap')
     })
 
-    it('should detect missing required dependencies (Tailwind without PostCSS)', () => {
-      const validator = new CompatibilityValidator(compatibilityRules)
-      const plugins = [createMockPlugin('tailwindcss')]
-
-      const result = validator.validate(plugins)
-
-      expect(result.valid).toBe(false)
-      expect(result.errors.length).toBeGreaterThan(0)
-      const requiresError = result.errors.find((e) => e.type === 'REQUIRES')
-      expect(requiresError).toBeDefined()
-      expect(requiresError?.plugin).toBe('tailwindcss')
-      expect(requiresError?.required).toContain('postcss')
-      expect(requiresError?.required).toContain('autoprefixer')
-    })
-
-    it('should not error when required dependencies are present', () => {
+    it('should validate tailwindcss plugin successfully', () => {
       const validator = new CompatibilityValidator(compatibilityRules)
       const plugins = [
         createMockPlugin('tailwindcss'),
-        createMockPlugin('postcss'),
-        createMockPlugin('autoprefixer'),
+        createMockPlugin('@tailwindcss/vite'),
       ]
 
       const result = validator.validate(plugins)
 
+      expect(result.valid).toBe(true)
       const requiresErrors = result.errors.filter((e) => e.type === 'REQUIRES')
       expect(requiresErrors).toHaveLength(0)
     })
@@ -213,11 +196,9 @@ describe('CompatibilityValidator', () => {
       const result = validator.validate(plugins)
 
       // Devrait avoir :
-      // - 1 erreur : Tailwind sans PostCSS/Autoprefixer
       // - 1 warning : Conflit Tailwind + Bootstrap
       // - 1 suggestion : Types pour react-router-dom
-      expect(result.valid).toBe(false)
-      expect(result.errors.length).toBeGreaterThan(0)
+      expect(result.valid).toBe(true) // Pas d'erreurs, seulement warnings et suggestions
       expect(result.warnings.length).toBeGreaterThan(0)
       expect(result.suggestions.length).toBeGreaterThan(0)
     })

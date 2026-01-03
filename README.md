@@ -4,11 +4,11 @@
 
 **Configure your frontend stack, instantly**
 
-[![npm version](https://img.shields.io/npm/v/confjs.svg)](https://www.npmjs.com/package/confjs)
+[![npm version](https://img.shields.io/npm/v/@configjs/cli.svg)](https://www.npmjs.com/package/@configjs/cli)
 [![CI Tests](https://github.com/julien-lin/configjs/actions/workflows/test.yml/badge.svg)](https://github.com/julien-lin/configjs/actions/workflows/test.yml)
 [![Publish](https://github.com/julien-lin/configjs/actions/workflows/publish.yml/badge.svg)](https://github.com/julien-lin/configjs/actions/workflows/publish.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node version](https://img.shields.io/node/v/confjs.svg)](https://nodejs.org)
+[![Node version](https://img.shields.io/node/v/@configjs/cli.svg)](https://nodejs.org)
 
 Un utilitaire CLI intelligent pour installer et configurer automatiquement vos bibliothèques frontend par catégories fonctionnelles.
 
@@ -35,13 +35,13 @@ Le bootstrap d'un projet frontend moderne prend **2-4 heures** entre l'installat
 Aucune installation nécessaire ! Utilisez directement via `npx` :
 
 ```bash
-npx confjs react
+npx @configjs/cli react
 ```
 
 Ou installez globalement :
 
 ```bash
-npm install -g confjs
+npm install -g @configjs/cli
 confjs react
 ```
 

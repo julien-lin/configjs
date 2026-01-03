@@ -1,12 +1,4 @@
-import {
-  readFile,
-  writeFile,
-  pathExists,
-  ensureDir,
-  copyFile as fsCopyFile,
-  readJson,
-  writeJson,
-} from 'fs-extra'
+import fs from 'fs-extra'
 import { resolve, dirname, extname } from 'path'
 import type { PackageJson } from 'type-fest'
 import { logger } from './logger.js'
@@ -71,13 +63,13 @@ export interface TsConfig {
 export async function readPackageJson(root: string): Promise<PackageJson> {
   const packageJsonPath = resolve(root, 'package.json')
 
-  if (!(await pathExists(packageJsonPath))) {
+  if (!(await fs.pathExists(packageJsonPath))) {
     throw new Error(`package.json not found at ${packageJsonPath}`)
   }
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const pkg = await readJson(packageJsonPath)
+    const pkg = await fs.readJson(packageJsonPath)
     logger.debug(`Read package.json from ${packageJsonPath}`)
     return pkg as PackageJson
   } catch (error) {
@@ -112,7 +104,7 @@ export async function writePackageJson(
 
   try {
     // Utiliser writeJson avec formatting pour préserver la structure
-    await writeJson(packageJsonPath, pkg, {
+    await fs.writeJson(packageJsonPath, pkg, {
       spaces: 2,
       EOL: '\n',
     })
@@ -146,10 +138,10 @@ export async function readTsConfig(root: string): Promise<TsConfig | null> {
   ]
 
   for (const tsconfigPath of possiblePaths) {
-    if (await pathExists(tsconfigPath)) {
+    if (await fs.pathExists(tsconfigPath)) {
       try {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const config = await readJson(tsconfigPath)
+        const config = await fs.readJson(tsconfigPath)
         logger.debug(`Read tsconfig.json from ${tsconfigPath}`)
         return config as TsConfig
       } catch (error) {
@@ -183,7 +175,7 @@ export async function readTsConfig(root: string): Promise<TsConfig | null> {
  */
 export async function checkPathExists(path: string): Promise<boolean> {
   const fullPath = resolve(path)
-  return pathExists(fullPath)
+  return fs.pathExists(fullPath)
 }
 
 /**
@@ -202,7 +194,7 @@ export async function ensureDirectory(path: string): Promise<void> {
   const fullPath = resolve(path)
 
   try {
-    await ensureDir(fullPath)
+    await fs.ensureDir(fullPath)
     logger.debug(`Ensured directory exists: ${fullPath}`)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
@@ -228,7 +220,7 @@ export async function copyFile(src: string, dest: string): Promise<void> {
   const destPath = resolve(dest)
 
   // Vérifier que le fichier source existe
-  if (!(await pathExists(srcPath))) {
+  if (!(await fs.pathExists(srcPath))) {
     throw new Error(`Source file not found: ${srcPath}`)
   }
 
@@ -237,7 +229,7 @@ export async function copyFile(src: string, dest: string): Promise<void> {
   await ensureDirectory(destDir)
 
   try {
-    await fsCopyFile(srcPath, destPath)
+    await fs.copyFile(srcPath, destPath)
     logger.debug(`Copied file from ${srcPath} to ${destPath}`)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
@@ -263,7 +255,7 @@ export async function copyFile(src: string, dest: string): Promise<void> {
 export async function backupFile(filePath: string): Promise<string> {
   const fullPath = resolve(filePath)
 
-  if (!(await pathExists(fullPath))) {
+  if (!(await fs.pathExists(fullPath))) {
     throw new Error(`File not found for backup: ${fullPath}`)
   }
 
@@ -303,7 +295,7 @@ export async function restoreBackup(
   const backupFullPath = resolve(backupPath)
   const originalFullPath = resolve(originalPath)
 
-  if (!(await pathExists(backupFullPath))) {
+  if (!(await fs.pathExists(backupFullPath))) {
     throw new Error(`Backup file not found: ${backupFullPath}`)
   }
 
@@ -337,12 +329,12 @@ export async function readFileContent(
 ): Promise<string> {
   const fullPath = resolve(filePath)
 
-  if (!(await pathExists(fullPath))) {
+  if (!(await fs.pathExists(fullPath))) {
     throw new Error(`File not found: ${fullPath}`)
   }
 
   try {
-    const content = await readFile(fullPath, encoding)
+    const content = await fs.readFile(fullPath, encoding)
     logger.debug(`Read file: ${fullPath}`)
     return content
   } catch (error) {
@@ -377,7 +369,7 @@ export async function writeFileContent(
   await ensureDirectory(parentDir)
 
   try {
-    await writeFile(fullPath, content, encoding)
+    await fs.writeFile(fullPath, content, encoding)
     logger.debug(`Wrote file: ${fullPath}`)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
@@ -406,7 +398,7 @@ export async function appendToFile(
 
   // Lire le contenu existant
   let existingContent = ''
-  if (await pathExists(fullPath)) {
+  if (await fs.pathExists(fullPath)) {
     existingContent = await readFileContent(fullPath)
   }
 

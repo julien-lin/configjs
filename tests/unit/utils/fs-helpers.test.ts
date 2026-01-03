@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import * as fsExtra from 'fs-extra'
+import fs from 'fs-extra'
 import { resolve } from 'path'
 import {
   readPackageJson,
@@ -17,55 +17,57 @@ import {
 
 // Mocks
 vi.mock('fs-extra', () => ({
-  pathExists: vi.fn(),
-  readJson: vi.fn(),
-  writeJson: vi.fn(),
-  ensureDir: vi.fn(),
-  copyFile: vi.fn(),
-  readFile: vi.fn(),
-  writeFile: vi.fn(),
+  default: {
+    pathExists: vi.fn(),
+    readJson: vi.fn(),
+    writeJson: vi.fn(),
+    ensureDir: vi.fn(),
+    copyFile: vi.fn(),
+    readFile: vi.fn(),
+    writeFile: vi.fn(),
+  },
 }))
 
 // `mockedFs` alias removed; use typed aliases below
 
 // Typed aliases for mocks to avoid unsafe `any` usage
-const pathExistsMock = fsExtra.pathExists as unknown as {
+const pathExistsMock = fs.pathExists as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
   mockResolvedValue: (v: boolean) => void
   mockRejectedValue: (e: unknown) => void
 }
 
-const readJsonMock = fsExtra.readJson as unknown as {
+const readJsonMock = fs.readJson as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
   mockResolvedValue: (v: unknown) => void
   mockRejectedValue: (e: unknown) => void
 }
 
-const writeJsonMock = fsExtra.writeJson as unknown as {
+const writeJsonMock = fs.writeJson as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
   mockResolvedValue: (v: unknown) => void
   mockRejectedValue: (e: unknown) => void
 }
 
-const ensureDirMock = fsExtra.ensureDir as unknown as {
+const ensureDirMock = fs.ensureDir as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
   mockResolvedValue: (v: unknown) => void
   mockRejectedValue: (e: unknown) => void
 }
 
-const copyFileMock = fsExtra.copyFile as unknown as {
+const copyFileMock = fs.copyFile as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
   mockResolvedValue: (v: unknown) => void
   mockRejectedValue: (e: unknown) => void
 }
 
-const readFileMock = fsExtra.readFile as unknown as {
+const readFileMock = fs.readFile as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
   mockResolvedValue: (v: string) => void
   mockRejectedValue: (e: unknown) => void
 }
 
-const writeFileMock = fsExtra.writeFile as unknown as {
+const writeFileMock = fs.writeFile as unknown as {
   mockImplementation: (fn: (...args: unknown[]) => unknown) => void
   mockResolvedValue: (v: unknown) => void
   mockRejectedValue: (e: unknown) => void
@@ -92,10 +94,10 @@ describe('fs-helpers', () => {
       const result = await readPackageJson(mockProjectRoot)
 
       expect(result).toEqual(mockPackageJson)
-      expect(fsExtra.pathExists).toHaveBeenCalledWith(
+      expect(fs.pathExists).toHaveBeenCalledWith(
         resolve(mockProjectRoot, 'package.json')
       )
-      expect(fsExtra.readJson).toHaveBeenCalledWith(
+      expect(fs.readJson).toHaveBeenCalledWith(
         resolve(mockProjectRoot, 'package.json')
       )
     })
@@ -131,7 +133,7 @@ describe('fs-helpers', () => {
 
       await writePackageJson(mockProjectRoot, mockPackageJson)
 
-      expect(fsExtra.writeJson).toHaveBeenCalledWith(
+      expect(fs.writeJson).toHaveBeenCalledWith(
         resolve(mockProjectRoot, 'package.json'),
         mockPackageJson,
         {
@@ -167,7 +169,7 @@ describe('fs-helpers', () => {
       const result = await readTsConfig(mockProjectRoot)
 
       expect(result).toEqual(mockTsConfig)
-      expect(fsExtra.pathExists).toHaveBeenCalledWith(
+      expect(fs.pathExists).toHaveBeenCalledWith(
         resolve(mockProjectRoot, 'tsconfig.json')
       )
     })
@@ -194,7 +196,7 @@ describe('fs-helpers', () => {
       const result = await readTsConfig(mockProjectRoot)
 
       expect(result).toEqual(mockTsConfig)
-      expect(fsExtra.pathExists).toHaveBeenCalledWith(
+      expect(fs.pathExists).toHaveBeenCalledWith(
         resolve(mockProjectRoot, 'tsconfig.app.json')
       )
     })
@@ -219,7 +221,7 @@ describe('fs-helpers', () => {
       const result = await checkPathExists('/some/path')
 
       expect(result).toBe(true)
-      expect(fsExtra.pathExists).toHaveBeenCalledWith(resolve('/some/path'))
+      expect(fs.pathExists).toHaveBeenCalledWith(resolve('/some/path'))
     })
 
     it('should return false if path does not exist', async () => {
@@ -237,7 +239,7 @@ describe('fs-helpers', () => {
 
       await ensureDirectory('/some/directory')
 
-      expect(fsExtra.ensureDir).toHaveBeenCalledWith(resolve('/some/directory'))
+      expect(fs.ensureDir).toHaveBeenCalledWith(resolve('/some/directory'))
     })
 
     it('should throw error if directory creation fails', async () => {
@@ -257,11 +259,9 @@ describe('fs-helpers', () => {
 
       await copyFile('/source/file.txt', '/dest/file.txt')
 
-      expect(fsExtra.pathExists).toHaveBeenCalledWith(
-        resolve('/source/file.txt')
-      )
-      expect(fsExtra.ensureDir).toHaveBeenCalled()
-      expect(fsExtra.copyFile).toHaveBeenCalledWith(
+      expect(fs.pathExists).toHaveBeenCalledWith(resolve('/source/file.txt'))
+      expect(fs.ensureDir).toHaveBeenCalled()
+      expect(fs.copyFile).toHaveBeenCalledWith(
         resolve('/source/file.txt'),
         resolve('/dest/file.txt')
       )
@@ -298,8 +298,8 @@ describe('fs-helpers', () => {
       const backupPath = await backupFile(filePath)
 
       expect(backupPath).toContain('.backup')
-      expect(fsExtra.pathExists).toHaveBeenCalledWith(resolve(filePath))
-      expect(fsExtra.copyFile).toHaveBeenCalled()
+      expect(fs.pathExists).toHaveBeenCalledWith(resolve(filePath))
+      expect(fs.copyFile).toHaveBeenCalled()
     })
 
     it('should throw error if file does not exist', async () => {
@@ -324,8 +324,8 @@ describe('fs-helpers', () => {
 
       await restoreBackup(backupPath, originalPath)
 
-      expect(fsExtra.pathExists).toHaveBeenCalledWith(resolve(backupPath))
-      expect(fsExtra.copyFile).toHaveBeenCalledWith(
+      expect(fs.pathExists).toHaveBeenCalledWith(resolve(backupPath))
+      expect(fs.copyFile).toHaveBeenCalledWith(
         resolve(backupPath),
         resolve(originalPath)
       )
@@ -349,10 +349,8 @@ describe('fs-helpers', () => {
       const result = await readFileContent('/path/to/file.txt')
 
       expect(result).toBe(mockContent)
-      expect(fsExtra.pathExists).toHaveBeenCalledWith(
-        resolve('/path/to/file.txt')
-      )
-      expect(fsExtra.readFile).toHaveBeenCalledWith(
+      expect(fs.pathExists).toHaveBeenCalledWith(resolve('/path/to/file.txt'))
+      expect(fs.readFile).toHaveBeenCalledWith(
         resolve('/path/to/file.txt'),
         'utf-8'
       )
@@ -385,8 +383,8 @@ describe('fs-helpers', () => {
 
       await writeFileContent('/path/to/file.txt', 'Hello World')
 
-      expect(fsExtra.ensureDir).toHaveBeenCalled()
-      expect(fsExtra.writeFile).toHaveBeenCalledWith(
+      expect(fs.ensureDir).toHaveBeenCalled()
+      expect(fs.writeFile).toHaveBeenCalledWith(
         resolve('/path/to/file.txt'),
         'Hello World',
         'utf-8'
@@ -417,7 +415,7 @@ describe('fs-helpers', () => {
 
       await appendToFile('/path/to/file.txt', newContent)
 
-      expect(fsExtra.writeFile).toHaveBeenCalledWith(
+      expect(fs.writeFile).toHaveBeenCalledWith(
         resolve('/path/to/file.txt'),
         existingContent + newContent,
         'utf-8'
@@ -433,7 +431,7 @@ describe('fs-helpers', () => {
 
       await appendToFile('/path/to/file.txt', newContent)
 
-      expect(fsExtra.writeFile).toHaveBeenCalledWith(
+      expect(fs.writeFile).toHaveBeenCalledWith(
         resolve('/path/to/file.txt'),
         newContent,
         'utf-8'
