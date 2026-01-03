@@ -326,17 +326,19 @@ export class Installer {
   private async installPackages(plugins: Plugin[]): Promise<InstallResult[]> {
     const results: InstallResult[] = []
 
-    // Installer en parallèle quand possible
-    const installPromises = plugins.map(async (plugin) => {
+    // Installer SÉQUENTIELLEMENT pour éviter la corruption du package.json
+    // Chaque plugin appelle npm install, donc on doit les faire un par un
+    for (const plugin of plugins) {
       try {
         // Vérifier si déjà installé
         if (plugin.detect && (await plugin.detect(this.ctx))) {
           logger.debug(`${plugin.displayName} is already installed`)
-          return {
+          results.push({
             packages: {},
             success: true,
             message: 'Already installed',
-          }
+          })
+          continue
         }
 
         // Pre-install hook
@@ -352,27 +354,24 @@ export class Installer {
           await plugin.postInstall(this.ctx)
         }
 
-        return result
+        results.push(result)
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error)
         logger.error(`Failed to install ${plugin.displayName}: ${errorMessage}`)
-        return {
+        results.push({
           packages: {},
           success: false,
           message: errorMessage,
-        }
+        })
       }
-    })
-
-    const installResults = await Promise.all(installPromises)
-    results.push(...installResults)
+    }
 
     // Installer les packages via package manager
     const allDependencies: string[] = []
     const allDevDependencies: string[] = []
 
-    for (const result of installResults) {
+    for (const result of results) {
       if (result.success && result.packages) {
         if (result.packages.dependencies) {
           allDependencies.push(...result.packages.dependencies)
@@ -400,8 +399,6 @@ export class Installer {
           dev: false,
           silent: false,
         })
-        // Petit délai pour que npm finisse d'écrire le package.json
-        await new Promise((resolve) => setTimeout(resolve, 500))
       }
 
       // Puis les dev-dépendances
@@ -412,8 +409,6 @@ export class Installer {
           dev: true,
           silent: false,
         })
-        // Petit délai pour que npm finisse d'écrire le package.json
-        await new Promise((resolve) => setTimeout(resolve, 500))
       }
     }
 
