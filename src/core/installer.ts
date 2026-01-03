@@ -383,23 +383,38 @@ export class Installer {
       }
     }
 
-    // Installer les dépendances
-    if (allDependencies.length > 0) {
-      await installPackages(allDependencies, {
-        packageManager: this.ctx.packageManager,
-        projectRoot: this.ctx.projectRoot,
-        dev: false,
-        silent: false,
-      })
-    }
+    // Installer les dépendances et dev-dépendances en un seul appel
+    // pour éviter les conflits d'écriture du package.json
+    const allPackagesToInstall = [...allDependencies, ...allDevDependencies]
 
-    if (allDevDependencies.length > 0) {
-      await installPackages(allDevDependencies, {
-        packageManager: this.ctx.packageManager,
-        projectRoot: this.ctx.projectRoot,
-        dev: true,
-        silent: false,
-      })
+    if (allPackagesToInstall.length > 0) {
+      // Séparer les installations dev et non-dev
+      const depsToInstall = allDependencies
+      const devDepsToInstall = allDevDependencies
+
+      // Installer d'abord les dépendances (non-dev)
+      if (depsToInstall.length > 0) {
+        await installPackages(depsToInstall, {
+          packageManager: this.ctx.packageManager,
+          projectRoot: this.ctx.projectRoot,
+          dev: false,
+          silent: false,
+        })
+        // Petit délai pour que npm finisse d'écrire le package.json
+        await new Promise((resolve) => setTimeout(resolve, 500))
+      }
+
+      // Puis les dev-dépendances
+      if (devDepsToInstall.length > 0) {
+        await installPackages(devDepsToInstall, {
+          packageManager: this.ctx.packageManager,
+          projectRoot: this.ctx.projectRoot,
+          dev: true,
+          silent: false,
+        })
+        // Petit délai pour que npm finisse d'écrire le package.json
+        await new Promise((resolve) => setTimeout(resolve, 500))
+      }
     }
 
     return results

@@ -539,7 +539,16 @@ function injectProvider(content: string, isTypeScript: boolean): string {
   // Remplacer le contenu de la fonction App ou du composant
   // Chercher function App() ou const App = ou export default function App()
   const appFunctionRegex =
-    /(export\s+default\s+)?function\s+App\s*\([^)]*\)\s*\{[\s\S]*?\n\s*return\s+\([\s\S]*?\)\s*;?\s*\n\s*\}/m
+    /(export\s+default\s+)?function\s+App\s*\([^)]*\)\s*\{[\s\S]*?\n\s*return\s+[\s\S]*?\n\s*\}/m
+
+  const normalizeReturn = (returnBlock: string): string => {
+    // Prendre le contenu après `return`
+    const raw = returnBlock.replace(/return\s+/, '').trim()
+    // Enlever parenthèses englobantes si présentes
+    const withoutParens =
+      raw.startsWith('(') && raw.endsWith(')') ? raw.slice(1, -1).trim() : raw
+    return withoutParens
+  }
 
   if (appFunctionRegex.test(modifiedContent)) {
     modifiedContent = modifiedContent.replace(appFunctionRegex, (match) => {
@@ -548,9 +557,11 @@ function injectProvider(content: string, isTypeScript: boolean): string {
         /((export\s+default\s+)?function\s+App\s*\([^)]*\))/
       )
       if (signatureMatch) {
-        // Extraire le contenu du return existant
-        const returnMatch = match.match(/return\s+\(([\s\S]*?)\)/m)
-        const innerContent = returnMatch?.[1] || '<div>App</div>'
+        // Extraire le bloc return (avec ou sans parenthèses)
+        const returnMatch = match.match(/return[\s\S]*?\n\s*\}/m)
+        const innerContent = returnMatch
+          ? normalizeReturn(returnMatch[0].replace(/\}\s*$/, ''))
+          : '<div>App</div>'
 
         const returnStatement = isTypeScript
           ? `  return (\n    <Provider store={store}>\n      ${innerContent.trim()}\n    </Provider>\n  )\n`
@@ -561,14 +572,18 @@ function injectProvider(content: string, isTypeScript: boolean): string {
       return match
     })
   } else {
-    // Si on ne trouve pas le pattern, on remplace juste le return
-    const returnRegex = /return\s+\([\s\S]*?\)\s*;?/m
-    if (returnRegex.test(modifiedContent)) {
-      modifiedContent = modifiedContent.replace(returnRegex, (match) => {
-        const innerContent = match.replace(/return\s+\(|\)\s*;?/g, '').trim()
-        return isTypeScript
-          ? `return (\n    <Provider store={store}>\n      ${innerContent}\n    </Provider>\n  )`
-          : `return (\n    <Provider store={store}>\n      ${innerContent}\n    </Provider>\n  )`
+    // Chercher const App = () =>
+    const arrowFunctionRegex =
+      /(const|let|var)\s+App\s*=\s*\([^)]*\)\s*=>\s*\{?[\s\S]*?return\s+[\s\S]*?\}?/m
+
+    if (arrowFunctionRegex.test(modifiedContent)) {
+      modifiedContent = modifiedContent.replace(arrowFunctionRegex, (match) => {
+        const returnMatch = match.match(/return[\s\S]*/m)
+        const innerContent = returnMatch
+          ? normalizeReturn(returnMatch[0].replace(/\}?\s*$/, ''))
+          : '<div>App</div>'
+
+        return `const App = () => {\n  return (\n    <Provider store={store}>\n      ${innerContent.trim()}\n    </Provider>\n  )\n}`
       })
     } else {
       // Ajouter à la fin du fichier si on ne trouve rien
