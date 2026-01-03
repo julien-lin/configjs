@@ -15,6 +15,22 @@ import * as packageManager from '../../../src/utils/package-manager.js'
 
 // Mocks
 vi.mock('../../../src/utils/package-manager.js')
+vi.mock('../../../src/utils/fs-helpers.js', () => ({
+  checkPathExists: vi.fn().mockResolvedValue(false),
+  readFileContent: vi.fn().mockResolvedValue('{}'),
+  writeFileContent: vi.fn().mockResolvedValue(undefined),
+  readPackageJson: vi
+    .fn()
+    .mockResolvedValue({ dependencies: {}, devDependencies: {} }),
+  writePackageJson: vi.fn().mockResolvedValue(undefined),
+  readTsConfig: vi.fn().mockResolvedValue(null),
+  ensureDirectory: vi.fn().mockResolvedValue(undefined),
+  copyFile: vi.fn().mockResolvedValue(undefined),
+  backupFile: vi.fn().mockResolvedValue('backup-path'),
+  restoreBackup: vi.fn().mockResolvedValue(undefined),
+  appendToFile: vi.fn().mockResolvedValue(undefined),
+  normalizePath: vi.fn((path: string) => path),
+}))
 
 describe('Installer', () => {
   let mockContext: ProjectContext

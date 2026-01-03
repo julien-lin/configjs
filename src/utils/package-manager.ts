@@ -1,5 +1,5 @@
 import { execa } from 'execa'
-import { pathExists } from 'fs-extra'
+import fs from 'fs-extra'
 import { resolve, join } from 'path'
 import type { PackageManager } from '../types/index.js'
 import { logger } from './logger.js'
@@ -62,7 +62,7 @@ export async function detectPackageManager(
 
   for (const { file, manager } of lockfiles) {
     const lockfilePath = join(root, file)
-    if (await pathExists(lockfilePath)) {
+    if (await fs.pathExists(lockfilePath)) {
       logger.debug(`Detected package manager: ${manager} (found ${file})`)
       return manager
     }

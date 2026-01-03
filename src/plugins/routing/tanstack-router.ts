@@ -583,6 +583,9 @@ function injectRouterProvider(content: string, isTypeScript: boolean): string {
     modifiedContent = importLines.join('\n')
   }
 
+  // Détecter si Provider est déjà présent (Redux/autre state management)
+  const hasProvider = modifiedContent.includes('<Provider')
+
   // Remplacer le contenu de la fonction App ou du composant
   // Chercher function App() ou const App = ou export default function App()
   const appFunctionRegex =
@@ -595,6 +598,20 @@ function injectRouterProvider(content: string, isTypeScript: boolean): string {
         /((export\s+default\s+)?function\s+App\s*\([^)]*\))/
       )
       if (signatureMatch) {
+        // Si Provider existe, on enveloppe RouterProvider dans le Provider existant
+        if (hasProvider) {
+          // Extraire le contenu du Provider
+          const providerMatch = match.match(
+            /<Provider[\s\S]*?>([\s\S]*?)<\/Provider>/m
+          )
+          if (providerMatch) {
+            const providerOpening = match.match(/<Provider[^>]*>/)?.[0] || ''
+            const returnStatement = `  return (\n    ${providerOpening}\n      <RouterProvider router={router} />\n    </Provider>\n  )\n`
+            return `${signatureMatch[1]} {\n${returnStatement}}\n`
+          }
+        }
+
+        // Sinon, juste RouterProvider
         const returnStatement = isTypeScript
           ? '  return <RouterProvider router={router} />\n'
           : '  return <RouterProvider router={router} />\n'
@@ -604,18 +621,27 @@ function injectRouterProvider(content: string, isTypeScript: boolean): string {
       return match
     })
   } else {
-    // Si on ne trouve pas le pattern, on remplace juste le return
-    const returnRegex = /return\s+\([\s\S]*?\)\s*;?/m
-    if (returnRegex.test(modifiedContent)) {
-      modifiedContent = modifiedContent.replace(
-        returnRegex,
-        isTypeScript
-          ? '  return <RouterProvider router={router} />'
-          : '  return <RouterProvider router={router} />'
-      )
+    // Chercher const App = () =>
+    const arrowFunctionRegex =
+      /(const|let|var)\s+App\s*=\s*\([^)]*\)\s*=>\s*\{?[\s\S]*?return\s+[\s\S]*?\}?/m
+
+    if (arrowFunctionRegex.test(modifiedContent)) {
+      modifiedContent = modifiedContent.replace(arrowFunctionRegex, (match) => {
+        if (hasProvider) {
+          // Extraire le contenu du Provider
+          const providerMatch = match.match(
+            /<Provider[\s\S]*?>([\s\S]*?)<\/Provider>/m
+          )
+          if (providerMatch) {
+            const providerOpening = match.match(/<Provider[^>]*>/)?.[0] || ''
+            return `const App = () => {\n  return (\n    ${providerOpening}\n      <RouterProvider router={router} />\n    </Provider>\n  )\n}`
+          }
+        }
+        return `const App = () => {\n  return <RouterProvider router={router} />\n}`
+      })
     } else {
-      // Ajouter à la fin du fichier si on ne trouve rien
-      modifiedContent += `\n\nfunction App() {\n  return <RouterProvider router={router} />\n}\n\nexport default App\n`
+      // Si on ne trouve pas le pattern, ajouter à la fin du fichier
+      modifiedContent += `\n\nconst App = () => {\n  return <RouterProvider router={router} />\n}\n\nexport default App\n`
     }
   }
 

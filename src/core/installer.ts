@@ -10,6 +10,7 @@ import type {
 import { CompatibilityValidator } from './validator.js'
 import type { ConfigWriter } from './config-writer.js'
 import type { BackupManager } from './backup-manager.js'
+import { PluginTracker } from './plugin-tracker.js'
 import { installPackages } from '../utils/package-manager.js'
 import { logger } from '../utils/logger.js'
 
@@ -47,6 +48,8 @@ interface ResolvedPlugins {
  * ```
  */
 export class Installer {
+  private tracker: PluginTracker
+
   /**
    * @param ctx - Contexte du projet détecté
    * @param validator - Validateur de compatibilité
@@ -59,7 +62,9 @@ export class Installer {
     // @ts-expect-error - writer will be used in future versions for plugin configuration
     private readonly writer: ConfigWriter,
     private readonly backupManager: BackupManager
-  ) {}
+  ) {
+    this.tracker = new PluginTracker(ctx.projectRoot)
+  }
 
   /**
    * Installe un ensemble de plugins
@@ -83,9 +88,43 @@ export class Installer {
     logger.info(`Starting installation of ${plugins.length} plugin(s)`)
 
     try {
+      // 0. Charger le tracker
+      await this.tracker.load()
+
+      // Filtrer les plugins déjà installés
+      const notInstalled = plugins.filter((p) => {
+        const isInstalled = this.tracker.isInstalled(p.name)
+        if (isInstalled) {
+          logger.info(`${p.displayName} is already installed, skipping...`)
+        }
+        return !isInstalled
+      })
+
+      if (notInstalled.length === 0) {
+        logger.info('All plugins are already installed')
+        return {
+          success: true,
+          duration: Date.now() - startTime,
+          installed: [],
+          warnings: [],
+          filesCreated: [],
+        }
+      }
+
+      // Vérifier les conflits avec les plugins déjà installés
+      for (const plugin of notInstalled) {
+        const conflicts = this.tracker.checkCategoryConflicts(plugin.category)
+        if (conflicts.length > 0) {
+          const conflictNames = conflicts.map((c) => c.displayName).join(', ')
+          throw new Error(
+            `Cannot install ${plugin.displayName}: conflicts with already installed plugin(s) in category ${plugin.category}: ${conflictNames}. Please remove conflicting plugins first.`
+          )
+        }
+      }
+
       // 1. Validation
       logger.debug('Validating plugins compatibility...')
-      const validationResult = this.validator.validate(plugins)
+      const validationResult = this.validator.validate(notInstalled)
 
       if (!validationResult.valid) {
         const errorMessages = validationResult.errors
@@ -105,7 +144,7 @@ export class Installer {
 
       // 2. Résolution des dépendances
       logger.debug('Resolving dependencies...')
-      const resolved = this.resolveDependencies(plugins)
+      const resolved = this.resolveDependencies(notInstalled)
       const allPlugins = resolved.plugins
 
       if (resolved.autoInstalled.length > 0) {
@@ -165,7 +204,22 @@ export class Installer {
       logger.debug('Running post-install hooks...')
       await this.runPostInstallHooks(allPlugins)
 
-      // 7. Rapport final
+      // 7. Marquer les plugins comme installés
+      logger.debug('Tracking installed plugins...')
+      for (const plugin of allPlugins) {
+        await this.tracker.addPlugin({
+          name: plugin.name,
+          displayName: plugin.displayName,
+          category: plugin.category,
+          version: plugin.version,
+          packages: {
+            dependencies: [],
+            devDependencies: [],
+          },
+        })
+      }
+
+      // 8. Rapport final
       const duration = Date.now() - startTime
       const installed = allPlugins.map((p) => p.name)
 

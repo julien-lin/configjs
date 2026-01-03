@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { execa } from 'execa'
-import { pathExists } from 'fs-extra'
+import fs from 'fs-extra'
 import {
   detectPackageManager,
   installPackages,
@@ -11,7 +11,11 @@ import type { PackageManager } from '../../../src/types/index.js'
 
 // Mocks
 vi.mock('execa')
-vi.mock('fs-extra')
+vi.mock('fs-extra', () => ({
+  default: {
+    pathExists: vi.fn(),
+  },
+}))
 
 describe('package-manager', () => {
   const mockProjectRoot = '/tmp/test-project'
@@ -23,7 +27,7 @@ describe('package-manager', () => {
   describe('detectPackageManager', () => {
     it('should detect pnpm from pnpm-lock.yaml', async () => {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      vi.mocked(pathExists).mockImplementation((path: string) => {
+      vi.mocked(fs.pathExists).mockImplementation((path: string) => {
         const normalizedPath = String(path).replace(/\\/g, '/')
         if (normalizedPath.includes('pnpm-lock.yaml')) {
           return Promise.resolve(true)
@@ -38,7 +42,7 @@ describe('package-manager', () => {
 
     it('should detect yarn from yarn.lock', async () => {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      vi.mocked(pathExists).mockImplementation((path: string) => {
+      vi.mocked(fs.pathExists).mockImplementation((path: string) => {
         const normalizedPath = String(path).replace(/\\/g, '/')
         if (normalizedPath.includes('yarn.lock')) {
           return Promise.resolve(true)
@@ -53,7 +57,7 @@ describe('package-manager', () => {
 
     it('should detect npm from package-lock.json', async () => {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      vi.mocked(pathExists).mockImplementation((path: string) => {
+      vi.mocked(fs.pathExists).mockImplementation((path: string) => {
         const normalizedPath = String(path).replace(/\\/g, '/')
         if (normalizedPath.includes('package-lock.json')) {
           return Promise.resolve(true)
@@ -68,7 +72,7 @@ describe('package-manager', () => {
 
     it('should detect bun from bun.lockb', async () => {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      vi.mocked(pathExists).mockImplementation((path: string) => {
+      vi.mocked(fs.pathExists).mockImplementation((path: string) => {
         const normalizedPath = String(path).replace(/\\/g, '/')
         if (normalizedPath.includes('bun.lockb')) {
           return Promise.resolve(true)
@@ -83,7 +87,7 @@ describe('package-manager', () => {
 
     it('should default to npm when no lockfile found', async () => {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      vi.mocked(pathExists).mockImplementation(() => Promise.resolve(false))
+      vi.mocked(fs.pathExists).mockImplementation(() => Promise.resolve(false))
 
       const result = await detectPackageManager(mockProjectRoot)
 
@@ -92,7 +96,7 @@ describe('package-manager', () => {
 
     it('should prioritize pnpm over yarn when both exist', async () => {
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      vi.mocked(pathExists).mockImplementation((path: string) => {
+      vi.mocked(fs.pathExists).mockImplementation((path: string) => {
         const normalizedPath = String(path).replace(/\\/g, '/')
         return Promise.resolve(
           normalizedPath.includes('pnpm-lock.yaml') ||

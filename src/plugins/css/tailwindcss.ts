@@ -227,31 +227,31 @@ export const tailwindcssPlugin: Plugin = {
 }
 
 /**
- * Contenu du fichier vite.config.ts avec TailwindCSS
+ * Contenu du fichier vite.config.ts avec TailwindCSS v4
+ * Selon la documentation officielle: https://tailwindcss.com/docs/installation/using-vite
  */
 function getViteConfigContentTS(): string {
   return `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-  ],
+  plugins: [react(), tailwindcss()],
 })
 `
 }
 
 /**
- * Contenu du fichier vite.config.js avec TailwindCSS
+ * Contenu du fichier vite.config.js avec TailwindCSS v4
+ * Selon la documentation officielle: https://tailwindcss.com/docs/installation/using-vite
  */
 function getViteConfigContentJS(): string {
   return `import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-  ],
+  plugins: [react(), tailwindcss()],
 })
 `
 }
