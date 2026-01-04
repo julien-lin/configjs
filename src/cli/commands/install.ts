@@ -15,6 +15,7 @@ import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
 import { SpinnerManager } from '../ui/spinner.js'
 import { displayInstallationReport } from '../ui/report.js'
+import pc from 'picocolors'
 
 /**
  * Commande d'installation pour React
@@ -27,8 +28,6 @@ export async function installReact(options: CLIOptions): Promise<void> {
     const language = await promptLanguage()
     const t = getTranslations(language)
 
-    const pc = require('picocolors')
-    
     console.log()
     console.log(pc.bold(pc.cyan(`🔍 ${t.detection.detecting}`)))
 
@@ -38,17 +37,23 @@ export async function installReact(options: CLIOptions): Promise<void> {
 
     // Afficher le contexte détecté
     console.log(
-      pc.green(`   ✓ ${t.detection.framework}: `) + pc.bold(`${ctx.framework} ${pc.gray(ctx.frameworkVersion)}`)
+      pc.green(`   ✓ ${t.detection.framework}: `) +
+        pc.bold(`${ctx.framework} ${pc.gray(ctx.frameworkVersion)}`)
     )
     console.log(
-      pc.green(`   ✓ ${t.detection.typescript}: `) + pc.bold(ctx.typescript ? 'Oui' : 'Non')
+      pc.green(`   ✓ ${t.detection.typescript}: `) +
+        pc.bold(ctx.typescript ? 'Oui' : 'Non')
     )
     if (ctx.bundler) {
       console.log(
-        pc.green(`   ✓ ${t.detection.bundler}: `) + pc.bold(`${ctx.bundler} ${pc.gray(ctx.bundlerVersion || '')}`)
+        pc.green(`   ✓ ${t.detection.bundler}: `) +
+          pc.bold(`${ctx.bundler} ${pc.gray(ctx.bundlerVersion || '')}`)
       )
     }
-    console.log(pc.green(`   ✓ ${t.detection.packageManager}: `) + pc.bold(ctx.packageManager))
+    console.log(
+      pc.green(`   ✓ ${t.detection.packageManager}: `) +
+        pc.bold(ctx.packageManager)
+    )
     console.log()
 
     // 3. Sélection des plugins (sauf si --yes)
@@ -75,7 +80,9 @@ export async function installReact(options: CLIOptions): Promise<void> {
     }
 
     console.log()
-    console.log(pc.bold(pc.green(`✓ ${t.common.selected(selectedPlugins.length)}`)))
+    console.log(
+      pc.bold(pc.green(`✓ ${t.common.selected(selectedPlugins.length)}`))
+    )
     console.log()
 
     // 4. Confirmation (sauf si --yes ou --silent)
@@ -97,7 +104,10 @@ export async function installReact(options: CLIOptions): Promise<void> {
       console.log(pc.bold(pc.cyan('📦 Packages à installer :')))
       for (const plugin of selectedPlugins) {
         console.log(
-          pc.blue(`   • ${plugin.displayName}`) + pc.gray(` (${plugin.name}${plugin.version ? `@${plugin.version}` : ''})`)
+          pc.blue(`   • ${plugin.displayName}`) +
+            pc.gray(
+              ` (${plugin.name}${plugin.version ? `@${plugin.version}` : ''})`
+            )
         )
       }
       console.log()
@@ -106,8 +116,12 @@ export async function installReact(options: CLIOptions): Promise<void> {
         console.log(pc.gray(`   • ${plugin.displayName} configuration`))
       }
       console.log()
-      console.log(pc.yellow("⚠️  Aucune modification n'a été effectuée (dry-run)"))
-      console.log(pc.cyan('💡 Exécutez sans --dry-run pour appliquer les changements'))
+      console.log(
+        pc.yellow("⚠️  Aucune modification n'a été effectuée (dry-run)")
+      )
+      console.log(
+        pc.cyan('💡 Exécutez sans --dry-run pour appliquer les changements')
+      )
       console.log()
       return
     }

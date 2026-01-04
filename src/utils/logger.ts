@@ -60,7 +60,10 @@ class Logger {
     }
   }
 
-  item(message: string, color: 'green' | 'blue' | 'yellow' | 'gray' = 'gray'): void {
+  item(
+    message: string,
+    color: 'green' | 'blue' | 'yellow' | 'gray' = 'gray'
+  ): void {
     if (this.level <= LogLevel.INFO) {
       const colorFn = pc[color]
       console.log(colorFn(`  • ${message}`))
