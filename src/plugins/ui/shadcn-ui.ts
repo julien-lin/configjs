@@ -136,24 +136,7 @@ export const shadcnUiPlugin: Plugin = {
     const srcDir = join(projectRoot, ctx.srcDir)
 
     try {
-      // 1. Vérifier que TailwindCSS est installé
-      const tailwindInstalled =
-        ctx.dependencies['tailwindcss'] !== undefined ||
-        ctx.devDependencies['tailwindcss'] !== undefined
-
-      if (!tailwindInstalled) {
-        logger.warn(
-          'TailwindCSS is required for Shadcn/ui. Please install TailwindCSS first.'
-        )
-        return {
-          files,
-          success: false,
-          message:
-            'TailwindCSS is required for Shadcn/ui. Please install TailwindCSS first.',
-        }
-      }
-
-      // 2. Créer components.json
+      // 1. Créer components.json
       const componentsJsonPath = join(projectRoot, 'components.json')
       const componentsJsonExists = await checkPathExists(componentsJsonPath)
 
@@ -173,7 +156,7 @@ export const shadcnUiPlugin: Plugin = {
         logger.info(`Created components.json: ${componentsJsonPath}`)
       }
 
-      // 3. Créer src/lib/utils.ts (ou .js) avec la fonction cn
+      // 2. Créer src/lib/utils.ts (ou .js) avec la fonction cn
       const libDir = join(srcDir, 'lib')
       await ensureDirectory(libDir)
 
@@ -216,7 +199,7 @@ export const shadcnUiPlugin: Plugin = {
         logger.info(`Created utils file: ${utilsPath}`)
       }
 
-      // 4. Créer src/components/ui/button.tsx (exemple de composant)
+      // 3. Créer src/components/ui/button.tsx (exemple de composant)
       const uiDir = join(srcDir, 'components', 'ui')
       await ensureDirectory(uiDir)
 
