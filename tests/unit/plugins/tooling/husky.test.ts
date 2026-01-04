@@ -150,13 +150,13 @@ describe('Husky Plugin', () => {
       }
     })
 
-    it('should fail if Git is not initialized', async () => {
+    it('should succeed but skip hooks if Git is not initialized', async () => {
       vi.mocked(fsHelpers.checkPathExists).mockResolvedValue(false)
 
       const result = await huskyPlugin.configure(mockContext)
 
-      expect(result.success).toBe(false)
-      expect(result.message).toContain('Git repository not found')
+      expect(result.success).toBe(true)
+      expect(result.message).toContain('Git not initialized')
     })
 
     it('should skip hook creation if files already exist', async () => {
