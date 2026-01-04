@@ -1,286 +1,326 @@
-# confjs
+# ConfigJS
 
-<div align="center">
+**The intelligent CLI that configures your entire frontend stack in under 2 minutes**
 
-**Configure your frontend stack, instantly**
+[![npm version](https://img.shields.io/npm/v/@configjs/cli?style=flat-square&color=blue)](https://www.npmjs.com/package/@configjs/cli)
+[![npm downloads](https://img.shields.io/npm/dm/@configjs/cli?style=flat-square&color=brightgreen)](https://www.npmjs.com/package/@configjs/cli)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Node version](https://img.shields.io/node/v/@configjs/cli?style=flat-square)](https://nodejs.org)
+[![Bundle size](https://img.shields.io/bundlephobia/min/@configjs/cli?style=flat-square)](https://bundlephobia.com/package/@configjs/cli)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
+[![Sponsor](https://img.shields.io/badge/Sponsor-❤-red?style=for-the-badge&logo=github)](https://github.com/sponsors/julien-lin)
 
-[![npm version](https://img.shields.io/npm/v/@configjs/cli.svg)](https://www.npmjs.com/package/@configjs/cli)
-[![CI Tests](https://github.com/julien-lin/configjs/actions/workflows/test.yml/badge.svg)](https://github.com/julien-lin/configjs/actions/workflows/test.yml)
-[![Publish](https://github.com/julien-lin/configjs/actions/workflows/publish.yml/badge.svg)](https://github.com/julien-lin/configjs/actions/workflows/publish.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node version](https://img.shields.io/node/v/@configjs/cli.svg)](https://nodejs.org)
+**[Quick Start](#-quick-start) • [Features](#-key-features) • [Documentation](#-documentation) • [Plugins](#-supported-libraries) • [Contribute](#-contributing)**
 
-Un utilitaire CLI intelligent pour installer et configurer automatiquement vos bibliothèques frontend par catégories fonctionnelles.
-
-[Installation](#-installation) • [Usage](#-usage) • [Fonctionnalités](#-fonctionnalités) • [Documentation](#-documentation)
-
-</div>
+> **[🇫🇷 Version française](./README.fr.md)**
 
 ---
 
-## 🎯 Pourquoi confjs ?
+## 💡 Why ConfigJS?
 
-Le bootstrap d'un projet frontend moderne prend **2-4 heures** entre l'installation des bibliothèques, leur configuration, et la résolution des conflits potentiels.
+Setting up a modern React project typically takes **2-4 hours**:
+- Installing libraries one by one
+- Reading documentation for each tool
+- Writing boilerplate configuration
+- Resolving version conflicts
+- Creating initial code structure
 
-**confjs** réduit ce temps à **moins de 2 minutes** en :
+**ConfigJS reduces this to less than 2 minutes** with zero effort.
 
-- ✅ **Détectant automatiquement** votre environnement (React, TypeScript, Vite, etc.)
-- ✅ **Installant ET configurant** les bibliothèques de votre choix
-- ✅ **Validant les compatibilités** pour éviter les conflits
-- ✅ **Générant le code initial** nécessaire (routes, stores, configs)
-- ✅ Garantissant un **projet immédiatement utilisable**
+### The Problem
+```bash
+npm install react-router-dom axios zustand tailwindcss ...
+# Then spend hours configuring each library manually
+# Fight with TypeScript errors
+# Debug version conflicts
+# Write repetitive boilerplate
+```
 
-## 🚀 Installation
+### The ConfigJS Solution
+```bash
+npx @configjs/cli react
+# Interactive wizard guides you
+# Everything installed AND configured
+# Zero conflicts guaranteed
+# Production-ready code generated
+```
 
-Aucune installation nécessaire ! Utilisez directement via `npx` :
+## 🚀 Quick Start
+
+**No installation required!** Use directly with `npx`:
 
 ```bash
+cd your-react-project
 npx @configjs/cli react
 ```
 
-Ou installez globalement :
+That's it! ConfigJS will:
+1. 🔍 **Detect** your environment (React version, TypeScript, bundler)
+2. 🎯 **Guide** you through library selection by category
+3. 📦 **Install** all packages sequentially (no conflicts)
+4. ⚙️ **Configure** everything with working code
+5. ✅ **Validate** compatibility and dependencies
+6. 🎉 **Done!** Your project is production-ready
+
+### Example Session
 
 ```bash
-npm install -g @configjs/cli
-confjs react
+$ npx @configjs/cli react
+
+✔ Choose your language › English
+
+🔍 Detecting context...
+   ✓ Framework: React 19.2.0
+   ✓ TypeScript: Yes
+   ✓ Bundler: Vite 7.2.4
+   ✓ Package manager: npm
+
+✔ CSS / Styling › TailwindCSS
+✔ Routing › React Router
+✔ State Management › Zustand
+✔ HTTP Client › Axios
+✔ UI Components › Shadcn/ui
+✔ Forms › React Hook Form + Zod
+✔ Tooling › ESLint, Prettier, Husky
+
+✓ 7 libraries selected
+
+✨ Installation completed in 1.8s
+
+📦 Installed packages:
+   ✓ TailwindCSS (^4.1.18)
+   ✓ React Router (^7.11.0)
+   ✓ Zustand (^5.0.9)
+   ✓ Axios (^1.13.2)
+   ...
+
+📝 Created files:
+   • src/router.tsx
+   • src/store/index.ts
+   • src/lib/api.ts
+   • components.json
+   ...
+
+🚀 Next steps:
+   1. npm run dev
+   2. Visit http://localhost:5173
 ```
 
-## 📦 Usage
+---
 
-### Mode interactif (recommandé)
+## ✨ Key Features
+
+### 🎯 Smart Detection
+
+ConfigJS automatically detects your project setup:
+- ✅ **Framework & Version** (React 18/19)
+- ✅ **Language** (JavaScript/TypeScript)
+- ✅ **Bundler** (Vite, Webpack, Create React App)
+- ✅ **Package Manager** (npm, yarn, pnpm, bun)
+- ✅ **Already Installed Libraries** (skips duplicates)
+- ✅ **Project Structure** (adapts configuration)
+
+### ⚙️ Complete Configuration (Not Just Installation!)
+
+Unlike simple installers, ConfigJS **actually configures** your libraries with working code:
+
+**React Router Example:**
+```typescript
+✓ Installed react-router-dom
+✓ Created src/router.tsx with routes
+✓ Created src/routes/Home.tsx
+✓ Created src/routes/About.tsx
+✓ Integrated RouterProvider in App.tsx
+✓ TypeScript types configured
+→ Ready to use immediately!
+```
+
+**TailwindCSS Example:**
+```typescript
+✓ Installed tailwindcss + @tailwindcss/vite
+✓ Updated vite.config.ts with plugin
+✓ Injected directives in src/index.css
+✓ JIT mode enabled
+→ Start using Tailwind classes now!
+```
+
+**Redux Toolkit Example:**
+```typescript
+✓ Installed @reduxjs/toolkit + react-redux
+✓ Created src/store/index.ts with configureStore
+✓ Created src/store/slices/counterSlice.ts
+✓ Created src/store/hooks.ts (typed hooks)
+✓ Wrapped App in <Provider>
+→ Full Redux setup in seconds!
+```
+
+### 🛡️ Smart Compatibility Validation
+
+ConfigJS prevents conflicts before they happen:
+
+- ❌ **Exclusive Conflicts**: Can't install Redux + Zustand (only one state manager)
+- ❌ **Exclusive Routing**: React Router OR TanStack Router (not both)
+- ⚠️ **Warnings**: TailwindCSS + Bootstrap (different philosophies)
+- ✅ **Auto-Dependencies**: TailwindCSS requires PostCSS → installed automatically
+- ✅ **Plugin Tracking**: Remembers installed plugins (`.configjsrc`)
+
+### 📦 Supported Libraries (40+ Plugins)
+
+#### 🎨 CSS / Styling
+- TailwindCSS v4 (with @tailwindcss/vite)
+- Styled Components
+- React Bootstrap
+- Emotion
+- CSS Modules
+
+#### 🧭 Routing
+- React Router v7
+- TanStack Router
+
+#### 🗂️ State Management
+- Redux Toolkit
+- Zustand
+- Jotai
+- MobX
+
+#### 🌐 HTTP Client
+- Axios
+- TanStack Query (React Query)
+- Fetch Wrapper
+
+#### 📝 Forms
+- React Hook Form
+- Formik
+- Zod (validation)
+- Yup (validation)
+
+#### 🎨 UI Components
+- Shadcn/ui
+- Radix UI
+- React Icons
+- Lucide Icons
+- React Hot Toast
+
+#### 🧪 Testing
+- React Testing Library
+- Vitest
+- Jest
+
+#### 🛠️ Tooling
+- ESLint
+- Prettier
+- Husky (Git hooks)
+- lint-staged
+- date-fns
+
+#### ✨ Animation
+- Framer Motion
+- React Spring
+
+#### 🔧 Utils
+- Lodash
+- clsx / classnames
+
+### 🔄 Automatic Rollback
+
+If something goes wrong, ConfigJS automatically restores everything:
 
 ```bash
-cd mon-projet-react
-npx confjs react
+❌ Error detected during configuration
+↺ Rolling back...
+   ✓ Restored package.json
+   ✓ Restored all modified files
+   ✓ Removed created files
+✅ Project restored to previous state
 ```
 
-L'assistant vous guidera à travers les différentes catégories :
+### 🎯 Plugin Tracking System
 
-```
-🔍 Détection du contexte...
-   ✓ Framework: React 18.2.0
-   ✓ TypeScript: Oui
-   ✓ Bundler: Vite 5.0.0
-
-📦 Sélectionnez vos bibliothèques :
-
-? Routing (recommandé)
-  ● react-router-dom
-  ○ @tanstack/router
-  ○ Aucun
-
-? State Management
-  ○ Redux Toolkit
-  ● zustand
-  ○ jotai
-  ○ Aucun
-
-...
-```
-
-### Mode configuration (CI/CD)
-
-Créez un fichier `.confjs.json` :
-
-```json
-{
-  "routing": "react-router-dom",
-  "state": "zustand",
-  "css": "tailwindcss",
-  "http": "axios",
-  "tooling": ["eslint", "prettier"]
-}
-```
-
-Puis exécutez :
+Never reinstall the same library twice:
 
 ```bash
-npx confjs react --config .confjs.json
+# First run
+$ npx @configjs/cli react
+✔ TailwindCSS › Selected
+
+# Second run (same project)
+$ npx @configjs/cli react
+ℹ TailwindCSS is already installed, skipping...
+
+# Check installed plugins
+$ npx @configjs/cli installed
+📦 Installed plugins:
+   ✓ TailwindCSS (^4.1.18) - installed 2 hours ago
+   ✓ React Router (^7.11.0) - installed 2 hours ago
 ```
 
-### Mode dry-run (simulation)
+ConfigJS creates a `.configjsrc` file to track installations and prevent conflicts.
 
-Visualisez ce qui sera installé sans rien modifier :
+---
+
+## 📖 Documentation
+
+### Commands
 
 ```bash
-npx confjs react --dry-run
+# Interactive installation
+npx @configjs/cli react
+
+# List available plugins
+npx @configjs/cli list
+npx @configjs/cli list --category routing
+
+# Check installed plugins
+npx @configjs/cli installed
+
+# Remove plugin from tracking
+npx @configjs/cli remove <plugin-name>
+
+# Validate project compatibility
+npx @configjs/cli check
 ```
 
-## ✨ Fonctionnalités
-
-### 🎯 Catégories supportées
-
-| Catégorie | Bibliothèques disponibles |
-|-----------|---------------------------|
-| **Routing** | react-router-dom, @tanstack/router |
-| **State Management** | Redux Toolkit, Zustand, Jotai |
-| **HTTP Client** | Axios, Fetch wrapper |
-| **CSS/UI** | TailwindCSS, Bootstrap |
-| **Tooling** | ESLint, Prettier, Husky, lint-staged, commitlint |
-
-### 🧠 Détection intelligente
-
-confjs détecte automatiquement :
-
-- ✅ Framework et version (React)
-- ✅ TypeScript
-- ✅ Bundler (Vite, Create React App, Webpack)
-- ✅ Package manager (npm, yarn, pnpm, bun)
-- ✅ Structure du projet
-- ✅ Bibliothèques déjà installées
-
-### ⚙️ Configuration automatique
-
-Contrairement aux simples installers, **confjs configure réellement** vos bibliothèques :
-
-**Exemple avec React Router :**
-```
-✓ Installation de react-router-dom
-✓ Création de src/router.tsx
-✓ Création de src/routes/Home.tsx
-✓ Intégration dans src/App.tsx
-✓ Configuration complète et fonctionnelle
-```
-
-**Exemple avec TailwindCSS :**
-```
-✓ Installation de tailwindcss, postcss, autoprefixer
-✓ Création de tailwind.config.js
-✓ Création de postcss.config.js
-✓ Injection dans src/index.css
-✓ Configuration JIT activée
-```
-
-### 🛡️ Validation des compatibilités
-
-confjs vérifie automatiquement :
-
-- ❌ **Conflits exclusifs** : Redux + Zustand (un seul state manager)
-- ⚠️ **Avertissements** : TailwindCSS + Bootstrap (approches différentes)
-- ✅ **Dépendances croisées** : TailwindCSS → PostCSS (installé automatiquement)
-
-### 🔄 Rollback automatique
-
-En cas d'erreur durant l'installation :
-
-```
-❌ Erreur détectée
-↺ Rollback en cours...
-✓ Fichiers restaurés
-✓ package.json restauré
-```
-
-## 🎨 Options CLI
+### CLI Options
 
 ```bash
-npx confjs react [options]
+npx @configjs/cli react [options]
 ```
 
 | Option | Description |
 |--------|-------------|
-| `--yes`, `-y` | Accepte tous les choix par défaut |
-| `--dry-run`, `-d` | Simule sans écrire sur le disque |
-| `--silent`, `-s` | Mode non-interactif (CI/CD) |
-| `--debug` | Active les logs détaillés |
-| `--config <file>`, `-c` | Utilise un fichier de configuration |
-| `--force`, `-f` | Force l'installation (écrase les configs) |
+| `--yes`, `-y` | Skip prompts, use defaults |
+| `--dry-run`, `-d` | Simulate without writing files |
+| `--silent`, `-s` | No output (CI/CD mode) |
+| `--no-install` | Generate configs only, skip npm install |
+| `--debug` | Verbose logging |
 
-### Exemples
+### Usage Examples
 
+**Quick setup with defaults:**
 ```bash
-# Mode rapide avec valeurs par défaut
-npx confjs react --yes
-
-# Simulation uniquement
-npx confjs react --dry-run
-
-# Pour CI/CD
-npx confjs react --silent --config .confjs.json
-
-# Avec logs détaillés
-npx confjs react --debug
+npx @configjs/cli react --yes
 ```
 
-## 📚 Commandes additionnelles
-
-### Liste des bibliothèques disponibles
-
+**CI/CD mode:**
 ```bash
-npx confjs list
+npx @configjs/cli react --silent --yes
 ```
 
-Filtrer par catégorie :
-
+**Preview changes only:**
 ```bash
-npx confjs list --category routing
-npx confjs list --category state
+npx @configjs/cli react --dry-run
 ```
 
-### Vérifier la compatibilité
-
+**Generate configs without installing packages:**
 ```bash
-npx confjs check --config .confjs.json
+npx @configjs/cli react --no-install
 ```
 
-### Aide
-
-```bash
-npx confjs --help
-npx confjs react --help
-```
-
-## 🎯 Exemples d'utilisation
-
-### Setup complet d'un projet React
-
-```bash
-# Créer un nouveau projet
-npm create vite@latest mon-app -- --template react-ts
-cd mon-app
-
-# Installer et configurer la stack
-npx confjs react
-
-# Sélectionner :
-# - Routing: react-router-dom
-# - State: zustand
-# - CSS: tailwindcss
-# - HTTP: axios
-# - Tooling: eslint, prettier
-
-# Démarrer
-npm run dev
-```
-
-### Configuration pré-définie pour l'équipe
-
-```bash
-# .confjs.json (à versionner dans Git)
-{
-  "routing": "react-router-dom",
-  "state": "zustand",
-  "css": "tailwindcss",
-  "http": "axios",
-  "tooling": ["eslint", "prettier", "husky"]
-}
-
-# Chaque membre de l'équipe exécute :
-npx confjs react --config .confjs.json
-```
-
-### Pipeline CI/CD
-
-```yaml
-# .github/workflows/setup.yml
-- name: Setup project
-  run: npx confjs react --silent --config .confjs.json
-```
+---
 
 ## 🏗️ Architecture
 
-### Système de plugins
-
-confjs utilise une architecture modulaire où chaque bibliothèque est un plugin autonome :
+ConfigJS uses a modular plugin architecture where each library is an autonomous plugin:
 
 ```typescript
 interface Plugin {
@@ -288,144 +328,128 @@ interface Plugin {
   category: Category
   frameworks: Framework[]
   
-  // Compatibilité
+  // Compatibility
   compatibleWith?: string[]
   incompatibleWith?: string[]
+  requires?: string[]
   
   // Lifecycle
+  detect?: (ctx: ProjectContext) => boolean | Promise<boolean>
   install: (ctx: ProjectContext) => Promise<void>
   configure: (ctx: ProjectContext) => Promise<void>
   rollback?: (ctx: ProjectContext) => Promise<void>
 }
 ```
 
-### Extensibilité
+### Extensibility
 
-Créez vos propres plugins :
+Create your own plugins:
 
 ```bash
-npm install confjs-plugin-react-query
+npm install @configjs/plugin-react-query
 ```
 
-confjs détectera et chargera automatiquement les plugins préfixés par `confjs-plugin-*`.
+ConfigJS will automatically detect and load plugins prefixed with `@configjs/plugin-*`.
 
-## 🔧 Configuration
+---
 
-### Fichier .confjs.json
+## 🤝 Contributing
 
-```json
-{
-  "routing": "react-router-dom",
-  "state": "zustand",
-  "css": "tailwindcss",
-  "http": "axios",
-  "forms": "react-hook-form",
-  "tooling": ["eslint", "prettier", "husky"],
-  
-  "options": {
-    "typescript": true,
-    "strict": true,
-    "examples": true
-  }
-}
-```
+Contributions are welcome! Check out [CONTRIBUTING.md](./docs/CONTRIBUTING.md) for guidelines.
 
-### Fichier .confjs.yaml (alternatif)
+### Develop a Plugin
 
-```yaml
-routing: react-router-dom
-state: zustand
-css: tailwindcss
-http: axios
+See [PLUGIN_DEVELOPMENT.md](./docs/PLUGIN_DEVELOPMENT.md) to create your own plugins.
 
-tooling:
-  - eslint
-  - prettier
-  - husky
-
-options:
-  typescript: true
-  strict: true
-  examples: true
-```
-
-## 🤝 Contribuer
-
-Les contributions sont les bienvenues ! Consultez [CONTRIBUTING.md](./docs/CONTRIBUTING.md) pour les guidelines.
-
-### Développer un plugin
-
-Consultez [PLUGIN_DEVELOPMENT.md](./docs/PLUGIN_DEVELOPMENT.md) pour créer vos propres plugins.
-
-### Setup développement
+### Development Setup
 
 ```bash
 # Clone
-git clone https://github.com/julien/confjs.git
-cd confjs
+git clone https://github.com/julien-lin/orchestrateur-framework.git
+cd orchestrateur-framework
 
-# Install
+# Install dependencies
 npm install
 
-# Dev mode
-npm run dev
-
-# Tests
+# Run tests
 npm run test
 npm run test:watch
+
+# Type check
+npm run typecheck
+
+# Lint
+npm run lint
 
 # Build
 npm run build
 ```
 
+---
+
 ## 📋 Requirements
 
 - **Node.js** ≥ 18.0.0
 - **npm** / **yarn** / **pnpm** / **bun**
-- Un projet React existant
-
-## 🗺️ Roadmap
-
-### v1.0 (MVP) ✅
-- [x] Support React
-- [x] 12 plugins intégrés
-- [x] Validation compatibilités
-- [x] Configuration automatique
-
-### v1.1 (Q1 2026)
-- [ ] Support Next.js
-- [ ] Support Remix
-- [ ] Plugins UI (MUI, Chakra, Radix)
-- [ ] Plugins forms (React Hook Form, Formik)
-
-### v2.0 (Q2 2026)
-- [ ] Support Vue 3
-- [ ] Support Svelte
-- [ ] Interface web de configuration
-
-### v2.x (Future)
-- [ ] Templates personnalisables
-- [ ] Marketplace de plugins
-- [ ] React Native support
-
-## 📄 License
-
-[MIT](./LICENSE) © Julien
-
-## 🙏 Remerciements
-
-Inspiré par les meilleures pratiques de :
-- [Vite](https://vitejs.dev)
-- [Create T3 App](https://create.t3.gg)
-- [Projen](https://projen.io)
+- An existing React project (Vite, CRA, or custom setup)
 
 ---
 
-<div align="center">
+## 🗺️ Roadmap
 
-**Fait avec ❤️ pour la communauté frontend**
+### v1.1 ✅ (Current)
+- [x] Plugin tracking system (.configjsrc)
+- [x] Plugin detection (package.json + tracker)
+- [x] Enhanced console UX with colors
+- [x] Sequential installation (prevents corruption)
+- [x] 40+ plugins across 10 categories
 
-[Changelog](./CHANGELOG.md) • [Issues](https://github.com/julien/confjs/issues) • [Contributing](./docs/CONTRIBUTING.md)
+### v1.2 (Q2 2025)
+- [ ] Configuration presets (starter templates)
+- [ ] Plugin marketplace
+- [ ] Interactive upgrade command
+- [ ] Conflict resolution wizard
 
-</div>
+### v2.0 (Q3 2025)
+- [ ] Support Next.js
+- [ ] Support Remix
+- [ ] Support Astro
+- [ ] Web UI for configuration
+
+### v2.x (Future)
+- [ ] Support Vue 3
+- [ ] Support Svelte
+- [ ] React Native support
+- [ ] Custom plugin templates
+
+---
+
+## 💖 Support This Project
+
+If ConfigJS saves you time and makes your life easier, consider sponsoring the project:
+
+**[❤️ Sponsor on GitHub](https://github.com/sponsors/julien-lin)**
+
+Your support helps maintain and improve ConfigJS for the entire community!
+
+---
+
+## 📄 License
+
+[MIT](./LICENSE) © [Julien Lin](https://github.com/julien-lin)
+
+---
+
+## 🙏 Acknowledgments
+
+Inspired by the best practices from:
+- [Vite](https://vitejs.dev) - Lightning-fast build tool
+- [Create T3 App](https://create.t3.gg) - Type-safe full-stack toolkit
+- [Projen](https://projen.io) - Project configuration as code
+
+---
+
+**Made with ❤️ for the frontend community**
+
+[Changelog](./CHANGELOG.md) • [Issues](https://github.com/julien-lin/orchestrateur-framework/issues) • [Contributing](./docs/CONTRIBUTING.md)
 
