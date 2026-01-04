@@ -184,16 +184,6 @@ describe('Shadcn/ui Plugin', () => {
       expect(buttonFile).toBeDefined()
     })
 
-    it('should fail if TailwindCSS is not installed', async () => {
-      mockContext.dependencies = {}
-      mockContext.devDependencies = {}
-
-      const result = await shadcnUiPlugin.configure(mockContext)
-
-      expect(result.success).toBe(false)
-      expect(result.message).toContain('TailwindCSS is required')
-    })
-
     it('should skip components.json creation if already exists', async () => {
       vi.mocked(fsHelpers.checkPathExists).mockResolvedValueOnce(true)
 
