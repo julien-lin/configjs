@@ -109,18 +109,19 @@ export const huskyPlugin: Plugin = {
     const projectRoot = ctx.projectRoot
 
     try {
-      // 1. Initialiser Husky si .git existe
+      // 1. Vérifier si .git existe
       const gitDir = join(projectRoot, '.git')
       const gitExists = await checkPathExists(gitDir)
 
       if (!gitExists) {
         logger.warn(
-          '.git directory not found. Husky requires Git to be initialized.'
+          '.git directory not found. Husky hooks will be skipped. Initialize Git and run npm run prepare to set up Husky.'
         )
         return {
           files,
-          success: false,
-          message: 'Git repository not found. Please initialize Git first.',
+          success: true,
+          message:
+            'Husky installed but hooks skipped (Git not initialized). Run "git init && npm run prepare" to initialize Husky hooks later.',
         }
       }
 
