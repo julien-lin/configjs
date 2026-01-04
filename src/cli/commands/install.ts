@@ -27,7 +27,10 @@ export async function installReact(options: CLIOptions): Promise<void> {
     const language = await promptLanguage()
     const t = getTranslations(language)
 
-    console.log(`\n${t.detection.detecting}`)
+    const pc = require('picocolors')
+    
+    console.log()
+    console.log(pc.bold(pc.cyan(`🔍 ${t.detection.detecting}`)))
 
     // 2. Détection du contexte
     const projectRoot = process.cwd()
@@ -35,17 +38,18 @@ export async function installReact(options: CLIOptions): Promise<void> {
 
     // Afficher le contexte détecté
     console.log(
-      `   ✓ ${t.detection.framework}: ${ctx.framework} ${ctx.frameworkVersion}`
+      pc.green(`   ✓ ${t.detection.framework}: `) + pc.bold(`${ctx.framework} ${pc.gray(ctx.frameworkVersion)}`)
     )
     console.log(
-      `   ✓ ${t.detection.typescript}: ${ctx.typescript ? 'Oui' : 'Non'}`
+      pc.green(`   ✓ ${t.detection.typescript}: `) + pc.bold(ctx.typescript ? 'Oui' : 'Non')
     )
     if (ctx.bundler) {
       console.log(
-        `   ✓ ${t.detection.bundler}: ${ctx.bundler} ${ctx.bundlerVersion || ''}`
+        pc.green(`   ✓ ${t.detection.bundler}: `) + pc.bold(`${ctx.bundler} ${pc.gray(ctx.bundlerVersion || '')}`)
       )
     }
-    console.log(`   ✓ ${t.detection.packageManager}: ${ctx.packageManager}\n`)
+    console.log(pc.green(`   ✓ ${t.detection.packageManager}: `) + pc.bold(ctx.packageManager))
+    console.log()
 
     // 3. Sélection des plugins (sauf si --yes)
     let selectedPlugins: (typeof pluginRegistry)[number][] = []
@@ -64,12 +68,15 @@ export async function installReact(options: CLIOptions): Promise<void> {
     }
 
     if (selectedPlugins.length === 0) {
-      console.log(`\n${t.common.selected(0)}`)
-      console.log('Exiting...')
+      console.log()
+      console.log(pc.yellow(`⚠️  ${t.common.selected(0)}`))
+      console.log(pc.gray('Exiting...'))
       return
     }
 
-    console.log(`\n${t.common.selected(selectedPlugins.length)}`)
+    console.log()
+    console.log(pc.bold(pc.green(`✓ ${t.common.selected(selectedPlugins.length)}`)))
+    console.log()
 
     // 4. Confirmation (sauf si --yes ou --silent)
     if (!options.yes && !options.silent) {
@@ -82,20 +89,26 @@ export async function installReact(options: CLIOptions): Promise<void> {
 
     // 5. Mode Dry-Run (simulation détaillée)
     if (options.dryRun) {
-      console.log('\n🔍 MODE DRY-RUN (simulation uniquement)')
-      console.log('━'.repeat(50))
-      console.log('\n📦 Packages à installer :')
+      console.log()
+      console.log(pc.bold(pc.yellow('━'.repeat(60))))
+      console.log(pc.bold(pc.yellow('🔍 MODE DRY-RUN (simulation uniquement)')))
+      console.log(pc.bold(pc.yellow('━'.repeat(60))))
+      console.log()
+      console.log(pc.bold(pc.cyan('📦 Packages à installer :')))
       for (const plugin of selectedPlugins) {
         console.log(
-          `   ${plugin.name}${plugin.version ? `@${plugin.version}` : ''}`
+          pc.blue(`   • ${plugin.displayName}`) + pc.gray(` (${plugin.name}${plugin.version ? `@${plugin.version}` : ''})`)
         )
       }
-      console.log('\n📝 Fichiers qui seraient créés/modifiés :')
+      console.log()
+      console.log(pc.bold(pc.cyan('📝 Fichiers qui seraient créés/modifiés :')))
       for (const plugin of selectedPlugins) {
-        console.log(`   ${plugin.displayName} configuration`)
+        console.log(pc.gray(`   • ${plugin.displayName} configuration`))
       }
-      console.log("\n⚠️  Aucune modification n'a été effectuée (dry-run)")
-      console.log('💡 Exécutez sans --dry-run pour appliquer les changements')
+      console.log()
+      console.log(pc.yellow("⚠️  Aucune modification n'a été effectuée (dry-run)"))
+      console.log(pc.cyan('💡 Exécutez sans --dry-run pour appliquer les changements'))
+      console.log()
       return
     }
 
@@ -107,8 +120,10 @@ export async function installReact(options: CLIOptions): Promise<void> {
 
     // Mode --no-install : générer uniquement les configs
     if (options.install === false) {
-      console.log('\n⚙️  Mode configuration uniquement (--no-install)')
-      console.log('Les packages ne seront PAS installés\n')
+      console.log()
+      console.log(pc.yellow('⚙️  Mode configuration uniquement (--no-install)'))
+      console.log(pc.gray('Les packages ne seront PAS installés'))
+      console.log()
     }
 
     // Installation avec spinner

@@ -23,7 +23,7 @@ class Logger {
 
   info(message: string, ...args: unknown[]): void {
     if (this.level <= LogLevel.INFO) {
-      console.log(pc.blue(`ℹ ${message}`), ...args)
+      console.log(pc.cyan(`ℹ ${message}`), ...args)
     }
   }
 
@@ -35,13 +35,41 @@ class Logger {
 
   warn(message: string, ...args: unknown[]): void {
     if (this.level <= LogLevel.WARN) {
-      console.warn(pc.yellow(`⚠ ${message}`), ...args)
+      console.warn(pc.yellow(`⚠️  ${message}`), ...args)
     }
   }
 
   error(message: string, ...args: unknown[]): void {
     if (this.level <= LogLevel.ERROR) {
       console.error(pc.red(`✖ ${message}`), ...args)
+    }
+  }
+
+  header(message: string): void {
+    if (this.level <= LogLevel.INFO) {
+      console.log()
+      console.log(pc.bold(pc.magenta(`◆ ${message}`)))
+      console.log()
+    }
+  }
+
+  section(title: string): void {
+    if (this.level <= LogLevel.INFO) {
+      console.log()
+      console.log(pc.bold(pc.cyan(`▸ ${title}`)))
+    }
+  }
+
+  item(message: string, color: 'green' | 'blue' | 'yellow' | 'gray' = 'gray'): void {
+    if (this.level <= LogLevel.INFO) {
+      const colorFn = pc[color]
+      console.log(colorFn(`  • ${message}`))
+    }
+  }
+
+  dim(message: string): void {
+    if (this.level <= LogLevel.INFO) {
+      console.log(pc.gray(`  ${message}`))
     }
   }
 
