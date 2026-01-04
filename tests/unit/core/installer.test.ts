@@ -150,8 +150,14 @@ describe('Installer', () => {
 
     it('should skip already installed plugins', async () => {
       const plugins = [
-        { ...createMockPlugin('plugin-a', { detect: true }), category: Category.STATE },
-        { ...createMockPlugin('plugin-b', { detect: false }), category: Category.HTTP },
+        {
+          ...createMockPlugin('plugin-a', { detect: true }),
+          category: Category.STATE,
+        },
+        {
+          ...createMockPlugin('plugin-b', { detect: false }),
+          category: Category.HTTP,
+        },
       ]
 
       vi.mocked(packageManager.installPackages).mockResolvedValue({
