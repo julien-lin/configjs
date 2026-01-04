@@ -16,56 +16,60 @@ export function displayInstallationReport(
   lang: SupportedLanguage
 ): void {
   const t = getTranslations(lang)
+  const pc = require('picocolors')
 
-  console.log(`\n${t.report.title}`)
+  // En-tête avec bordure
+  console.log()
+  console.log(pc.bold(pc.green('━'.repeat(60))))
+  console.log(pc.bold(pc.green(`✨ ${t.report.title}`)))
   if (report.duration > 0) {
     const durationSeconds = (report.duration / 1000).toFixed(1)
-    console.log(`   (${durationSeconds}s)\n`)
-  } else {
-    console.log('')
+    console.log(pc.gray(`   Temps d'installation: ${durationSeconds}s`))
   }
+  console.log(pc.bold(pc.green('━'.repeat(60))))
+  console.log()
 
   // Packages installés
   if (report.installed.length > 0) {
-    console.log(`${t.report.packagesInstalled}:`)
+    console.log(pc.bold(pc.cyan(`📦 ${t.report.packagesInstalled}:`)))
     for (const pluginName of report.installed) {
       const plugin = plugins.find((p) => p.name === pluginName)
-      const version = plugin?.version ? ` (${plugin.version})` : ''
-      console.log(`   ✓ ${plugin?.displayName || pluginName}${version}`)
+      const version = plugin?.version ? pc.gray(` (${plugin.version})`) : ''
+      console.log(pc.green(`   ✓ ${plugin?.displayName || pluginName}`) + version)
     }
-    console.log('')
+    console.log()
   }
 
   // Fichiers créés
   const createdFiles = report.filesCreated.filter((f) => f.type === 'create')
   if (createdFiles.length > 0) {
-    console.log(`${t.report.filesCreated}:`)
+    console.log(pc.bold(pc.cyan(`📝 ${t.report.filesCreated}:`)))
     for (const file of createdFiles) {
-      console.log(`   • ${file.path}`)
+      console.log(pc.blue(`   • ${file.path}`))
     }
-    console.log('')
+    console.log()
   }
 
   // Fichiers modifiés
   const modifiedFiles = report.filesCreated.filter((f) => f.type === 'modify')
   if (modifiedFiles.length > 0) {
-    console.log(`${t.report.filesModified}:`)
+    console.log(pc.bold(pc.cyan(`📝 ${t.report.filesModified}:`)))
     for (const file of modifiedFiles) {
-      console.log(`   • ${file.path}`)
+      console.log(pc.yellow(`   • ${file.path}`))
     }
-    console.log('')
+    console.log()
   }
 
   // Warnings
   if (report.warnings.length > 0) {
-    console.log(`⚠️  ${report.warnings.length} warning(s):`)
+    console.log(pc.bold(pc.yellow(`⚠️  ${report.warnings.length} warning(s):`)))
     for (const warning of report.warnings) {
-      console.log(`   ⚠ ${warning.message}`)
+      console.log(pc.yellow(`   ⚠️  ${warning.message}`))
       if (warning.plugins && warning.plugins.length > 0) {
-        console.log(`     Plugins: ${warning.plugins.join(', ')}`)
+        console.log(pc.gray(`      Plugins: ${warning.plugins.join(', ')}`))
       }
     }
-    console.log('')
+    console.log()
   }
 
   // Prochaines étapes
@@ -79,12 +83,13 @@ export function displayInstallationReport(
  */
 function displayNextSteps(lang: SupportedLanguage): void {
   const t = getTranslations(lang)
+  const pc = require('picocolors')
 
-  console.log(`${t.report.nextSteps}:`)
-  console.log('   1. npm run dev')
-  console.log('   2. Visitez http://localhost:5173')
-  console.log('   3. Consultez la documentation dans src/')
-  console.log('')
+  console.log(pc.bold(pc.magenta(`🚀 ${t.report.nextSteps}:`)))
+  console.log(pc.cyan('   1. ') + pc.bold('npm run dev'))
+  console.log(pc.cyan('   2. ') + 'Visitez ' + pc.underline(pc.blue('http://localhost:5173')))
+  console.log(pc.cyan('   3. ') + 'Consultez la documentation dans ' + pc.italic('src/'))
+  console.log()
 }
 
 /**
