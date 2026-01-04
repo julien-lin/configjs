@@ -2,6 +2,7 @@ import type { InstallationReport } from '../../types/index.js'
 import type { Plugin } from '../../types/index.js'
 import type { SupportedLanguage } from '../i18n/types.js'
 import { getTranslations } from '../i18n/index.js'
+import pc from 'picocolors'
 
 /**
  * Affiche le rapport final d'installation
@@ -16,7 +17,6 @@ export function displayInstallationReport(
   lang: SupportedLanguage
 ): void {
   const t = getTranslations(lang)
-  const pc = require('picocolors')
 
   // En-tête avec bordure
   console.log()
@@ -35,7 +35,9 @@ export function displayInstallationReport(
     for (const pluginName of report.installed) {
       const plugin = plugins.find((p) => p.name === pluginName)
       const version = plugin?.version ? pc.gray(` (${plugin.version})`) : ''
-      console.log(pc.green(`   ✓ ${plugin?.displayName || pluginName}`) + version)
+      console.log(
+        pc.green(`   ✓ ${plugin?.displayName || pluginName}`) + version
+      )
     }
     console.log()
   }
@@ -83,12 +85,17 @@ export function displayInstallationReport(
  */
 function displayNextSteps(lang: SupportedLanguage): void {
   const t = getTranslations(lang)
-  const pc = require('picocolors')
 
   console.log(pc.bold(pc.magenta(`🚀 ${t.report.nextSteps}:`)))
   console.log(pc.cyan('   1. ') + pc.bold('npm run dev'))
-  console.log(pc.cyan('   2. ') + 'Visitez ' + pc.underline(pc.blue('http://localhost:5173')))
-  console.log(pc.cyan('   3. ') + 'Consultez la documentation dans ' + pc.italic('src/'))
+  console.log(
+    pc.cyan('   2. ') +
+      'Visitez ' +
+      pc.underline(pc.blue('http://localhost:5173'))
+  )
+  console.log(
+    pc.cyan('   3. ') + 'Consultez la documentation dans ' + pc.italic('src/')
+  )
   console.log()
 }
 
