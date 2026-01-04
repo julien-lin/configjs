@@ -92,13 +92,45 @@ export class Installer {
       await this.tracker.load()
 
       // Filtrer les plugins déjà installés
-      const notInstalled = plugins.filter((p) => {
-        const isInstalled = this.tracker.isInstalled(p.name)
+      // Vérifier à la fois dans le tracker ET via la méthode detect() du plugin
+      const notInstalledPromises = plugins.map(async (p) => {
+        const isTracked = this.tracker.isInstalled(p.name)
+        const isDetected = p.detect ? await p.detect(this.ctx) : false
+        const isInstalled = isTracked || isDetected
+
         if (isInstalled) {
           logger.info(`${p.displayName} is already installed, skipping...`)
+          // Si détecté mais pas tracké, l'ajouter au tracker
+          if (isDetected && !isTracked) {
+            logger.debug(
+              `${p.displayName} detected but not tracked, adding to tracker...`
+            )
+            try {
+              await this.tracker.addPlugin({
+                name: p.name,
+                displayName: p.displayName,
+                category: p.category,
+                version: p.version,
+                packages: {
+                  dependencies: [],
+                  devDependencies: [],
+                },
+              })
+            } catch (error) {
+              logger.warn(
+                `Failed to add ${p.displayName} to tracker: ${error instanceof Error ? error.message : String(error)}`
+              )
+            }
+          }
+          return null
         }
-        return !isInstalled
+        return p
       })
+
+      const notInstalledResults = await Promise.all(notInstalledPromises)
+      const notInstalled = notInstalledResults.filter(
+        (p): p is Plugin => p !== null
+      )
 
       if (notInstalled.length === 0) {
         logger.info('All plugins are already installed')

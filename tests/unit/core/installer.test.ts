@@ -150,8 +150,8 @@ describe('Installer', () => {
 
     it('should skip already installed plugins', async () => {
       const plugins = [
-        createMockPlugin('plugin-a', { detect: true }),
-        createMockPlugin('plugin-b', { detect: false }),
+        { ...createMockPlugin('plugin-a', { detect: true }), category: Category.STATE },
+        { ...createMockPlugin('plugin-b', { detect: false }), category: Category.HTTP },
       ]
 
       vi.mocked(packageManager.installPackages).mockResolvedValue({
@@ -162,7 +162,9 @@ describe('Installer', () => {
       const result = await installer.install(plugins)
 
       expect(result.success).toBe(true)
-      expect(result.installed).toHaveLength(2)
+      // Seulement plugin-b devrait être installé (plugin-a est déjà détecté)
+      expect(result.installed).toHaveLength(1)
+      expect(result.installed).toEqual(['plugin-b'])
     })
 
     it('should run pre-install and post-install hooks', async () => {
