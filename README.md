@@ -49,13 +49,20 @@ npx @configjs/cli react
 
 **No installation required!** Use directly with `npx`:
 
+### For React Projects
 ```bash
 cd your-react-project
 npx @configjs/cli react
 ```
 
+### For Next.js Projects
+```bash
+cd your-nextjs-project
+npx @configjs/cli nextjs
+```
+
 That's it! ConfigJS will:
-1. 🔍 **Detect** your environment (React version, TypeScript, bundler)
+1. 🔍 **Detect** your environment (React/Next.js version, TypeScript, bundler)
 2. 🎯 **Guide** you through library selection by category
 3. 📦 **Install** all packages sequentially (no conflicts)
 4. ⚙️ **Configure** everything with working code
@@ -113,9 +120,10 @@ $ npx @configjs/cli react
 ### 🎯 Smart Detection
 
 ConfigJS automatically detects your project setup:
-- ✅ **Framework & Version** (React 18/19)
+- ✅ **Framework & Version** (React 18/19, Next.js 13/14)
+- ✅ **Router Type** (App Router vs Pages Router for Next.js)
 - ✅ **Language** (JavaScript/TypeScript)
-- ✅ **Bundler** (Vite, Webpack, Create React App)
+- ✅ **Bundler** (Vite, Webpack, Create React App, Next.js)
 - ✅ **Package Manager** (npm, yarn, pnpm, bun)
 - ✅ **Already Installed Libraries** (skips duplicates)
 - ✅ **Project Structure** (adapts configuration)
@@ -263,8 +271,11 @@ ConfigJS creates a `.configjsrc` file to track installations and prevent conflic
 ### Commands
 
 ```bash
-# Interactive installation
+# Interactive installation for React
 npx @configjs/cli react
+
+# Interactive installation for Next.js
+npx @configjs/cli nextjs
 
 # List available plugins
 npx @configjs/cli list
@@ -279,6 +290,15 @@ npx @configjs/cli remove <plugin-name>
 # Validate project compatibility
 npx @configjs/cli check
 ```
+
+### Next.js Support
+
+ConfigJS fully supports Next.js projects with automatic detection of:
+- **App Router** vs **Pages Router**
+- Next.js-specific plugins (Image Optimization, Font Optimization, Middleware, API Routes)
+- Compatible libraries adapted for Next.js (TailwindCSS, Shadcn/ui, React Hot Toast)
+
+See [Next.js Documentation](./DOCUMENTATION/NEXTJS.md) for complete guide.
 
 ### CLI Options
 
@@ -411,7 +431,7 @@ npm run build
 - [ ] Conflict resolution wizard
 
 ### v2.0 (Q3 2025)
-- [ ] Support Next.js
+- [x] Support Next.js ✅
 - [ ] Support Remix
 - [ ] Support Astro
 - [ ] Web UI for configuration

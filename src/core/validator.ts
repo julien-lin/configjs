@@ -4,6 +4,7 @@ import type {
   ValidationError,
   ValidationWarning,
   ValidationResult,
+  ProjectContext,
 } from '../types/index.js'
 import { logger } from '../utils/logger.js'
 
@@ -39,28 +40,40 @@ export class CompatibilityValidator {
    * Valide la compatibilité d'un ensemble de plugins
    *
    * @param plugins - Liste des plugins à valider
+   * @param ctx - Contexte du projet (optionnel, pour règles spécifiques framework)
    * @returns Résultat de la validation avec erreurs, warnings et suggestions
    *
    * @example
    * ```typescript
-   * const result = validator.validate([plugin1, plugin2, plugin3])
+   * const result = validator.validate([plugin1, plugin2, plugin3], ctx)
    * if (!result.valid) {
    *   // Gérer les erreurs
    * }
    * ```
    */
-  validate(plugins: Plugin[]): ValidationResult {
+  validate(plugins: Plugin[], ctx?: ProjectContext): ValidationResult {
     logger.debug(`Validating ${plugins.length} plugin(s)`)
 
     const pluginNames = new Set(plugins.map((p) => p.name))
 
+    // Filtrer les règles selon le framework si contexte fourni
+    const applicableRules = ctx
+      ? this.rules.filter(
+          (rule) => !rule.framework || rule.framework === ctx.framework
+        )
+      : this.rules.filter((rule) => !rule.framework)
+
     // Vérifications en parallèle
-    const allConflicts = this.checkConflicts(plugins, pluginNames)
+    const allConflicts = this.checkConflicts(
+      plugins,
+      pluginNames,
+      applicableRules
+    )
     const conflictErrors: ValidationError[] = []
     const conflictWarnings: ValidationWarning[] = []
 
     for (const conflict of allConflicts) {
-      const rule = this.rules.find(
+      const rule = applicableRules.find(
         (r) =>
           r.type === 'CONFLICT' &&
           r.plugins?.every((p) => conflict.plugins?.includes(p))
@@ -72,14 +85,42 @@ export class CompatibilityValidator {
       }
     }
 
+    // Vérifier les conflits framework
+    const frameworkConflicts = ctx
+      ? this.checkFrameworkConflicts(plugins, pluginNames, ctx, applicableRules)
+      : []
+
+    // Séparer les conflits framework par sévérité
+    const frameworkErrors: ValidationError[] = []
+    const frameworkWarnings: ValidationWarning[] = []
+
+    for (const conflict of frameworkConflicts) {
+      const rule = applicableRules.find(
+        (r) =>
+          r.type === 'CONFLICT' &&
+          r.framework === ctx?.framework &&
+          r.plugins?.some((p) => conflict.plugins?.includes(p))
+      )
+      if (rule?.severity === 'error') {
+        frameworkErrors.push(conflict)
+      } else {
+        frameworkWarnings.push(conflict)
+      }
+    }
+
     const errors = [
-      ...this.checkExclusivity(plugins, pluginNames),
+      ...this.checkExclusivity(plugins, pluginNames, applicableRules),
       ...conflictErrors,
-      ...this.checkDependencies(plugins, pluginNames),
+      ...this.checkDependencies(plugins, pluginNames, applicableRules),
+      ...frameworkErrors,
     ]
 
-    const warnings = conflictWarnings
-    const suggestions = this.checkRecommendations(plugins, pluginNames)
+    const warnings = [...conflictWarnings, ...frameworkWarnings]
+    const suggestions = this.checkRecommendations(
+      plugins,
+      pluginNames,
+      applicableRules
+    )
 
     const valid = errors.length === 0
 
@@ -98,21 +139,71 @@ export class CompatibilityValidator {
   }
 
   /**
+   * Vérifie les conflits avec le framework
+   *
+   * @param _plugins - Liste des plugins (non utilisée, conservée pour cohérence)
+   * @param pluginNames - Set des noms de plugins pour lookup rapide
+   * @param ctx - Contexte du projet
+   * @param rules - Règles applicables
+   * @returns Liste des erreurs/warnings de conflit framework
+   *
+   * @internal
+   */
+  private checkFrameworkConflicts(
+    _plugins: Plugin[],
+    pluginNames: Set<string>,
+    ctx: ProjectContext,
+    rules: CompatibilityRule[]
+  ): ValidationWarning[] {
+    const conflicts: ValidationWarning[] = []
+
+    for (const rule of rules) {
+      if (
+        rule.type !== 'CONFLICT' ||
+        !rule.framework ||
+        rule.framework !== ctx.framework
+      ) {
+        continue
+      }
+
+      // Vérifier si le plugin en conflit avec le framework est présent
+      if (rule.plugins && rule.plugins.length > 0) {
+        const conflictingPlugins = rule.plugins.filter((pluginName) =>
+          pluginNames.has(pluginName)
+        )
+
+        if (conflictingPlugins.length > 0) {
+          conflicts.push({
+            type: 'CONFLICT',
+            plugins: conflictingPlugins,
+            message: rule.reason,
+            canOverride: rule.allowOverride ?? true,
+          })
+        }
+      }
+    }
+
+    return conflicts
+  }
+
+  /**
    * Vérifie les règles d'exclusivité (EXCLUSIVE)
    *
    * @param _plugins - Liste des plugins (non utilisée, conservée pour cohérence)
    * @param pluginNames - Set des noms de plugins pour lookup rapide
+   * @param rules - Règles applicables
    * @returns Liste des erreurs d'exclusivité
    *
    * @internal
    */
   private checkExclusivity(
     _plugins: Plugin[],
-    pluginNames: Set<string>
+    pluginNames: Set<string>,
+    rules: CompatibilityRule[] = this.rules
   ): ValidationError[] {
     const errors: ValidationError[] = []
 
-    for (const rule of this.rules) {
+    for (const rule of rules) {
       if (rule.type !== 'EXCLUSIVE' || !rule.plugins) {
         continue
       }
@@ -140,17 +231,23 @@ export class CompatibilityValidator {
    *
    * @param _plugins - Liste des plugins (non utilisée, conservée pour cohérence)
    * @param pluginNames - Set des noms de plugins pour lookup rapide
+   * @param rules - Règles applicables
    * @returns Liste des warnings/erreurs de conflit
    *
    * @internal
    */
   private checkConflicts(
     _plugins: Plugin[],
-    pluginNames: Set<string>
+    pluginNames: Set<string>,
+    rules: CompatibilityRule[] = this.rules
   ): ValidationWarning[] {
     const conflicts: ValidationWarning[] = []
 
-    for (const rule of this.rules) {
+    for (const rule of rules) {
+      // Ignorer les règles avec framework (gérées séparément)
+      if (rule.framework) {
+        continue
+      }
       if (rule.type !== 'CONFLICT' || !rule.plugins) {
         continue
       }
@@ -178,17 +275,19 @@ export class CompatibilityValidator {
    *
    * @param _plugins - Liste des plugins (non utilisée, conservée pour cohérence)
    * @param pluginNames - Set des noms de plugins pour lookup rapide
+   * @param rules - Règles applicables
    * @returns Liste des erreurs de dépendances manquantes
    *
    * @internal
    */
   private checkDependencies(
     _plugins: Plugin[],
-    pluginNames: Set<string>
+    pluginNames: Set<string>,
+    rules: CompatibilityRule[] = this.rules
   ): ValidationError[] {
     const errors: ValidationError[] = []
 
-    for (const rule of this.rules) {
+    for (const rule of rules) {
       if (rule.type !== 'REQUIRES' || !rule.plugin || !rule.requires) {
         continue
       }
@@ -222,17 +321,19 @@ export class CompatibilityValidator {
    *
    * @param _plugins - Liste des plugins (non utilisée, conservée pour cohérence)
    * @param pluginNames - Set des noms de plugins pour lookup rapide
+   * @param rules - Règles applicables
    * @returns Liste des suggestions de plugins recommandés
    *
    * @internal
    */
   private checkRecommendations(
     _plugins: Plugin[],
-    pluginNames: Set<string>
+    pluginNames: Set<string>,
+    rules: CompatibilityRule[] = this.rules
   ): string[] {
     const suggestions: string[] = []
 
-    for (const rule of this.rules) {
+    for (const rule of rules) {
       if (rule.type !== 'RECOMMENDS' || !rule.plugin || !rule.recommends) {
         continue
       }
@@ -290,6 +391,40 @@ export const compatibilityRules: CompatibilityRule[] = [
     recommends: ['@types/react-router-dom'],
     reason:
       'Types TypeScript recommandés pour une meilleure expérience de développement',
+    severity: 'info',
+  },
+
+  // Règles spécifiques Next.js
+  // React Router incompatible avec Next.js
+  {
+    type: 'CONFLICT',
+    plugins: ['react-router-dom'],
+    framework: 'nextjs',
+    reason:
+      'React Router est incompatible avec Next.js. Next.js a son propre système de routing intégré.',
+    severity: 'error',
+    allowOverride: false,
+  },
+
+  // Framer Motion peut causer des problèmes SSR avec Next.js
+  {
+    type: 'CONFLICT',
+    plugins: ['framer-motion'],
+    framework: 'nextjs',
+    reason:
+      'Framer Motion peut causer des problèmes avec le Server-Side Rendering (SSR) de Next.js. Utilisez des alternatives compatibles SSR ou configurez correctement le dynamic import.',
+    severity: 'warning',
+    allowOverride: true,
+  },
+
+  // Shadcn/ui nécessite une configuration spéciale pour Next.js
+  {
+    type: 'RECOMMENDS',
+    plugin: 'shadcn-ui',
+    recommends: ['shadcn-ui-nextjs'],
+    framework: 'nextjs',
+    reason:
+      'Pour Next.js, utilisez la variante shadcn-ui-nextjs qui est optimisée pour React Server Components.',
     severity: 'info',
   },
 ]

@@ -74,7 +74,16 @@ export const nextjsFontOptimizationPlugin: Plugin = {
     const hasSrcDir = ctx.srcDir && ctx.srcDir !== '.'
 
     try {
-      // Chercher app/layout.tsx (App Router) ou pages/_app.tsx (Pages Router)
+      // Utiliser ctx.nextjsRouter si disponible, sinon détecter
+      const isAppRouter =
+        ctx.nextjsRouter === 'app' ||
+        (ctx.nextjsRouter === undefined &&
+          (await checkPathExists(
+            hasSrcDir
+              ? join(projectRoot, ctx.srcDir, 'app')
+              : join(projectRoot, 'app')
+          )))
+
       const appLayoutPath = hasSrcDir
         ? join(projectRoot, ctx.srcDir, 'app', `layout.${extension}`)
         : join(projectRoot, 'app', `layout.${extension}`)
@@ -82,21 +91,21 @@ export const nextjsFontOptimizationPlugin: Plugin = {
         ? join(projectRoot, ctx.srcDir, 'pages', `_app.${extension}`)
         : join(projectRoot, 'pages', `_app.${extension}`)
 
-      const appLayoutExists = await checkPathExists(appLayoutPath)
-      const pagesAppExists = await checkPathExists(pagesAppPath)
-
       let targetPath: string | null = null
       let targetContent = ''
-      let isAppRouter = false
 
-      if (appLayoutExists) {
-        targetPath = appLayoutPath
-        targetContent = await readFileContent(appLayoutPath)
-        isAppRouter = true
-      } else if (pagesAppExists) {
-        targetPath = pagesAppPath
-        targetContent = await readFileContent(pagesAppPath)
-        isAppRouter = false
+      if (isAppRouter) {
+        const appLayoutExists = await checkPathExists(appLayoutPath)
+        if (appLayoutExists) {
+          targetPath = appLayoutPath
+          targetContent = await readFileContent(appLayoutPath)
+        }
+      } else {
+        const pagesAppExists = await checkPathExists(pagesAppPath)
+        if (pagesAppExists) {
+          targetPath = pagesAppPath
+          targetContent = await readFileContent(pagesAppPath)
+        }
       }
 
       if (targetPath && targetContent) {

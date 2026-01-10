@@ -66,6 +66,11 @@ export async function promptPluginSelection(
       continue
     }
 
+    // Exclure React Router si Next.js est détecté (Next.js a son propre routing)
+    if (ctx.framework === 'nextjs' && plugin.name === 'react-router-dom') {
+      continue
+    }
+
     // Filtrer par TypeScript si requis
     if (plugin.requiresTypeScript === true && !ctx.typescript) {
       continue

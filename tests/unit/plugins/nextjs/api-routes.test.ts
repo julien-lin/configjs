@@ -29,6 +29,7 @@ describe('Next.js API Routes Plugin', () => {
       os: 'darwin',
       nodeVersion: '20.0.0',
       hasGit: false,
+      nextjsRouter: 'app', // App Router par défaut
       dependencies: {
         next: '^14.0.0',
       },
@@ -87,14 +88,15 @@ describe('Next.js API Routes Plugin', () => {
     })
 
     it('should create API route for Pages Router (TypeScript)', async () => {
-      vi.mocked(fsHelpers.checkPathExists).mockReset()
-      vi.mocked(fsHelpers.checkPathExists)
-        .mockResolvedValueOnce(false) // app/api/hello/route.ts doesn't exist
-        .mockResolvedValueOnce(false) // pages/api/hello.ts doesn't exist
-        .mockResolvedValueOnce(false) // app directory doesn't exist
-        .mockResolvedValueOnce(true) // pages directory exists
+      const pagesContext = {
+        ...mockContext,
+        nextjsRouter: 'pages' as const,
+      }
 
-      const result = await nextjsApiRoutesPlugin.configure(mockContext)
+      vi.mocked(fsHelpers.checkPathExists).mockReset()
+      vi.mocked(fsHelpers.checkPathExists).mockResolvedValueOnce(false) // pages/api/hello.ts doesn't exist
+
+      const result = await nextjsApiRoutesPlugin.configure(pagesContext)
 
       expect(result.success).toBe(true)
       const apiFile = result.files.find((f) =>

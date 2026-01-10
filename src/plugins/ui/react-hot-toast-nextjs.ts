@@ -107,7 +107,16 @@ export const reactHotToastNextjsPlugin: Plugin = {
     const hasSrcDir = ctx.srcDir && ctx.srcDir !== '.'
 
     try {
-      // Détecter App Router ou Pages Router
+      // Utiliser ctx.nextjsRouter si disponible, sinon détecter
+      const isAppRouter =
+        ctx.nextjsRouter === 'app' ||
+        (ctx.nextjsRouter === undefined &&
+          (await checkPathExists(
+            hasSrcDir
+              ? join(projectRoot, ctx.srcDir, 'app')
+              : join(projectRoot, 'app')
+          )))
+
       const appLayoutPath = hasSrcDir
         ? join(projectRoot, ctx.srcDir, 'app', `layout.${extension}`)
         : join(projectRoot, 'app', `layout.${extension}`)
@@ -115,30 +124,35 @@ export const reactHotToastNextjsPlugin: Plugin = {
         ? join(projectRoot, ctx.srcDir, 'pages', `_app.${extension}`)
         : join(projectRoot, 'pages', `_app.${extension}`)
 
-      const appLayoutExists = await checkPathExists(appLayoutPath)
-      const pagesAppExists = await checkPathExists(pagesAppPath)
-
       let targetPath: string | null = null
       let targetContent = ''
-      let isAppRouter = false
 
-      if (appLayoutExists) {
+      if (isAppRouter) {
         // App Router
-        targetPath = appLayoutPath
-        targetContent = await readFileContent(appLayoutPath)
-        isAppRouter = true
-      } else if (pagesAppExists) {
-        // Pages Router
-        targetPath = pagesAppPath
-        targetContent = await readFileContent(pagesAppPath)
-        isAppRouter = false
+        const appLayoutExists = await checkPathExists(appLayoutPath)
+        if (appLayoutExists) {
+          targetPath = appLayoutPath
+          targetContent = await readFileContent(appLayoutPath)
+        } else {
+          // Créer app/layout.tsx par défaut
+          targetPath = appLayoutPath
+          targetContent = ctx.typescript
+            ? getAppLayoutContentTS()
+            : getAppLayoutContentJS()
+        }
       } else {
-        // Créer app/layout.tsx par défaut (App Router)
-        targetPath = appLayoutPath
-        targetContent = ctx.typescript
-          ? getAppLayoutContentTS()
-          : getAppLayoutContentJS()
-        isAppRouter = true
+        // Pages Router
+        const pagesAppExists = await checkPathExists(pagesAppPath)
+        if (pagesAppExists) {
+          targetPath = pagesAppPath
+          targetContent = await readFileContent(pagesAppPath)
+        } else {
+          // Créer pages/_app.tsx par défaut
+          targetPath = pagesAppPath
+          targetContent = ctx.typescript
+            ? getPagesAppContentTS()
+            : getPagesAppContentJS()
+        }
       }
 
       if (targetPath) {
@@ -323,6 +337,43 @@ export default function RootLayout({ children }) {
         {children}
       </body>
     </html>
+  )
+}
+`
+}
+
+/**
+ * Contenu par défaut pour pages/_app.tsx (Pages Router - TypeScript)
+ */
+function getPagesAppContentTS(): string {
+  return `import type { AppProps } from 'next/app'
+import { Toaster } from 'react-hot-toast'
+import '../styles/globals.css'
+
+export default function App({ Component, pageProps }: AppProps) {
+  return (
+    <>
+      <Toaster />
+      <Component {...pageProps} />
+    </>
+  )
+}
+`
+}
+
+/**
+ * Contenu par défaut pour pages/_app.jsx (Pages Router - JavaScript)
+ */
+function getPagesAppContentJS(): string {
+  return `import { Toaster } from 'react-hot-toast'
+import '../styles/globals.css'
+
+export default function App({ Component, pageProps }) {
+  return (
+    <>
+      <Toaster />
+      <Component {...pageProps} />
+    </>
   )
 }
 `

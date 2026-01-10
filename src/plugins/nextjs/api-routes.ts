@@ -97,43 +97,29 @@ export const nextjsApiRoutesPlugin: Plugin = {
         }
       }
 
-      // Vérifier si app/ ou pages/ existe
-      const appDirExists = hasSrcDir
-        ? await checkPathExists(join(projectRoot, ctx.srcDir, 'app'))
-        : await checkPathExists(join(projectRoot, 'app'))
-      const pagesDirExists = hasSrcDir
-        ? await checkPathExists(join(projectRoot, ctx.srcDir, 'pages'))
-        : await checkPathExists(join(projectRoot, 'pages'))
+      // Utiliser ctx.nextjsRouter si disponible, sinon détecter
+      const isAppRouter =
+        ctx.nextjsRouter === 'app' ||
+        (ctx.nextjsRouter === undefined &&
+          (await checkPathExists(
+            hasSrcDir
+              ? join(projectRoot, ctx.srcDir, 'app')
+              : join(projectRoot, 'app')
+          )))
 
       let targetPath: string
-      let isAppRouter: boolean
 
-      if (appDirExists) {
+      if (isAppRouter) {
         // App Router
         targetPath = appApiPath
-        isAppRouter = true
         await ensureDirectory(
           join(projectRoot, hasSrcDir ? ctx.srcDir : '.', 'app', 'api', 'hello')
         )
-      } else if (pagesDirExists) {
+      } else {
         // Pages Router
         targetPath = pagesApiPath
-        isAppRouter = false
         await ensureDirectory(
           join(projectRoot, hasSrcDir ? ctx.srcDir : '.', 'pages', 'api')
-        )
-      } else {
-        // Par défaut, créer pour App Router
-        targetPath = appApiPath
-        isAppRouter = true
-        await ensureDirectory(
-          join(
-            projectRoot,
-            hasSrcDir ? ctx.srcDir || '.' : '.',
-            'app',
-            'api',
-            'hello'
-          )
         )
       }
 

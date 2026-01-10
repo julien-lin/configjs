@@ -145,7 +145,7 @@ describe('Installer', () => {
       const result = await installer.install(plugins)
 
       expect(result.success).toBe(false)
-      expect(validateSpy).toHaveBeenCalledWith(plugins)
+      expect(validateSpy).toHaveBeenCalledWith(plugins, mockContext)
     })
 
     it('should skip already installed plugins', async () => {

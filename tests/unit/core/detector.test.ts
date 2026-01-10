@@ -440,6 +440,146 @@ describe('detector', () => {
       expect(context.bundler).toBe('nextjs')
     })
 
+    it('should detect App Router when app directory exists', async () => {
+      const mockPackageJson = {
+        name: 'nextjs-project',
+        dependencies: {
+          next: '^14.0.0',
+        },
+        devDependencies: {
+          typescript: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue({
+        compilerOptions: { target: 'ES2022' },
+      } as never)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('next.config.ts') ||
+            pathStr.includes('src/app') ||
+            pathStr.includes('app') ||
+            pathStr.includes('public') ||
+            pathStr.includes('package.json')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('nextjs')
+      expect(context.nextjsRouter).toBe('app')
+    })
+
+    it('should detect Pages Router when pages directory exists', async () => {
+      const mockPackageJson = {
+        name: 'nextjs-project',
+        dependencies: {
+          next: '^14.0.0',
+        },
+        devDependencies: {
+          typescript: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue({
+        compilerOptions: { target: 'ES2022' },
+      } as never)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('next.config.ts') ||
+            pathStr.includes('src/pages') ||
+            pathStr.includes('pages') ||
+            pathStr.includes('public') ||
+            pathStr.includes('package.json')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('nextjs')
+      expect(context.nextjsRouter).toBe('pages')
+    })
+
+    it('should prioritize App Router when both app and pages directories exist', async () => {
+      const mockPackageJson = {
+        name: 'nextjs-project',
+        dependencies: {
+          next: '^14.0.0',
+        },
+        devDependencies: {
+          typescript: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue({
+        compilerOptions: { target: 'ES2022' },
+      } as never)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('next.config.ts') ||
+            pathStr.includes('src/app') ||
+            pathStr.includes('app') ||
+            pathStr.includes('src/pages') ||
+            pathStr.includes('pages') ||
+            pathStr.includes('public') ||
+            pathStr.includes('package.json')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('nextjs')
+      // App Router doit être prioritaire
+      expect(context.nextjsRouter).toBe('app')
+    })
+
+    it('should return undefined nextjsRouter for non-Next.js projects', async () => {
+      const mockPackageJson = {
+        name: 'react-project',
+        dependencies: {
+          react: '^18.2.0',
+        },
+        devDependencies: {
+          vite: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('vite.config.ts') ||
+            pathStr.includes('src') ||
+            pathStr.includes('public') ||
+            pathStr.includes('package.json')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('react')
+      expect(context.nextjsRouter).toBeUndefined()
+    })
+
     it('should detect static directory instead of public', async () => {
       const mockPackageJson = {
         name: 'test-project',
