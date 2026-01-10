@@ -53,6 +53,9 @@ export interface ProjectContext {
   // Git
   hasGit: boolean
   gitHooksPath?: string
+
+  // Next.js specific
+  nextjsRouter?: 'app' | 'pages' // App Router ou Pages Router
 }
 
 export interface Plugin {
@@ -125,6 +128,7 @@ export interface CompatibilityRule {
   plugins?: string[]
   requires?: string[]
   recommends?: string[]
+  framework?: Framework // Framework spécifique pour cette règle
   reason: string
   severity: Severity
   allowOverride?: boolean

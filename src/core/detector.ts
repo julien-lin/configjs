@@ -262,6 +262,45 @@ async function detectPublicDir(projectRoot: string): Promise<string> {
 }
 
 /**
+ * Détecte le router Next.js (App Router vs Pages Router)
+ *
+ * @param projectRoot - Chemin racine du projet
+ * @param srcDir - Dossier source du projet
+ * @returns Router détecté ('app' ou 'pages'), ou undefined si non détectable
+ *
+ * @internal
+ */
+async function detectNextjsRouter(
+  projectRoot: string,
+  srcDir: string
+): Promise<'app' | 'pages' | undefined> {
+  // Vérifier dans srcDir d'abord, puis à la racine
+  const appDirInSrc = join(projectRoot, srcDir, 'app')
+  const pagesDirInSrc = join(projectRoot, srcDir, 'pages')
+  const appDirAtRoot = join(projectRoot, 'app')
+  const pagesDirAtRoot = join(projectRoot, 'pages')
+
+  const appDirExists =
+    (await checkPathExists(appDirInSrc)) ||
+    (await checkPathExists(appDirAtRoot))
+  const pagesDirExists =
+    (await checkPathExists(pagesDirInSrc)) ||
+    (await checkPathExists(pagesDirAtRoot))
+
+  // Si les deux existent, prioriser App Router (nouveau système)
+  if (appDirExists) {
+    return 'app'
+  }
+
+  if (pagesDirExists) {
+    return 'pages'
+  }
+
+  // Si aucun n'existe, retourner undefined
+  return undefined
+}
+
+/**
  * Détecte si Git est utilisé dans le projet
  *
  * @param projectRoot - Chemin racine du projet
@@ -397,6 +436,12 @@ export async function detectContext(
   // Détecter le lockfile
   const lockfile = await detectLockfile(fullPath, packageManager)
 
+  // Détecter le router Next.js si applicable
+  const nextjsRouter =
+    frameworkInfo.framework === 'nextjs'
+      ? await detectNextjsRouter(fullPath, srcDir)
+      : undefined
+
   // Extraire les dépendances
   const dependencies = (pkg['dependencies'] as Record<string, string>) || {}
   const devDependencies =
@@ -436,6 +481,9 @@ export async function detectContext(
     // Git
     hasGit: gitInfo.hasGit,
     gitHooksPath: gitInfo.gitHooksPath,
+
+    // Next.js specific
+    nextjsRouter,
   }
 
   // Mettre en cache

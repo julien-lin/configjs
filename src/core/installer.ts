@@ -156,7 +156,7 @@ export class Installer {
 
       // 1. Validation
       logger.debug('Validating plugins compatibility...')
-      const validationResult = this.validator.validate(notInstalled)
+      const validationResult = this.validator.validate(notInstalled, this.ctx)
 
       if (!validationResult.valid) {
         const errorMessages = validationResult.errors

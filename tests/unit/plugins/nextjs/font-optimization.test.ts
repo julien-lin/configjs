@@ -29,6 +29,7 @@ describe('Next.js Font Optimization Plugin', () => {
       os: 'darwin',
       nodeVersion: '20.0.0',
       hasGit: false,
+      nextjsRouter: 'app', // App Router par défaut
       dependencies: {
         next: '^14.0.0',
       },
