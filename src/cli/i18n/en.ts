@@ -63,4 +63,26 @@ export const en: Translations = {
     incompatiblePlugins: (plugins: string[]) =>
       `Incompatible plugins detected: ${plugins.join(', ')}`,
   },
+  vite: {
+    noReactDetected: '⚠️  No React project detected in the current directory.',
+    proposeSetup: 'Would you like to create a new React project with Vite?',
+    projectName: 'Project name',
+    projectNamePlaceholder: 'my-react-project',
+    template: 'Template',
+    templateOptions: [
+      { value: 'react', name: 'React (JavaScript)' },
+      { value: 'react-ts', name: 'React (TypeScript)' },
+    ],
+    creating: 'Creating React project with Vite...',
+    success: '✅ Project created successfully!',
+    error: '❌ Error creating project',
+    changingDirectory: 'Changing to project directory...',
+    validation: {
+      empty: 'Project name cannot be empty',
+      invalid:
+        'Project name can only contain letters, numbers, dashes and underscores',
+    },
+    folderExists: (name: string) =>
+      `Folder "${name}" already exists. Please choose another name.`,
+  },
 }
