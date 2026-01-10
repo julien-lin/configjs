@@ -13,6 +13,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Interactive configuration wizard
 - VS Code extension
 
+## [1.2.0] - 2026-01-02
+
+### Added
+
+#### Next.js Support
+- 🚀 Full Next.js support with `npx @configjs/cli nextjs` command
+- 🔍 Automatic Next.js project detection
+- 📦 Next.js project creation wizard (TypeScript, ESLint, TailwindCSS, App/Pages Router)
+- 🎯 Automatic App Router vs Pages Router detection
+- 🔌 Next.js-specific plugins:
+  - Image Optimization (`nextjs-image-optimization`)
+  - Font Optimization (`nextjs-font-optimization`)
+  - Middleware (`nextjs-middleware`)
+  - API Routes (`nextjs-api-routes`)
+- 🎨 Next.js-adapted plugins:
+  - TailwindCSS Next.js (`tailwindcss-nextjs`)
+  - Shadcn/ui Next.js (`shadcn-ui-nextjs`)
+  - React Hot Toast Next.js (`react-hot-toast-nextjs`)
+- ✅ Compatibility validation for Next.js (blocks React Router, warns about Framer Motion)
+- 📝 Complete Next.js documentation (`DOCUMENTATION/NEXTJS.md`)
+- 🧪 E2E and integration tests for Next.js workflows
+
+#### Improvements
+- Enhanced framework detection to prioritize Next.js over React
+- Router-specific configuration (App Router vs Pages Router)
+- Framework-specific compatibility rules
+
 ## [1.0.0] - 2026-01-02
 
 ### 🎉 First Stable Release
