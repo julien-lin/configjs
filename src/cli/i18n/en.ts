@@ -85,4 +85,28 @@ export const en: Translations = {
     folderExists: (name: string) =>
       `Folder "${name}" already exists. Please choose another name.`,
   },
+  nextjs: {
+    noNextjsDetected:
+      '⚠️  No Next.js project detected in the current directory.',
+    proposeSetup: 'Would you like to create a new Next.js project?',
+    projectName: 'Project name',
+    projectNamePlaceholder: 'my-nextjs-project',
+    typescript: 'Use TypeScript?',
+    eslint: 'Use ESLint?',
+    tailwind: 'Use TailwindCSS?',
+    srcDir: 'Use src/ directory?',
+    appRouter: 'Use App Router (recommended)?',
+    importAlias: 'Import alias (e.g. @/*)',
+    creating: 'Creating Next.js project...',
+    success: '✅ Project created successfully!',
+    error: '❌ Error creating project',
+    changingDirectory: 'Changing to project directory...',
+    validation: {
+      empty: 'Project name cannot be empty',
+      invalid:
+        'Project name can only contain letters, numbers, dashes and underscores',
+    },
+    folderExists: (name: string) =>
+      `Folder "${name}" already exists. Please choose another name.`,
+  },
 }

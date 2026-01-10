@@ -32,7 +32,7 @@ export const reactIconsPlugin: Plugin = {
   category: Category.UI,
   version: '^5.3.0',
 
-  frameworks: ['react'],
+  frameworks: ['react', 'nextjs'],
 
   /**
    * Détecte si React Icons est déjà installé

@@ -32,7 +32,7 @@ export const radixUiPlugin: Plugin = {
   category: Category.UI,
   version: '^1.2.4',
 
-  frameworks: ['react'],
+  frameworks: ['react', 'nextjs'],
 
   /**
    * Détecte si Radix UI est déjà installé

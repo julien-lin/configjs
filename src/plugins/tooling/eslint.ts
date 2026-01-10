@@ -36,7 +36,7 @@ export const eslintPlugin: Plugin = {
   category: Category.TOOLING,
   version: '^9.39.2',
 
-  frameworks: ['react', 'vue', 'svelte'],
+  frameworks: ['react', 'vue', 'svelte', 'nextjs'],
 
   /**
    * Détecte si ESLint est déjà installé

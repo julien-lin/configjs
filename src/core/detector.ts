@@ -50,6 +50,14 @@ function detectFramework(pkg: Record<string, unknown>): {
     ...((pkg['devDependencies'] as Record<string, string>) || {}),
   }
 
+  // Détection Next.js (en priorité car Next.js contient React)
+  if (deps['next']) {
+    return {
+      framework: 'nextjs',
+      version: deps['next'].replace(/[\^~]/, ''),
+    }
+  }
+
   // Détection React
   if (deps['react']) {
     return {
@@ -75,7 +83,7 @@ function detectFramework(pkg: Record<string, unknown>): {
   }
 
   throw new DetectionError(
-    'No supported framework detected. Supported frameworks: React, Vue, Svelte',
+    'No supported framework detected. Supported frameworks: Next.js, React, Vue, Svelte',
     { dependencies: Object.keys(deps) }
   )
 }
@@ -96,6 +104,23 @@ async function detectBundler(
   const deps = {
     ...((pkg['dependencies'] as Record<string, string>) || {}),
     ...((pkg['devDependencies'] as Record<string, string>) || {}),
+  }
+
+  // Détection Next.js (en priorité car Next.js a son propre bundler)
+  if (deps['next']) {
+    // Vérifier la présence de next.config.js ou next.config.ts
+    const nextConfigExists =
+      (await checkPathExists(join(projectRoot, 'next.config.js'))) ||
+      (await checkPathExists(join(projectRoot, 'next.config.ts'))) ||
+      (await checkPathExists(join(projectRoot, 'next.config.mjs'))) ||
+      (await checkPathExists(join(projectRoot, 'next.config.cjs')))
+
+    if (nextConfigExists) {
+      return {
+        bundler: 'nextjs',
+        version: deps['next'].replace(/[\^~]/, ''),
+      }
+    }
   }
 
   // Détection Vite
@@ -299,8 +324,8 @@ async function detectLockfile(
  * Détecte le contexte complet d'un projet frontend
  *
  * Cette fonction analyse un projet pour déterminer :
- * - Le framework utilisé (React, Vue, Svelte)
- * - Le bundler (Vite, Webpack, CRA, etc.)
+ * - Le framework utilisé (Next.js, React, Vue, Svelte)
+ * - Le bundler (Next.js, Vite, Webpack, CRA, etc.)
  * - Si TypeScript est utilisé
  * - Le package manager (npm, yarn, pnpm, bun)
  * - La structure du projet (dossiers src, public)

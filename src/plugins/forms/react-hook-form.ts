@@ -32,7 +32,7 @@ export const reactHookFormPlugin: Plugin = {
   category: Category.FORMS,
   version: '^7.69.0',
 
-  frameworks: ['react'],
+  frameworks: ['react', 'nextjs'],
 
   /**
    * Détecte si React Hook Form est déjà installé

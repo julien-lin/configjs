@@ -32,7 +32,7 @@ export const zodPlugin: Plugin = {
   category: Category.FORMS,
   version: '^3.24.1',
 
-  frameworks: ['react', 'vue', 'svelte'],
+  frameworks: ['react', 'vue', 'svelte', 'nextjs'],
 
   /**
    * Détecte si Zod est déjà installé
