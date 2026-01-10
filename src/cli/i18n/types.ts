@@ -57,4 +57,21 @@ export interface Translations {
     validationFailed: string
     incompatiblePlugins: (plugins: string[]) => string
   }
+  vite: {
+    noReactDetected: string
+    proposeSetup: string
+    projectName: string
+    projectNamePlaceholder: string
+    template: string
+    templateOptions: Array<{ value: string; name: string }>
+    creating: string
+    success: string
+    error: string
+    changingDirectory: string
+    validation: {
+      empty: string
+      invalid: string
+    }
+    folderExists: (name: string) => string
+  }
 }

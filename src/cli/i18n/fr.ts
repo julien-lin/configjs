@@ -64,4 +64,27 @@ export const fr: Translations = {
     incompatiblePlugins: (plugins: string[]) =>
       `Plugins incompatibles détectés : ${plugins.join(', ')}`,
   },
+  vite: {
+    noReactDetected:
+      '⚠️  Aucun projet React détecté dans le répertoire actuel.',
+    proposeSetup: 'Souhaitez-vous créer un nouveau projet React avec Vite ?',
+    projectName: 'Nom du projet',
+    projectNamePlaceholder: 'mon-projet-react',
+    template: 'Template',
+    templateOptions: [
+      { value: 'react', name: 'React (JavaScript)' },
+      { value: 'react-ts', name: 'React (TypeScript)' },
+    ],
+    creating: 'Création du projet React avec Vite...',
+    success: '✅ Projet créé avec succès !',
+    error: '❌ Erreur lors de la création du projet',
+    changingDirectory: 'Changement vers le répertoire du projet...',
+    validation: {
+      empty: 'Le nom du projet ne peut pas être vide',
+      invalid:
+        'Le nom du projet ne peut contenir que des lettres, chiffres, tirets et underscores',
+    },
+    folderExists: (name: string) =>
+      `Le dossier "${name}" existe déjà. Veuillez choisir un autre nom.`,
+  },
 }

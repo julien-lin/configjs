@@ -1,9 +1,11 @@
 import type { CLIOptions } from '../../types/index.js'
-import { detectContext } from '../../core/detector.js'
+import { detectContext, DetectionError } from '../../core/detector.js'
 import { pluginRegistry } from '../../plugins/registry.js'
 import { promptLanguage } from '../prompts/language.js'
 import { promptPluginSelection } from '../prompts/select-plugins.js'
 import { promptConfirmation } from '../prompts/confirm.js'
+import { promptViteSetup } from '../prompts/vite-setup.js'
+import { createViteProject } from '../utils/vite-installer.js'
 import { getTranslations } from '../i18n/index.js'
 import { logger } from '../../utils/logger.js'
 import { Installer } from '../../core/installer.js'
@@ -32,8 +34,45 @@ export async function installReact(options: CLIOptions): Promise<void> {
     console.log(pc.bold(pc.cyan(`🔍 ${t.detection.detecting}`)))
 
     // 2. Détection du contexte
-    const projectRoot = process.cwd()
-    const ctx = await detectContext(projectRoot)
+    let projectRoot = process.cwd()
+    let ctx
+
+    try {
+      ctx = await detectContext(projectRoot)
+    } catch (error) {
+      // Si React n'est pas détecté, proposer de créer un projet Vite
+      if (error instanceof DetectionError) {
+        console.log()
+        console.log(pc.yellow(t.vite.noReactDetected))
+        console.log()
+
+        const viteOptions = await promptViteSetup(language)
+
+        if (!viteOptions) {
+          console.log()
+          console.log(pc.gray(t.common.cancel))
+          return
+        }
+
+        // Créer le projet Vite
+        const newProjectPath = await createViteProject(
+          viteOptions,
+          projectRoot,
+          language
+        )
+
+        // Changer vers le nouveau répertoire
+        process.chdir(newProjectPath)
+        projectRoot = newProjectPath
+
+        console.log()
+
+        // Réessayer la détection du contexte
+        ctx = await detectContext(projectRoot)
+      } else {
+        throw error
+      }
+    }
 
     // Afficher le contexte détecté
     console.log(
