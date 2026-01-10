@@ -37,7 +37,7 @@ export const jotaiPlugin: Plugin = {
   category: Category.STATE,
   version: '^2.16.1',
 
-  frameworks: ['react'],
+  frameworks: ['react', 'nextjs'],
   incompatibleWith: ['@reduxjs/toolkit', 'zustand'],
 
   /**

@@ -32,7 +32,7 @@ export const axiosPlugin: Plugin = {
   category: Category.HTTP,
   version: '^1.13.2',
 
-  frameworks: ['react', 'vue', 'svelte'],
+  frameworks: ['react', 'vue', 'svelte', 'nextjs'],
 
   /**
    * Détecte si Axios est déjà installé

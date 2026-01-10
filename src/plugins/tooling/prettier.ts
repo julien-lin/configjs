@@ -36,7 +36,7 @@ export const prettierPlugin: Plugin = {
   category: Category.TOOLING,
   version: '^3.7.4',
 
-  frameworks: ['react', 'vue', 'svelte'],
+  frameworks: ['react', 'vue', 'svelte', 'nextjs'],
 
   /**
    * Détecte si Prettier est déjà installé

@@ -44,6 +44,14 @@ import { prettierPlugin } from './tooling/prettier.js'
 import { huskyPlugin } from './tooling/husky.js'
 import { dateFnsPlugin } from './utils/date-fns.js'
 import { reactTestingLibraryPlugin } from './testing/react-testing-library.js'
+// Next.js plugins
+import { tailwindcssNextjsPlugin } from './css/tailwindcss-nextjs.js'
+import { shadcnUiNextjsPlugin } from './ui/shadcn-ui-nextjs.js'
+import { reactHotToastNextjsPlugin } from './ui/react-hot-toast-nextjs.js'
+import { nextjsImageOptimizationPlugin } from './nextjs/image-optimization.js'
+import { nextjsFontOptimizationPlugin } from './nextjs/font-optimization.js'
+import { nextjsMiddlewarePlugin } from './nextjs/middleware.js'
+import { nextjsApiRoutesPlugin } from './nextjs/api-routes.js'
 // ... autres imports
 
 /**
@@ -69,6 +77,7 @@ export const pluginRegistry: Plugin[] = [
   tanstackQueryPlugin,
   // CSS
   tailwindcssPlugin,
+  tailwindcssNextjsPlugin,
   styledComponentsPlugin,
   emotionPlugin,
   reactBootstrapPlugin,
@@ -77,9 +86,11 @@ export const pluginRegistry: Plugin[] = [
   zodPlugin,
   // UI
   shadcnUiPlugin,
+  shadcnUiNextjsPlugin,
   radixUiPlugin,
   reactIconsPlugin,
   reactHotToastPlugin,
+  reactHotToastNextjsPlugin,
   framerMotionPlugin,
   // Tooling
   eslintPlugin,
@@ -88,6 +99,11 @@ export const pluginRegistry: Plugin[] = [
   dateFnsPlugin,
   // Testing
   reactTestingLibraryPlugin,
+  // Next.js specific
+  nextjsImageOptimizationPlugin,
+  nextjsFontOptimizationPlugin,
+  nextjsMiddlewarePlugin,
+  nextjsApiRoutesPlugin,
   // etc.
 ]
 

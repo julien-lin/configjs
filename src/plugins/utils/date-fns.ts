@@ -32,7 +32,7 @@ export const dateFnsPlugin: Plugin = {
   category: Category.TOOLING,
   version: '^4.1.0',
 
-  frameworks: ['react', 'vue', 'svelte'],
+  frameworks: ['react', 'vue', 'svelte', 'nextjs'],
 
   /**
    * Détecte si date-fns est déjà installé

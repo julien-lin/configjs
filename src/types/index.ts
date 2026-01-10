@@ -2,8 +2,8 @@
  * Types principaux pour confjs
  */
 
-export type Framework = 'react' | 'vue' | 'svelte'
-export type Bundler = 'vite' | 'webpack' | 'cra' | 'rspack' | null
+export type Framework = 'react' | 'vue' | 'svelte' | 'nextjs'
+export type Bundler = 'vite' | 'webpack' | 'cra' | 'rspack' | 'nextjs' | null
 export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun'
 
 export enum Category {

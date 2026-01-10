@@ -37,7 +37,7 @@ export const tanstackQueryPlugin: Plugin = {
   category: Category.HTTP,
   version: '^5.90.16',
 
-  frameworks: ['react'],
+  frameworks: ['react', 'nextjs'],
 
   /**
    * Détecte si TanStack Query est déjà installé

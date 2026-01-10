@@ -291,6 +291,155 @@ describe('detector', () => {
       expect(context.srcDir).toBe('app')
     })
 
+    it('should detect Next.js project with TypeScript', async () => {
+      const mockPackageJson = {
+        name: 'nextjs-project',
+        dependencies: {
+          next: '^14.0.0',
+          react: '^18.2.0',
+          'react-dom': '^18.2.0',
+        },
+        devDependencies: {
+          typescript: '^5.0.0',
+          '@types/node': '^20.0.0',
+          '@types/react': '^18.2.0',
+        },
+      }
+
+      const mockTsConfig = {
+        compilerOptions: {
+          target: 'ES2022',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(mockTsConfig as never)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('next.config.ts') ||
+            pathStr.includes('next.config.js') ||
+            pathStr.includes('tsconfig.json') ||
+            pathStr.includes('app') ||
+            pathStr.includes('public')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('nextjs')
+      expect(context.frameworkVersion).toBe('14.0.0')
+      expect(context.bundler).toBe('nextjs')
+      expect(context.bundlerVersion).toBe('14.0.0')
+      expect(context.typescript).toBe(true)
+      expect(context.packageManager).toBe('npm')
+      expect(context.lockfile).toBe('package-lock.json')
+    })
+
+    it('should detect Next.js project with JavaScript', async () => {
+      const mockPackageJson = {
+        name: 'nextjs-project',
+        dependencies: {
+          next: '^13.5.0',
+          react: '^18.2.0',
+          'react-dom': '^18.2.0',
+        },
+        devDependencies: {},
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('next.config.js') ||
+            pathStr.includes('app') ||
+            pathStr.includes('public')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('pnpm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('nextjs')
+      expect(context.frameworkVersion).toBe('13.5.0')
+      expect(context.bundler).toBe('nextjs')
+      expect(context.bundlerVersion).toBe('13.5.0')
+      expect(context.typescript).toBe(false)
+      expect(context.packageManager).toBe('pnpm')
+      expect(context.lockfile).toBe('pnpm-lock.yaml')
+    })
+
+    it('should detect Next.js from devDependencies', async () => {
+      const mockPackageJson = {
+        name: 'nextjs-project',
+        dependencies: {
+          react: '^18.2.0',
+        },
+        devDependencies: {
+          next: '^14.1.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('next.config.js') ||
+            pathStr.includes('app') ||
+            pathStr.includes('public')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('yarn')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('nextjs')
+      expect(context.frameworkVersion).toBe('14.1.0')
+      expect(context.bundler).toBe('nextjs')
+    })
+
+    it('should prioritize Next.js over React when both are present', async () => {
+      const mockPackageJson = {
+        name: 'nextjs-project',
+        dependencies: {
+          next: '^14.0.0',
+          react: '^18.2.0',
+          'react-dom': '^18.2.0',
+        },
+        devDependencies: {},
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('next.config.js') ||
+            pathStr.includes('app') ||
+            pathStr.includes('public')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      // Next.js doit être détecté en priorité, pas React
+      expect(context.framework).toBe('nextjs')
+      expect(context.frameworkVersion).toBe('14.0.0')
+      expect(context.bundler).toBe('nextjs')
+    })
+
     it('should detect static directory instead of public', async () => {
       const mockPackageJson = {
         name: 'test-project',

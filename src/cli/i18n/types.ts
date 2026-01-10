@@ -74,4 +74,25 @@ export interface Translations {
     }
     folderExists: (name: string) => string
   }
+  nextjs: {
+    noNextjsDetected: string
+    proposeSetup: string
+    projectName: string
+    projectNamePlaceholder: string
+    typescript: string
+    eslint: string
+    tailwind: string
+    srcDir: string
+    appRouter: string
+    importAlias: string
+    creating: string
+    success: string
+    error: string
+    changingDirectory: string
+    validation: {
+      empty: string
+      invalid: string
+    }
+    folderExists: (name: string) => string
+  }
 }

@@ -87,4 +87,28 @@ export const fr: Translations = {
     folderExists: (name: string) =>
       `Le dossier "${name}" existe déjà. Veuillez choisir un autre nom.`,
   },
+  nextjs: {
+    noNextjsDetected:
+      '⚠️  Aucun projet Next.js détecté dans le répertoire actuel.',
+    proposeSetup: 'Souhaitez-vous créer un nouveau projet Next.js ?',
+    projectName: 'Nom du projet',
+    projectNamePlaceholder: 'mon-projet-nextjs',
+    typescript: 'Utiliser TypeScript ?',
+    eslint: 'Utiliser ESLint ?',
+    tailwind: 'Utiliser TailwindCSS ?',
+    srcDir: 'Utiliser le dossier src/ ?',
+    appRouter: 'Utiliser App Router (recommandé) ?',
+    importAlias: "Alias d'import (ex: @/*)",
+    creating: 'Création du projet Next.js...',
+    success: '✅ Projet créé avec succès !',
+    error: '❌ Erreur lors de la création du projet',
+    changingDirectory: 'Changement vers le répertoire du projet...',
+    validation: {
+      empty: 'Le nom du projet ne peut pas être vide',
+      invalid:
+        'Le nom du projet ne peut contenir que des lettres, chiffres, tirets et underscores',
+    },
+    folderExists: (name: string) =>
+      `Le dossier "${name}" existe déjà. Veuillez choisir un autre nom.`,
+  },
 }
