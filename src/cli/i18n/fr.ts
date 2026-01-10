@@ -111,4 +111,27 @@ export const fr: Translations = {
     folderExists: (name: string) =>
       `Le dossier "${name}" existe déjà. Veuillez choisir un autre nom.`,
   },
+  vue: {
+    noVueDetected: '⚠️  Aucun projet Vue.js détecté dans le répertoire actuel.',
+    proposeSetup: 'Souhaitez-vous créer un nouveau projet Vue.js avec Vite ?',
+    projectName: 'Nom du projet',
+    projectNamePlaceholder: 'mon-projet-vue',
+    typescript: 'Utiliser TypeScript ?',
+    router: 'Utiliser Vue Router ?',
+    pinia: 'Utiliser Pinia (state management) ?',
+    vitest: 'Utiliser Vitest (testing) ?',
+    eslint: 'Utiliser ESLint ?',
+    prettier: 'Utiliser Prettier ?',
+    creating: 'Création du projet Vue.js avec Vite...',
+    success: '✅ Projet créé avec succès !',
+    error: '❌ Erreur lors de la création du projet',
+    changingDirectory: 'Changement vers le répertoire du projet...',
+    validation: {
+      empty: 'Le nom du projet ne peut pas être vide',
+      invalid:
+        'Le nom du projet ne peut contenir que des lettres, chiffres, tirets et underscores',
+    },
+    folderExists: (name: string) =>
+      `Le dossier "${name}" existe déjà. Veuillez choisir un autre nom.`,
+  },
 }

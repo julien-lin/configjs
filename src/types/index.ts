@@ -56,6 +56,10 @@ export interface ProjectContext {
 
   // Next.js specific
   nextjsRouter?: 'app' | 'pages' // App Router ou Pages Router
+
+  // Vue.js specific
+  vueVersion?: '3' // Version Vue (3 uniquement, Vue 2 non supporté par Vite)
+  vueApi?: 'composition' | 'options' // Composition API ou Options API
 }
 
 export interface Plugin {
