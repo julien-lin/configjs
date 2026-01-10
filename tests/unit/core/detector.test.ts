@@ -580,6 +580,197 @@ describe('detector', () => {
       expect(context.nextjsRouter).toBeUndefined()
     })
 
+    it('should detect Vue.js project with TypeScript', async () => {
+      const mockPackageJson = {
+        name: 'vue-project',
+        dependencies: {
+          vue: '^3.4.0',
+        },
+        devDependencies: {
+          vite: '^5.0.0',
+          typescript: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue({
+        compilerOptions: { target: 'ES2022' },
+      } as never)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('vite.config.ts') ||
+            pathStr.includes('src') ||
+            pathStr.includes('public') ||
+            pathStr.includes('package.json')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('vue')
+      expect(context.frameworkVersion).toBe('3.4.0')
+      expect(context.bundler).toBe('vite')
+      expect(context.vueVersion).toBe('3')
+    })
+
+    it('should detect Vue.js project with JavaScript', async () => {
+      const mockPackageJson = {
+        name: 'vue-project',
+        dependencies: {
+          vue: '^3.4.0',
+        },
+        devDependencies: {
+          vite: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('vite.config.js') ||
+            pathStr.includes('src') ||
+            pathStr.includes('public') ||
+            pathStr.includes('package.json')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('vue')
+      expect(context.frameworkVersion).toBe('3.4.0')
+      expect(context.bundler).toBe('vite')
+      expect(context.vueVersion).toBe('3')
+    })
+
+    it('should detect Vue.js from devDependencies', async () => {
+      const mockPackageJson = {
+        name: 'vue-project',
+        dependencies: {},
+        devDependencies: {
+          vue: '^3.4.0',
+          vite: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('vite.config.js') ||
+            pathStr.includes('src') ||
+            pathStr.includes('public') ||
+            pathStr.includes('package.json')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('vue')
+      expect(context.frameworkVersion).toBe('3.4.0')
+      expect(context.bundler).toBe('vite')
+    })
+
+    it('should reject Vue 2 and throw error', async () => {
+      const mockPackageJson = {
+        name: 'vue-project',
+        dependencies: {
+          vue: '^2.7.0',
+        },
+        devDependencies: {},
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+
+      await expect(detectContext(mockProjectRoot)).rejects.toThrow(
+        DetectionError
+      )
+      await expect(detectContext(mockProjectRoot)).rejects.toThrow(
+        'Vue 2 is not supported'
+      )
+    })
+
+    it('should detect Vue.js and set vueVersion to 3', async () => {
+      const mockPackageJson = {
+        name: 'vue-project',
+        dependencies: {
+          vue: '^3.4.0',
+        },
+        devDependencies: {
+          vite: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('vite.config.js') ||
+            pathStr.includes('src') ||
+            pathStr.includes('public') ||
+            pathStr.includes('package.json')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('vue')
+      expect(context.vueVersion).toBe('3')
+      // vueApi peut être undefined si aucun fichier .vue n'est trouvé
+      expect(context.vueApi).toBeUndefined() // Normal si aucun fichier .vue n'est trouvé
+    })
+
+    it('should return undefined vueApi and vueVersion for non-Vue projects', async () => {
+      const mockPackageJson = {
+        name: 'react-project',
+        dependencies: {
+          react: '^18.2.0',
+        },
+        devDependencies: {
+          vite: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('vite.config.ts') ||
+            pathStr.includes('src') ||
+            pathStr.includes('public') ||
+            pathStr.includes('package.json')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('react')
+      expect(context.vueVersion).toBeUndefined()
+      expect(context.vueApi).toBeUndefined()
+    })
+
     it('should detect static directory instead of public', async () => {
       const mockPackageJson = {
         name: 'test-project',

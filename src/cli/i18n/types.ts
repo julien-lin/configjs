@@ -95,4 +95,25 @@ export interface Translations {
     }
     folderExists: (name: string) => string
   }
+  vue: {
+    noVueDetected: string
+    proposeSetup: string
+    projectName: string
+    projectNamePlaceholder: string
+    typescript: string
+    router: string
+    pinia: string
+    vitest: string
+    eslint: string
+    prettier: string
+    creating: string
+    success: string
+    error: string
+    changingDirectory: string
+    validation: {
+      empty: string
+      invalid: string
+    }
+    folderExists: (name: string) => string
+  }
 }

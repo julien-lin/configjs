@@ -66,11 +66,22 @@ function detectFramework(pkg: Record<string, unknown>): {
     }
   }
 
-  // Détection Vue
+  // Détection Vue (Vue 3 uniquement, Vue 2 non supporté par Vite)
   if (deps['vue']) {
+    const version = deps['vue'].replace(/[\^~]/, '')
+    const majorVersion = parseInt(version.split('.')[0] || '0', 10)
+
+    // Vérifier que c'est Vue 3 (Vue 2 non supporté)
+    if (majorVersion < 3) {
+      throw new DetectionError(
+        'Vue 2 is not supported. Please use Vue 3 (Vue 2 is not compatible with Vite).',
+        { vueVersion: version }
+      )
+    }
+
     return {
       framework: 'vue',
-      version: deps['vue'].replace(/[\^~]/, ''),
+      version,
     }
   }
 
@@ -123,7 +134,7 @@ async function detectBundler(
     }
   }
 
-  // Détection Vite
+  // Détection Vite (prioritaire pour Vue.js)
   if (deps['vite']) {
     const viteConfigExists =
       (await checkPathExists(join(projectRoot, 'vite.config.js'))) ||
@@ -135,6 +146,20 @@ async function detectBundler(
       return {
         bundler: 'vite',
         version: deps['vite'].replace(/[\^~]/, ''),
+      }
+    }
+  }
+
+  // Détection Vue CLI (legacy, pour projets Vue existants)
+  if (deps['vue'] && deps['@vue/cli-service']) {
+    const vueConfigExists = await checkPathExists(
+      join(projectRoot, 'vue.config.js')
+    )
+
+    if (vueConfigExists) {
+      return {
+        bundler: 'webpack', // Vue CLI utilise Webpack
+        version: deps['@vue/cli-service'].replace(/[\^~]/, ''),
       }
     }
   }
@@ -301,6 +326,88 @@ async function detectNextjsRouter(
 }
 
 /**
+ * Détecte le style d'API Vue.js (Composition API vs Options API)
+ *
+ * @param projectRoot - Chemin racine du projet
+ * @param srcDir - Dossier source du projet
+ * @returns Style d'API détecté ('composition' ou 'options'), ou undefined si non détectable
+ *
+ * @internal
+ */
+async function detectVueApi(
+  projectRoot: string,
+  srcDir: string
+): Promise<'composition' | 'options' | undefined> {
+  const { readdir, readFile } = await import('fs/promises')
+  const srcPath = join(projectRoot, srcDir)
+
+  // Vérifier si le dossier src existe
+  if (!(await checkPathExists(srcPath))) {
+    return undefined
+  }
+
+  try {
+    // Chercher les fichiers .vue dans src et ses sous-dossiers
+    const files: string[] = []
+    async function findVueFiles(dir: string): Promise<void> {
+      const entries = await readdir(dir, { withFileTypes: true })
+      for (const entry of entries) {
+        const fullPath = join(dir, entry.name)
+        if (entry.isDirectory()) {
+          await findVueFiles(fullPath)
+        } else if (entry.name.endsWith('.vue')) {
+          files.push(fullPath)
+        }
+      }
+    }
+
+    await findVueFiles(srcPath)
+
+    // Analyser les fichiers .vue pour détecter le style d'API
+    let hasCompositionApi = false
+    let hasOptionsApi = false
+
+    for (const file of files.slice(0, 10)) {
+      // Limiter à 10 fichiers pour performance
+      try {
+        const content = await readFile(file, 'utf-8')
+        // Détecter Composition API : présence de <script setup> ou setup()
+        if (
+          content.includes('<script setup>') ||
+          content.includes('<script setup lang="ts">') ||
+          content.includes('export default defineComponent') ||
+          content.includes('setup()')
+        ) {
+          hasCompositionApi = true
+        }
+        // Détecter Options API : export default { ... }
+        if (
+          content.includes('export default {') ||
+          content.includes('export default{')
+        ) {
+          hasOptionsApi = true
+        }
+      } catch {
+        // Ignorer les erreurs de lecture
+      }
+    }
+
+    // Prioriser Composition API si les deux sont détectés
+    if (hasCompositionApi) {
+      return 'composition'
+    }
+
+    if (hasOptionsApi) {
+      return 'options'
+    }
+
+    return undefined
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * Détecte si Git est utilisé dans le projet
  *
  * @param projectRoot - Chemin racine du projet
@@ -442,6 +549,13 @@ export async function detectContext(
       ? await detectNextjsRouter(fullPath, srcDir)
       : undefined
 
+  // Détecter Vue.js version et API style si applicable
+  const vueVersion = frameworkInfo.framework === 'vue' ? '3' : undefined // Vue 3 uniquement
+  const vueApi =
+    frameworkInfo.framework === 'vue'
+      ? await detectVueApi(fullPath, srcDir)
+      : undefined
+
   // Extraire les dépendances
   const dependencies = (pkg['dependencies'] as Record<string, string>) || {}
   const devDependencies =
@@ -484,6 +598,10 @@ export async function detectContext(
 
     // Next.js specific
     nextjsRouter,
+
+    // Vue.js specific
+    vueVersion,
+    vueApi,
   }
 
   // Mettre en cache
