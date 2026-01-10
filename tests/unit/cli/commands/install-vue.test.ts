@@ -48,7 +48,7 @@ describe('install-vue', () => {
     vi.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit called')
     })
-    vi.spyOn(process, 'chdir').mockImplementation(() => { })
+    vi.spyOn(process, 'chdir').mockImplementation(() => {})
     vi.mocked(languagePrompt.promptLanguage).mockResolvedValue('fr')
     vi.mocked(detector.detectContext).mockResolvedValue(mockContext)
     vi.mocked(pluginSelection.promptPluginSelection).mockResolvedValue([])
