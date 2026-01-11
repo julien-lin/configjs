@@ -148,7 +148,7 @@ git push --follow-tags
 
 Pour plus de détails, consultez :
 - [.github/CICD_SETUP.md](.github/CICD_SETUP.md) - Guide complet CI/CD
-- [DOCUMENTATION/PRODUCTION_READINESS.md](DOCUMENTATION/PRODUCTION_READINESS.md) - Checklist production
+- [DEVELOPPEMENT/PRODUCTION_READINESS.md](DEVELOPPEMENT/PRODUCTION_READINESS.md) - Checklist production
 
 ---
 

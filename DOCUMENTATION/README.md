@@ -100,7 +100,7 @@ Contient :
 Pour la documentation utilisateur, consultez :
 - **README.md** (racine du projet) - Guide utilisateur
 - **docs/CONTRIBUTING.md** - Guide de contribution
-- **docs/PLUGIN_DEVELOPMENT.md** - Développement de plugins
+- **docs/PLUGIN_DEVELOPMENT.md** - Développement de plugins (voir DEVELOPPEMENT/ pour la documentation interne)
 - **CHANGELOG.md** - Historique des versions
 
 ---
