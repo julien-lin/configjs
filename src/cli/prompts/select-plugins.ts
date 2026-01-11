@@ -71,6 +71,26 @@ export async function promptPluginSelection(
       continue
     }
 
+    // Exclure React Router si Vue.js est détecté (Vue a son propre routing)
+    if (ctx.framework === 'vue' && plugin.name === 'react-router-dom') {
+      continue
+    }
+
+    // Exclure Zustand/Redux si Vue.js est détecté (utiliser Pinia pour Vue)
+    if (
+      ctx.framework === 'vue' &&
+      (plugin.name === 'zustand' ||
+        plugin.name === '@reduxjs/toolkit' ||
+        plugin.name === 'jotai')
+    ) {
+      continue
+    }
+
+    // Exclure Shadcn/ui si Vue.js est détecté (utiliser Vuetify/Quasar pour Vue)
+    if (ctx.framework === 'vue' && plugin.name === 'shadcn-ui') {
+      continue
+    }
+
     // Filtrer par TypeScript si requis
     if (plugin.requiresTypeScript === true && !ctx.typescript) {
       continue
