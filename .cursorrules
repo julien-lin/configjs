@@ -840,10 +840,11 @@ vi.mock('fs-extra', () => ({
 ### Avant chaque PR
 
 1. ✅ Tests d'intégration passent
-2. ✅ Documentation mise à jour
-3. ✅ CHANGELOG mis à jour
-4. ✅ Pas de breaking changes non documentés
-5. ✅ Code review par au moins 1 personne
+2. ✅ Documentation utilisateur mise à jour (`DOCUMENTATION/`)
+3. ✅ Documentation développeur mise à jour si nécessaire (`DEVELOPPEMENT/`)
+4. ✅ CHANGELOG mis à jour
+5. ✅ Pas de breaking changes non documentés
+6. ✅ Code review par au moins 1 personne
 
 ### Pour chaque nouveau plugin
 
@@ -852,7 +853,7 @@ vi.mock('fs-extra', () => ({
 3. ✅ Fonction `rollback()` implémentée
 4. ✅ Tests unitaires (≥80%)
 5. ✅ Test d'intégration avec vrai projet
-6. ✅ Documentation dans `docs/PLUGIN_DEVELOPMENT.md`
+6. ✅ Documentation dans `DEVELOPPEMENT/PLUGIN_DEVELOPMENT.md` (si nécessaire)
 7. ✅ Ajouté au registry
 
 ## 📚 Documentation
