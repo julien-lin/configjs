@@ -8,10 +8,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Additional framework support (Vue, Svelte)
+- Additional framework support (Svelte, Preact, Solid)
 - Plugin marketplace
 - Interactive configuration wizard
 - VS Code extension
+
+## [1.3.0] - 2026-01-02
+
+### Added
+
+#### Vue.js Support
+- 🚀 Full Vue.js 3 support with `npx @configjs/cli vue` command
+- 🔍 Automatic Vue.js project detection (Vue 3 only)
+- 📦 Vue.js project creation wizard using Vite (TypeScript, Router, Pinia, Vitest, ESLint, Prettier)
+- 🎯 Automatic Composition API vs Options API detection
+- 🔌 Vue.js-specific plugins:
+  - Vue Router (`vue-router`) - Official routing for Vue.js
+  - Pinia (`pinia`) - Official state management for Vue 3
+  - VueUse (`@vueuse/core`) - Collection of Vue Composition API utilities
+  - Vuetify (`vuetify`) - Material Design component framework
+  - Vue Test Utils (`vue-test-utils`) - Testing utilities for Vue.js
+  - ESLint Vue (`eslint-vue`) - ESLint configuration for Vue.js
+- ✅ Compatibility validation for Vue.js (blocks React Router, Zustand/Redux, Shadcn/ui)
+- 📝 Complete Vue.js documentation (`DOCUMENTATION/VUE.md`)
+- 🧪 E2E and integration tests for Vue.js workflows
+
+#### Improvements
+- Enhanced framework detection to support Vue.js
+- API style detection (Composition API vs Options API)
+- Framework-specific compatibility rules for Vue.js
+- Plugin adaptation based on detected API style
 
 ## [1.2.0] - 2026-01-02
 
