@@ -136,7 +136,8 @@ export const vueRouterPlugin: Plugin = {
 
       // 4. Créer src/views/HomeView.vue
       const homeViewPath = join(viewsDir, 'HomeView.vue')
-      const homeViewContent = getHomeViewContent()
+      const vueApi = ctx.vueApi || 'composition' // Default to Composition API
+      const homeViewContent = getHomeViewContent(vueApi)
 
       await writer.createFile(homeViewPath, homeViewContent)
       files.push({
@@ -150,7 +151,7 @@ export const vueRouterPlugin: Plugin = {
 
       // 5. Créer src/views/AboutView.vue
       const aboutViewPath = join(viewsDir, 'AboutView.vue')
-      const aboutViewContent = getAboutViewContent()
+      const aboutViewContent = getAboutViewContent(vueApi)
 
       await writer.createFile(aboutViewPath, aboutViewContent)
       files.push({
@@ -292,7 +293,31 @@ export default router
 /**
  * Contenu du fichier views/HomeView.vue
  */
-function getHomeViewContent(): string {
+function getHomeViewContent(vueApi: 'composition' | 'options' = 'composition'): string {
+  if (vueApi === 'options') {
+    return `<template>
+  <div class="home">
+    <h1>Home</h1>
+    <p>Welcome to your Vue.js application with Vue Router!</p>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'HomeView',
+}
+</script>
+
+<style scoped>
+.home {
+  text-align: center;
+  padding: 2rem;
+}
+</style>
+`
+  }
+
+  // Composition API (default)
   return `<template>
   <div class="home">
     <h1>Home</h1>
@@ -316,7 +341,31 @@ function getHomeViewContent(): string {
 /**
  * Contenu du fichier views/AboutView.vue
  */
-function getAboutViewContent(): string {
+function getAboutViewContent(vueApi: 'composition' | 'options' = 'composition'): string {
+  if (vueApi === 'options') {
+    return `<template>
+  <div class="about">
+    <h1>About</h1>
+    <p>This is the about page.</p>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'AboutView',
+}
+</script>
+
+<style scoped>
+.about {
+  text-align: center;
+  padding: 2rem;
+}
+</style>
+`
+  }
+
+  // Composition API (default)
   return `<template>
   <div class="about">
     <h1>About</h1>

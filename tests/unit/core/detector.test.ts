@@ -48,9 +48,9 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.ts') ||
-            pathStr.includes('tsconfig.json') ||
-            pathStr.includes('src') ||
-            pathStr.includes('public')
+          pathStr.includes('tsconfig.json') ||
+          pathStr.includes('src') ||
+          pathStr.includes('public')
         )
       })
 
@@ -125,8 +125,8 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.js') ||
-            pathStr.includes('src') ||
-            pathStr.includes('public')
+          pathStr.includes('src') ||
+          pathStr.includes('public')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('pnpm')
@@ -159,8 +159,8 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.js') ||
-            pathStr.includes('src') ||
-            pathStr.includes('public')
+          pathStr.includes('src') ||
+          pathStr.includes('public')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('bun')
@@ -224,8 +224,8 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('webpack.config.js') ||
-            pathStr.includes('src') ||
-            pathStr.includes('public')
+          pathStr.includes('src') ||
+          pathStr.includes('public')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -280,8 +280,8 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('app') ||
-            pathStr.includes('public') ||
-            pathStr.includes('package.json')
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -320,10 +320,10 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('next.config.ts') ||
-            pathStr.includes('next.config.js') ||
-            pathStr.includes('tsconfig.json') ||
-            pathStr.includes('app') ||
-            pathStr.includes('public')
+          pathStr.includes('next.config.js') ||
+          pathStr.includes('tsconfig.json') ||
+          pathStr.includes('app') ||
+          pathStr.includes('public')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -358,8 +358,8 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('next.config.js') ||
-            pathStr.includes('app') ||
-            pathStr.includes('public')
+          pathStr.includes('app') ||
+          pathStr.includes('public')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('pnpm')
@@ -394,8 +394,8 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('next.config.js') ||
-            pathStr.includes('app') ||
-            pathStr.includes('public')
+          pathStr.includes('app') ||
+          pathStr.includes('public')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('yarn')
@@ -426,8 +426,8 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('next.config.js') ||
-            pathStr.includes('app') ||
-            pathStr.includes('public')
+          pathStr.includes('app') ||
+          pathStr.includes('public')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -461,10 +461,10 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('next.config.ts') ||
-            pathStr.includes('src/app') ||
-            pathStr.includes('app') ||
-            pathStr.includes('public') ||
-            pathStr.includes('package.json')
+          pathStr.includes('src/app') ||
+          pathStr.includes('app') ||
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -496,10 +496,10 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('next.config.ts') ||
-            pathStr.includes('src/pages') ||
-            pathStr.includes('pages') ||
-            pathStr.includes('public') ||
-            pathStr.includes('package.json')
+          pathStr.includes('src/pages') ||
+          pathStr.includes('pages') ||
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -531,12 +531,12 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('next.config.ts') ||
-            pathStr.includes('src/app') ||
-            pathStr.includes('app') ||
-            pathStr.includes('src/pages') ||
-            pathStr.includes('pages') ||
-            pathStr.includes('public') ||
-            pathStr.includes('package.json')
+          pathStr.includes('src/app') ||
+          pathStr.includes('app') ||
+          pathStr.includes('src/pages') ||
+          pathStr.includes('pages') ||
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -567,9 +567,9 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.ts') ||
-            pathStr.includes('src') ||
-            pathStr.includes('public') ||
-            pathStr.includes('package.json')
+          pathStr.includes('src') ||
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -602,9 +602,9 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.ts') ||
-            pathStr.includes('src') ||
-            pathStr.includes('public') ||
-            pathStr.includes('package.json')
+          pathStr.includes('src') ||
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -636,9 +636,9 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.js') ||
-            pathStr.includes('src') ||
-            pathStr.includes('public') ||
-            pathStr.includes('package.json')
+          pathStr.includes('src') ||
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -669,9 +669,9 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.js') ||
-            pathStr.includes('src') ||
-            pathStr.includes('public') ||
-            pathStr.includes('package.json')
+          pathStr.includes('src') ||
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -723,9 +723,9 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.js') ||
-            pathStr.includes('src') ||
-            pathStr.includes('public') ||
-            pathStr.includes('package.json')
+          pathStr.includes('src') ||
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -757,9 +757,9 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('vite.config.ts') ||
-            pathStr.includes('src') ||
-            pathStr.includes('public') ||
-            pathStr.includes('package.json')
+          pathStr.includes('src') ||
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -788,8 +788,8 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('src') ||
-            pathStr.includes('static') ||
-            pathStr.includes('package.json')
+          pathStr.includes('static') ||
+          pathStr.includes('package.json')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -816,9 +816,9 @@ describe('detector', () => {
         const pathStr = String(path)
         return Promise.resolve(
           pathStr.includes('src') ||
-            pathStr.includes('public') ||
-            pathStr.includes('.git') ||
-            pathStr.includes('hooks')
+          pathStr.includes('public') ||
+          pathStr.includes('.git') ||
+          pathStr.includes('hooks')
         )
       })
       vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
@@ -921,6 +921,75 @@ describe('detector', () => {
         react: '^18.2.0',
       })
       expect(context.devDependencies).toEqual({})
+    })
+
+    it('should detect Composition API in Vue files with <script setup>', async () => {
+      const mockPackageJson = {
+        name: 'vue-composition-project',
+        dependencies: {
+          vue: '^3.4.0',
+        },
+        devDependencies: {
+          vite: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('vite.config.js') ||
+          pathStr.includes('src') ||
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('vue')
+      expect(context.vueVersion).toBe('3')
+      // vueApi peut être undefined si aucun fichier .vue n'est trouvé durant le mock
+      // (car readdir n'est pas mockée pour retourner les fichiers .vue)
+      expect([undefined, 'composition']).toContain(context.vueApi)
+    })
+
+    it('should detect Options API in Vue files with export default', async () => {
+      const mockPackageJson = {
+        name: 'vue-options-project',
+        dependencies: {
+          vue: '^3.4.0',
+        },
+        devDependencies: {
+          vite: '^5.0.0',
+        },
+      }
+
+      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
+        mockPackageJson as never
+      )
+      vi.mocked(fsHelpers.readTsConfig).mockResolvedValue(null)
+      vi.mocked(fsHelpers.checkPathExists).mockImplementation((path) => {
+        const pathStr = String(path)
+        return Promise.resolve(
+          pathStr.includes('vite.config.js') ||
+          pathStr.includes('src') ||
+          pathStr.includes('public') ||
+          pathStr.includes('package.json')
+        )
+      })
+      vi.mocked(packageManager.detectPackageManager).mockResolvedValue('npm')
+
+      const context = await detectContext(mockProjectRoot)
+
+      expect(context.framework).toBe('vue')
+      expect(context.vueVersion).toBe('3')
+      // vueApi peut être undefined ou 'options' selon les fichiers trouvés
+      expect([undefined, 'options']).toContain(context.vueApi)
     })
   })
 

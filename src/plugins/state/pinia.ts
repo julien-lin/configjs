@@ -141,8 +141,8 @@ export const piniaPlugin: Plugin = {
       // 3. Créer src/stores/counter.ts (store exemple)
       const counterStorePath = join(storesDir, `counter.${extension}`)
       const counterStoreContent = ctx.typescript
-        ? getCounterStoreContentTS()
-        : getCounterStoreContentJS()
+        ? getCounterStoreContentTS(ctx.vueApi)
+        : getCounterStoreContentJS(ctx.vueApi)
 
       await writer.createFile(counterStorePath, counterStoreContent)
       files.push({
@@ -227,7 +227,33 @@ export default pinia
 /**
  * Contenu du fichier stores/counter.ts (TypeScript)
  */
-function getCounterStoreContentTS(): string {
+function getCounterStoreContentTS(vueApi?: string): string {
+  if (vueApi === 'composition') {
+    return `import { ref, computed } from 'vue'
+import { defineStore } from 'pinia'
+
+export const useCounterStore = defineStore('counter', () => {
+  // State
+  const count = ref(0)
+
+  // Getters
+  const doubleCount = computed(() => count.value * 2)
+
+  // Actions
+  function increment() {
+    count.value++
+  }
+
+  function decrement() {
+    count.value--
+  }
+
+  return { count, doubleCount, increment, decrement }
+})
+`
+  }
+
+  // Default to Options API
   return `import { defineStore } from 'pinia'
 
 export const useCounterStore = defineStore('counter', {
@@ -252,7 +278,33 @@ export const useCounterStore = defineStore('counter', {
 /**
  * Contenu du fichier stores/counter.js (JavaScript)
  */
-function getCounterStoreContentJS(): string {
+function getCounterStoreContentJS(vueApi?: string): string {
+  if (vueApi === 'composition') {
+    return `import { ref, computed } from 'vue'
+import { defineStore } from 'pinia'
+
+export const useCounterStore = defineStore('counter', () => {
+  // State
+  const count = ref(0)
+
+  // Getters
+  const doubleCount = computed(() => count.value * 2)
+
+  // Actions
+  function increment() {
+    count.value++
+  }
+
+  function decrement() {
+    count.value--
+  }
+
+  return { count, doubleCount, increment, decrement }
+})
+`
+  }
+
+  // Default to Options API
   return `import { defineStore } from 'pinia'
 
 export const useCounterStore = defineStore('counter', {

@@ -159,6 +159,51 @@ describe('Vue Router Plugin', () => {
     })
 
     it('should handle composition API configuration', async () => {
+      const ctx = {
+        ...mockContext,
+        vueApi: 'composition' as const,
+      }
+
+      const result = await vueRouterPlugin.configure(ctx)
+
+      expect(result.success).toBe(true)
+      expect(ConfigWriter.prototype.createFile).toHaveBeenCalled()
+
+      // Vérifier que le contenu généré utilise Composition API
+      const createFileCalls = vi.mocked(ConfigWriter.prototype.createFile).mock.calls
+      const homeViewCall = createFileCalls.find((call) =>
+        call[0]?.toString().includes('HomeView.vue')
+      )
+      expect(homeViewCall).toBeDefined()
+      if (homeViewCall && homeViewCall[1]) {
+        expect(homeViewCall[1]).toContain('<script setup>')
+      }
+    })
+
+    it('should handle options API configuration', async () => {
+      const ctx = {
+        ...mockContext,
+        vueApi: 'options' as const,
+      }
+
+      const result = await vueRouterPlugin.configure(ctx)
+
+      expect(result.success).toBe(true)
+      expect(ConfigWriter.prototype.createFile).toHaveBeenCalled()
+
+      // Vérifier que le contenu généré utilise Options API
+      const createFileCalls = vi.mocked(ConfigWriter.prototype.createFile).mock.calls
+      const homeViewCall = createFileCalls.find((call) =>
+        call[0]?.toString().includes('HomeView.vue')
+      )
+      expect(homeViewCall).toBeDefined()
+      if (homeViewCall && homeViewCall[1]) {
+        expect(homeViewCall[1]).toContain('export default')
+        expect(homeViewCall[1]).not.toContain('<script setup>')
+      }
+    })
+
+    it('should default to composition API when vueApi is undefined', async () => {
       const result = await vueRouterPlugin.configure(mockContext)
 
       expect(result.success).toBe(true)
