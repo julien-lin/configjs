@@ -293,7 +293,9 @@ export default router
 /**
  * Contenu du fichier views/HomeView.vue
  */
-function getHomeViewContent(vueApi: 'composition' | 'options' = 'composition'): string {
+function getHomeViewContent(
+  vueApi: 'composition' | 'options' = 'composition'
+): string {
   if (vueApi === 'options') {
     return `<template>
   <div class="home">
@@ -341,7 +343,9 @@ export default {
 /**
  * Contenu du fichier views/AboutView.vue
  */
-function getAboutViewContent(vueApi: 'composition' | 'options' = 'composition'): string {
+function getAboutViewContent(
+  vueApi: 'composition' | 'options' = 'composition'
+): string {
   if (vueApi === 'options') {
     return `<template>
   <div class="about">
