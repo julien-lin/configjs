@@ -393,7 +393,7 @@ Contributions are welcome! Check out [CONTRIBUTING.md](./docs/CONTRIBUTING.md) f
 
 ### Develop a Plugin
 
-See [PLUGIN_DEVELOPMENT.md](./docs/PLUGIN_DEVELOPMENT.md) to create your own plugins.
+See [PLUGIN_DEVELOPMENT.md](./docs/PLUGIN_DEVELOPMENT.md) to create your own plugins (development documentation).
 
 ### Development Setup
 

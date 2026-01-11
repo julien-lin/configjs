@@ -359,7 +359,7 @@ Les contributions sont les bienvenues ! Consultez [CONTRIBUTING.md](./docs/CONTR
 
 ### Développer un Plugin
 
-Voir [PLUGIN_DEVELOPMENT.md](./docs/PLUGIN_DEVELOPMENT.md) pour créer vos propres plugins.
+Voir [PLUGIN_DEVELOPMENT.md](./docs/PLUGIN_DEVELOPMENT.md) pour créer vos propres plugins (documentation de développement).
 
 ### Configuration de Développement
 
