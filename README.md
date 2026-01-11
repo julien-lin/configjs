@@ -61,6 +61,12 @@ cd your-nextjs-project
 npx @configjs/cli nextjs
 ```
 
+### For Vue.js Projects
+```bash
+cd your-vue-project
+npx @configjs/cli vue
+```
+
 That's it! ConfigJS will:
 1. 🔍 **Detect** your environment (React/Next.js version, TypeScript, bundler)
 2. 🎯 **Guide** you through library selection by category
@@ -297,6 +303,14 @@ ConfigJS fully supports Next.js projects with automatic detection of:
 - **App Router** vs **Pages Router**
 - Next.js-specific plugins (Image Optimization, Font Optimization, Middleware, API Routes)
 - Compatible libraries adapted for Next.js (TailwindCSS, Shadcn/ui, React Hot Toast)
+
+### Vue.js Support
+
+ConfigJS fully supports Vue.js 3 projects with automatic detection of:
+- **Composition API** vs **Options API**
+- Vue.js-specific plugins (Vue Router, Pinia, VueUse, Vuetify)
+- Compatible libraries adapted for Vue.js (TailwindCSS, Axios, ESLint Vue)
+- Automatic project creation with Vite
 
 See [Next.js Documentation](./DOCUMENTATION/NEXTJS.md) for complete guide.
 

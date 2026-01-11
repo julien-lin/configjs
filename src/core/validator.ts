@@ -34,7 +34,7 @@ export class CompatibilityValidator {
   /**
    * @param rules - Règles de compatibilité à appliquer
    */
-  constructor(private readonly rules: CompatibilityRule[]) { }
+  constructor(private readonly rules: CompatibilityRule[]) {}
 
   /**
    * Valide la compatibilité d'un ensemble de plugins
@@ -59,8 +59,8 @@ export class CompatibilityValidator {
     // Filtrer les règles selon le framework si contexte fourni
     const applicableRules = ctx
       ? this.rules.filter(
-        (rule) => !rule.framework || rule.framework === ctx.framework
-      )
+          (rule) => !rule.framework || rule.framework === ctx.framework
+        )
       : this.rules.filter((rule) => !rule.framework)
 
     // Vérifications en parallèle
