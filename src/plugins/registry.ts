@@ -23,9 +23,11 @@ import { logger } from '../utils/logger.js'
 // Import des plugins (seront ajoutés progressivement)
 import { reactRouterPlugin } from './routing/react-router.js'
 import { tanstackRouterPlugin } from './routing/tanstack-router.js'
+import { vueRouterPlugin } from './routing/vue-router.js'
 import { zustandPlugin } from './state/zustand.js'
 import { jotaiPlugin } from './state/jotai.js'
 import { reduxToolkitPlugin } from './state/redux-toolkit.js'
+import { piniaPlugin } from './state/pinia.js'
 import { axiosPlugin } from './http/axios.js'
 import { tanstackQueryPlugin } from './http/tanstack-query.js'
 import { tailwindcssPlugin } from './css/tailwindcss.js'
@@ -40,10 +42,15 @@ import { reactIconsPlugin } from './ui/react-icons.js'
 import { reactHotToastPlugin } from './ui/react-hot-toast.js'
 import { framerMotionPlugin } from './animation/framer-motion.js'
 import { eslintPlugin } from './tooling/eslint.js'
+import { eslintVuePlugin } from './tooling/eslint-vue.js'
 import { prettierPlugin } from './tooling/prettier.js'
 import { huskyPlugin } from './tooling/husky.js'
 import { dateFnsPlugin } from './utils/date-fns.js'
+import { vueusePlugin } from './utils/vueuse.js'
 import { reactTestingLibraryPlugin } from './testing/react-testing-library.js'
+import { vueTestUtilsPlugin } from './testing/vue-test-utils.js'
+// UI frameworks
+import { vuetifyPlugin } from './ui/vuetify.js'
 // Next.js plugins
 import { tailwindcssNextjsPlugin } from './css/tailwindcss-nextjs.js'
 import { shadcnUiNextjsPlugin } from './ui/shadcn-ui-nextjs.js'
@@ -68,10 +75,12 @@ export const pluginRegistry: Plugin[] = [
   // Routing
   reactRouterPlugin,
   tanstackRouterPlugin,
+  vueRouterPlugin,
   // State
   zustandPlugin,
   jotaiPlugin,
   reduxToolkitPlugin,
+  piniaPlugin,
   // HTTP
   axiosPlugin,
   tanstackQueryPlugin,
@@ -92,12 +101,16 @@ export const pluginRegistry: Plugin[] = [
   reactHotToastPlugin,
   reactHotToastNextjsPlugin,
   framerMotionPlugin,
+  vuetifyPlugin,
   // Tooling
   eslintPlugin,
+  eslintVuePlugin,
   prettierPlugin,
   huskyPlugin,
   dateFnsPlugin,
+  vueusePlugin,
   // Testing
+  vueTestUtilsPlugin,
   reactTestingLibraryPlugin,
   // Next.js specific
   nextjsImageOptimizationPlugin,
