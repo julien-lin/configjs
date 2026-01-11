@@ -312,7 +312,7 @@ ConfigJS fully supports Vue.js 3 projects with automatic detection of:
 - Compatible libraries adapted for Vue.js (TailwindCSS, Axios, ESLint Vue)
 - Automatic project creation with Vite
 
-See [Next.js Documentation](./DOCUMENTATION/NEXTJS.md) for complete guide.
+See [Next.js Documentation](./DOCUMENTATION/NEXTJS.md) and [Vue.js Documentation](./DOCUMENTATION/VUE.md) for complete guides.
 
 ### CLI Options
 
