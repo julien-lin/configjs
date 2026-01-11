@@ -34,7 +34,7 @@ export class CompatibilityValidator {
   /**
    * @param rules - Règles de compatibilité à appliquer
    */
-  constructor(private readonly rules: CompatibilityRule[]) {}
+  constructor(private readonly rules: CompatibilityRule[]) { }
 
   /**
    * Valide la compatibilité d'un ensemble de plugins
@@ -59,8 +59,8 @@ export class CompatibilityValidator {
     // Filtrer les règles selon le framework si contexte fourni
     const applicableRules = ctx
       ? this.rules.filter(
-          (rule) => !rule.framework || rule.framework === ctx.framework
-        )
+        (rule) => !rule.framework || rule.framework === ctx.framework
+      )
       : this.rules.filter((rule) => !rule.framework)
 
     // Vérifications en parallèle
@@ -111,7 +111,7 @@ export class CompatibilityValidator {
     const errors = [
       ...this.checkExclusivity(plugins, pluginNames, applicableRules),
       ...conflictErrors,
-      ...this.checkDependencies(plugins, pluginNames, applicableRules),
+      ...this.checkDependencies(plugins, pluginNames, applicableRules, ctx),
       ...frameworkErrors,
     ]
 
@@ -276,6 +276,7 @@ export class CompatibilityValidator {
    * @param _plugins - Liste des plugins (non utilisée, conservée pour cohérence)
    * @param pluginNames - Set des noms de plugins pour lookup rapide
    * @param rules - Règles applicables
+   * @param ctx - Contexte du projet (optionnel)
    * @returns Liste des erreurs de dépendances manquantes
    *
    * @internal
@@ -283,7 +284,8 @@ export class CompatibilityValidator {
   private checkDependencies(
     _plugins: Plugin[],
     pluginNames: Set<string>,
-    rules: CompatibilityRule[] = this.rules
+    rules: CompatibilityRule[] = this.rules,
+    ctx?: ProjectContext
   ): ValidationError[] {
     const errors: ValidationError[] = []
 
@@ -298,9 +300,31 @@ export class CompatibilityValidator {
       }
 
       // Vérifier si toutes les dépendances sont présentes
-      const missingDependencies = rule.requires.filter(
-        (dep) => !pluginNames.has(dep)
-      )
+      const missingDependencies: string[] = []
+
+      for (const dep of rule.requires) {
+        // Vérifier d'abord dans les plugins sélectionnés
+        const pluginName = dep.split('@')[0] // Extraire le nom sans la version
+
+        if (!pluginName) {
+          continue
+        }
+
+        // Si c'est une dépendance de package (contient @version), vérifier dans les dependencies du projet
+        if (dep.includes('@') && ctx) {
+          const allDeps = { ...ctx.dependencies, ...ctx.devDependencies }
+
+          // Vérifier si la dépendance existe dans le projet
+          if (!allDeps[pluginName]) {
+            missingDependencies.push(dep)
+          }
+        } else {
+          // Sinon, vérifier dans les plugins sélectionnés
+          if (!pluginNames.has(pluginName)) {
+            missingDependencies.push(dep)
+          }
+        }
+      }
 
       if (missingDependencies.length > 0) {
         errors.push({
@@ -426,5 +450,61 @@ export const compatibilityRules: CompatibilityRule[] = [
     reason:
       'Pour Next.js, utilisez la variante shadcn-ui-nextjs qui est optimisée pour React Server Components.',
     severity: 'info',
+  },
+
+  // Règles spécifiques Vue.js
+  // React Router incompatible avec Vue.js
+  {
+    type: 'CONFLICT',
+    plugins: ['react-router-dom'],
+    framework: 'vue',
+    reason:
+      'React Router est incompatible avec Vue.js. Utilisez Vue Router (vue-router) pour Vue.js.',
+    severity: 'error',
+    allowOverride: false,
+  },
+
+  // Zustand/Redux incompatible avec Vue.js
+  {
+    type: 'CONFLICT',
+    plugins: ['zustand', '@reduxjs/toolkit', 'jotai'],
+    framework: 'vue',
+    reason:
+      'Zustand, Redux Toolkit et Jotai sont spécifiques à React. Pour Vue.js, utilisez Pinia (state management officiel).',
+    severity: 'error',
+    allowOverride: false,
+  },
+
+  // Shadcn/ui incompatible avec Vue.js
+  {
+    type: 'CONFLICT',
+    plugins: ['shadcn-ui'],
+    framework: 'vue',
+    reason:
+      'Shadcn/ui est spécifique à React. Pour Vue.js, utilisez Vuetify ou Quasar (frameworks UI Vue.js).',
+    severity: 'error',
+    allowOverride: false,
+  },
+
+  // Pinia nécessite Vue 3
+  {
+    type: 'REQUIRES',
+    plugin: 'pinia',
+    requires: ['vue@^3.0.0'],
+    framework: 'vue',
+    reason: "Pinia nécessite Vue 3. Vue 2 n'est plus supporté.",
+    severity: 'error',
+    allowOverride: false,
+  },
+
+  // Vue Router version doit correspondre à Vue version
+  {
+    type: 'CONFLICT',
+    plugins: ['vue-router'],
+    framework: 'vue',
+    reason:
+      'Assurez-vous que la version de Vue Router correspond à la version de Vue.js (Vue Router 4 pour Vue 3).',
+    severity: 'warning',
+    allowOverride: true,
   },
 ]
