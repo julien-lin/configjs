@@ -106,8 +106,8 @@ export const jotaiPlugin: Plugin = {
    * Documentation : https://jotai.org/docs/core/atom
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -116,7 +116,7 @@ export const jotaiPlugin: Plugin = {
     try {
       // 1. Créer le dossier store si nécessaire
       const storeDir = join(srcDir, 'store')
-      await ensureDirectory(storeDir)
+      await ensureDirectory(storeDir, ctx.fsAdapter)
 
       // 2. Créer src/store/atoms.ts (atomes de base)
       const atomsPath = join(storeDir, `atoms.${extension}`)
@@ -152,10 +152,10 @@ export const jotaiPlugin: Plugin = {
 
       // 4. Modifier App.tsx pour ajouter Provider (optionnel mais recommandé)
       const appPath = join(srcDir, `App.${ctx.typescript ? 'tsx' : 'jsx'}`)
-      const appExists = await checkPathExists(appPath)
+      const appExists = await checkPathExists(appPath, ctx.fsAdapter)
 
       if (appExists) {
-        const appContent = await readFileContent(appPath)
+        const appContent = await readFileContent(appPath, 'utf-8', ctx.fsAdapter)
         const modifiedAppContent = injectProvider(appContent, ctx.typescript)
 
         await writer.writeFile(appPath, modifiedAppContent, { backup: true })
@@ -207,7 +207,7 @@ export const jotaiPlugin: Plugin = {
    * Rollback de la configuration Jotai
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Jotai configuration rolled back')

@@ -104,8 +104,8 @@ export const tailwindcssNextjsPlugin: Plugin = {
    * - app/globals.css ou styles/globals.css : Import TailwindCSS
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -118,10 +118,10 @@ export const tailwindcssNextjsPlugin: Plugin = {
         projectRoot,
         `tailwind.config.${extension}`
       )
-      const tailwindConfigExists = await checkPathExists(tailwindConfigPath)
+      const tailwindConfigExists = await checkPathExists(tailwindConfigPath, ctx.fsAdapter)
 
       if (tailwindConfigExists) {
-        const existingContent = await readFileContent(tailwindConfigPath)
+        const existingContent = await readFileContent(tailwindConfigPath, 'utf-8', ctx.fsAdapter)
         // Vérifier si déjà configuré
         if (
           existingContent.includes('content:') &&
@@ -157,7 +157,7 @@ export const tailwindcssNextjsPlugin: Plugin = {
         projectRoot,
         `postcss.config.${postcssExtension}`
       )
-      const postcssConfigExists = await checkPathExists(postcssConfigPath)
+      const postcssConfigExists = await checkPathExists(postcssConfigPath, ctx.fsAdapter)
 
       if (!postcssConfigExists) {
         const postcssConfig = getPostcssConfigContent(postcssExtension)
@@ -182,9 +182,9 @@ export const tailwindcssNextjsPlugin: Plugin = {
 
       let cssFileModified = false
       for (const cssPath of cssFiles) {
-        const cssExists = await checkPathExists(cssPath)
+        const cssExists = await checkPathExists(cssPath, ctx.fsAdapter)
         if (cssExists) {
-          const cssContent = await readFileContent(cssPath)
+          const cssContent = await readFileContent(cssPath, 'utf-8', ctx.fsAdapter)
           const modifiedCss = injectTailwindDirectives(cssContent)
 
           await writer.writeFile(cssPath, modifiedCss, { backup: true })
@@ -236,7 +236,7 @@ export const tailwindcssNextjsPlugin: Plugin = {
    * Rollback de la configuration TailwindCSS
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('TailwindCSS configuration rolled back')

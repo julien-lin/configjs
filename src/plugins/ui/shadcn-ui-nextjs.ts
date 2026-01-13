@@ -119,8 +119,8 @@ export const shadcnUiNextjsPlugin: Plugin = {
    * - components/ui/button.tsx : Exemple de composant Button
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -130,7 +130,7 @@ export const shadcnUiNextjsPlugin: Plugin = {
     try {
       // 1. Créer components.json avec paths adaptés Next.js
       const componentsJsonPath = join(projectRoot, 'components.json')
-      const componentsJsonExists = await checkPathExists(componentsJsonPath)
+      const componentsJsonExists = await checkPathExists(componentsJsonPath, ctx.fsAdapter)
 
       if (componentsJsonExists) {
         logger.warn('components.json already exists, skipping creation')
@@ -151,16 +151,16 @@ export const shadcnUiNextjsPlugin: Plugin = {
       // 2. Créer lib/utils.ts (ou .js) avec la fonction cn
       // Pour Next.js : lib/utils.ts ou src/lib/utils.ts selon srcDir
       const libDir = join(baseDir, 'lib')
-      await ensureDirectory(libDir)
+      await ensureDirectory(libDir, ctx.fsAdapter)
 
       const utilsPath = join(libDir, `utils.${ctx.typescript ? 'ts' : 'js'}`)
-      const utilsExists = await checkPathExists(utilsPath)
+      const utilsExists = await checkPathExists(utilsPath, ctx.fsAdapter)
 
       if (utilsExists) {
         logger.warn(
           'utils.ts already exists, checking if cn function is present'
         )
-        const existingContent = await readFileContent(utilsPath)
+        const existingContent = await readFileContent(utilsPath, 'utf-8', ctx.fsAdapter)
         if (!existingContent.includes('export function cn')) {
           const cnFunction = ctx.typescript
             ? getCnFunctionTS()
@@ -193,10 +193,10 @@ export const shadcnUiNextjsPlugin: Plugin = {
 
       // 3. Créer components/ui/button.tsx (exemple de composant)
       const uiDir = join(baseDir, 'components', 'ui')
-      await ensureDirectory(uiDir)
+      await ensureDirectory(uiDir, ctx.fsAdapter)
 
       const buttonPath = join(uiDir, `button.${ctx.typescript ? 'tsx' : 'jsx'}`)
-      const buttonExists = await checkPathExists(buttonPath)
+      const buttonExists = await checkPathExists(buttonPath, ctx.fsAdapter)
 
       if (!buttonExists) {
         const buttonContent = ctx.typescript
@@ -224,9 +224,9 @@ export const shadcnUiNextjsPlugin: Plugin = {
       ]
 
       for (const cssPath of cssFiles) {
-        const cssExists = await checkPathExists(cssPath)
+        const cssExists = await checkPathExists(cssPath, ctx.fsAdapter)
         if (cssExists) {
-          const cssContent = await readFileContent(cssPath)
+          const cssContent = await readFileContent(cssPath, 'utf-8', ctx.fsAdapter)
           if (!cssContent.includes('@layer base')) {
             const shadcnVariables = getShadcnCSSVariables()
             const updatedCss = cssContent + '\n\n' + shadcnVariables
@@ -262,7 +262,7 @@ export const shadcnUiNextjsPlugin: Plugin = {
    * Rollback de la configuration Shadcn/ui
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Shadcn/ui configuration rolled back')

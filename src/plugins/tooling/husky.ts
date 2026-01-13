@@ -102,8 +102,8 @@ export const huskyPlugin: Plugin = {
    * Documentation : https://typicode.github.io/husky/getting-started.html
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -111,7 +111,7 @@ export const huskyPlugin: Plugin = {
     try {
       // 1. Vérifier si .git existe
       const gitDir = join(projectRoot, '.git')
-      const gitExists = await checkPathExists(gitDir)
+      const gitExists = await checkPathExists(gitDir, ctx.fsAdapter)
 
       if (!gitExists) {
         logger.warn(
@@ -127,11 +127,11 @@ export const huskyPlugin: Plugin = {
 
       // 2. Créer le dossier .husky
       const huskyDir = join(projectRoot, '.husky')
-      await ensureDirectory(huskyDir)
+      await ensureDirectory(huskyDir, ctx.fsAdapter)
 
       // 3. Créer .husky/pre-commit
       const preCommitPath = join(huskyDir, 'pre-commit')
-      const preCommitExists = await checkPathExists(preCommitPath)
+      const preCommitExists = await checkPathExists(preCommitPath, ctx.fsAdapter)
 
       if (!preCommitExists) {
         const preCommitContent = getPreCommitContent()
@@ -149,7 +149,7 @@ export const huskyPlugin: Plugin = {
 
       // 4. Créer .husky/pre-push
       const prePushPath = join(huskyDir, 'pre-push')
-      const prePushExists = await checkPathExists(prePushPath)
+      const prePushExists = await checkPathExists(prePushPath, ctx.fsAdapter)
 
       if (!prePushExists) {
         const prePushContent = getPrePushContent()
@@ -167,10 +167,10 @@ export const huskyPlugin: Plugin = {
 
       // 5. Ajouter le script prepare dans package.json
       const packageJsonPath = join(projectRoot, 'package.json')
-      const packageJsonExists = await checkPathExists(packageJsonPath)
+      const packageJsonExists = await checkPathExists(packageJsonPath, ctx.fsAdapter)
 
       if (packageJsonExists) {
-        const packageJsonContent = await readFileContent(packageJsonPath)
+        const packageJsonContent = await readFileContent(packageJsonPath, 'utf-8', ctx.fsAdapter)
         const packageJson = JSON.parse(packageJsonContent) as {
           scripts?: Record<string, string>
         }
@@ -229,7 +229,7 @@ export const huskyPlugin: Plugin = {
    * Rollback de la configuration Husky
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Husky configuration rolled back')

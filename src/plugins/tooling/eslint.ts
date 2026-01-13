@@ -112,8 +112,8 @@ export const eslintPlugin: Plugin = {
    * Documentation : https://eslint.org/docs/latest/use/configure/configuration-files-new
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -121,7 +121,7 @@ export const eslintPlugin: Plugin = {
     try {
       // 1. Créer eslint.config.js (flat config pour ESLint v9)
       const eslintConfigPath = join(projectRoot, 'eslint.config.js')
-      const eslintConfigExists = await checkPathExists(eslintConfigPath)
+      const eslintConfigExists = await checkPathExists(eslintConfigPath, ctx.fsAdapter)
 
       if (eslintConfigExists) {
         logger.warn('eslint.config.js already exists, skipping creation')
@@ -141,10 +141,10 @@ export const eslintPlugin: Plugin = {
 
       // 2. Ajouter les scripts dans package.json si nécessaire
       const packageJsonPath = join(projectRoot, 'package.json')
-      const packageJsonExists = await checkPathExists(packageJsonPath)
+      const packageJsonExists = await checkPathExists(packageJsonPath, ctx.fsAdapter)
 
       if (packageJsonExists) {
-        const packageJsonContent = await readFileContent(packageJsonPath)
+        const packageJsonContent = await readFileContent(packageJsonPath, 'utf-8', ctx.fsAdapter)
         const packageJson = JSON.parse(packageJsonContent) as {
           scripts?: Record<string, string>
         }
@@ -202,7 +202,7 @@ export const eslintPlugin: Plugin = {
    * Rollback de la configuration ESLint
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('ESLint configuration rolled back')

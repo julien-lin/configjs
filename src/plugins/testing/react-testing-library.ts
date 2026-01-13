@@ -105,8 +105,8 @@ export const reactTestingLibraryPlugin: Plugin = {
    * Documentation : https://testing-library.com/react
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -118,7 +118,7 @@ export const reactTestingLibraryPlugin: Plugin = {
         projectRoot,
         `setupTests.${ctx.typescript ? 'ts' : 'js'}`
       )
-      const setupTestsExists = await checkPathExists(setupTestsPath)
+      const setupTestsExists = await checkPathExists(setupTestsPath, ctx.fsAdapter)
 
       if (!setupTestsExists) {
         const setupTestsContent = ctx.typescript
@@ -138,13 +138,13 @@ export const reactTestingLibraryPlugin: Plugin = {
 
       // 2. Créer un exemple de test
       const testDir = join(srcDir, 'components', '__tests__')
-      await ensureDirectory(testDir)
+      await ensureDirectory(testDir, ctx.fsAdapter)
 
       const exampleTestPath = join(
         testDir,
         `Example.test.${ctx.typescript ? 'tsx' : 'jsx'}`
       )
-      const exampleTestExists = await checkPathExists(exampleTestPath)
+      const exampleTestExists = await checkPathExists(exampleTestPath, ctx.fsAdapter)
 
       if (!exampleTestExists) {
         const exampleTestContent = ctx.typescript
@@ -164,7 +164,7 @@ export const reactTestingLibraryPlugin: Plugin = {
 
       // 3. Vérifier et mettre à jour vitest.config.ts si nécessaire
       const vitestConfigPath = join(projectRoot, 'vitest.config.ts')
-      const vitestConfigExists = await checkPathExists(vitestConfigPath)
+      const vitestConfigExists = await checkPathExists(vitestConfigPath, ctx.fsAdapter)
 
       if (vitestConfigExists) {
         // Note : On ne modifie pas automatiquement vitest.config.ts
@@ -194,7 +194,7 @@ export const reactTestingLibraryPlugin: Plugin = {
    * Rollback de la configuration React Testing Library
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('React Testing Library configuration rolled back')

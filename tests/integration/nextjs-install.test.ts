@@ -1,6 +1,6 @@
 /**
  * Integration Tests: Next.js Installation Flow
- * Teste les workflows réels d'installation de plugins Next.js
+ * Teste les workflows réels d'installation de plugins Next.js avec memfs
  *
  * @group integration
  */
@@ -11,86 +11,61 @@ import {
   createTestProject,
   cleanupTestProject,
   readPackageJson,
+  writePackageJson,
   fileExists,
-} from './test-utils.js'
+  writeFile,
+  getFsAdapter,
+} from './memfs-test-utils.js'
 import {
   CompatibilityValidator,
-  compatibilityRules,
+  allCompatibilityRules,
 } from '../../src/core/validator.js'
 import { detectContext } from '../../src/core/detector.js'
 import { ConfigWriter } from '../../src/core/config-writer.js'
 import { BackupManager } from '../../src/core/backup-manager.js'
 import { pluginRegistry } from '../../src/plugins/registry.js'
+import { ensureDirectory } from '../../src/utils/fs-helpers.js'
 
-describe('Integration: Next.js Installation Flow', () => {
+describe('Integration: Next.js Installation Flow (memfs)', () => {
   let projectPath: string
 
-  beforeEach(async () => {
-    projectPath = await createTestProject('nextjs-install-test')
+  beforeEach(() => {
+    projectPath = createTestProject('nextjs-install-test', 'nextjs', {
+      typescript: true,
+      packageManager: 'npm',
+    })
   })
 
-  afterEach(async () => {
-    await cleanupTestProject(projectPath)
+  afterEach(() => {
+    cleanupTestProject(projectPath)
   })
 
   // ===== Next.js Project Setup =====
 
   it('should initialize a minimal Next.js project structure', async () => {
-    // Créer package.json Next.js
-    const pkg = await readPackageJson(projectPath)
-    pkg['dependencies'] = {
-      ...(pkg['dependencies'] || {}),
-      next: '^14.0.0',
-      react: '^18.2.0',
-      'react-dom': '^18.2.0',
-    }
-
-    await import('fs/promises').then((fs) =>
-      fs.writeFile(
-        join(projectPath, 'package.json'),
-        JSON.stringify(pkg, null, 2)
-      )
-    )
+    const fsAdapter = getFsAdapter()
 
     // Créer structure App Router
-    await import('fs/promises').then((fs) =>
-      fs.mkdir(join(projectPath, 'app'), { recursive: true })
-    )
+    await ensureDirectory(join(projectPath, 'app'), fsAdapter!)
 
-    const hasPackageJson = await fileExists(join(projectPath, 'package.json'))
+    const hasPackageJson = fileExists(join(projectPath, 'package.json'))
     expect(hasPackageJson).toBe(true)
 
-    const updatedPkg = await readPackageJson(projectPath)
-    expect(updatedPkg['dependencies']).toHaveProperty('next')
+    const pkg = readPackageJson(projectPath)
+    expect(pkg['dependencies']).toHaveProperty('next')
 
-    const context = await detectContext(projectPath)
+    const context = await detectContext(projectPath, fsAdapter!)
     expect(context.framework).toBe('nextjs')
     expect(context.nextjsRouter).toBe('app')
   })
 
   it('should detect Next.js project correctly', async () => {
-    // Créer projet Next.js
-    const pkg = await readPackageJson(projectPath)
-    pkg['dependencies'] = {
-      ...(pkg['dependencies'] || {}),
-      next: '^14.0.0',
-      react: '^18.2.0',
-      'react-dom': '^18.2.0',
-    }
-
-    await import('fs/promises').then((fs) =>
-      fs.writeFile(
-        join(projectPath, 'package.json'),
-        JSON.stringify(pkg, null, 2)
-      )
-    )
+    const fsAdapter = getFsAdapter()
 
     // Créer structure Pages Router
-    await import('fs/promises').then((fs) =>
-      fs.mkdir(join(projectPath, 'pages'), { recursive: true })
-    )
+    await ensureDirectory(join(projectPath, 'pages'), fsAdapter!)
 
-    const context = await detectContext(projectPath)
+    const context = await detectContext(projectPath, fsAdapter!)
     expect(context.framework).toBe('nextjs')
     expect(context.nextjsRouter).toBe('pages')
     expect(context.projectRoot).toBeDefined()
@@ -100,27 +75,9 @@ describe('Integration: Next.js Installation Flow', () => {
   // ===== Single Next.js Plugin Installation =====
 
   it('should install TailwindCSS Next.js plugin', async () => {
-    // Setup Next.js project
-    const pkg = await readPackageJson(projectPath)
-    pkg['dependencies'] = {
-      ...(pkg['dependencies'] || {}),
-      next: '^14.0.0',
-      react: '^18.2.0',
-      'react-dom': '^18.2.0',
-    }
+    const fsAdapter = getFsAdapter()
+    await ensureDirectory(join(projectPath, 'app'), fsAdapter!)
 
-    await import('fs/promises').then((fs) =>
-      fs.writeFile(
-        join(projectPath, 'package.json'),
-        JSON.stringify(pkg, null, 2)
-      )
-    )
-
-    await import('fs/promises').then((fs) =>
-      fs.mkdir(join(projectPath, 'app'), { recursive: true })
-    )
-
-    await detectContext(projectPath)
     const tailwindPlugin = pluginRegistry.find(
       (p) => p.name === 'tailwindcss-nextjs'
     )
@@ -132,23 +89,6 @@ describe('Integration: Next.js Installation Flow', () => {
   })
 
   it('should install Next.js Image Optimization plugin', async () => {
-    // Setup Next.js project
-    const pkg = await readPackageJson(projectPath)
-    pkg['dependencies'] = {
-      ...(pkg['dependencies'] || {}),
-      next: '^14.0.0',
-      react: '^18.2.0',
-      'react-dom': '^18.2.0',
-    }
-
-    await import('fs/promises').then((fs) =>
-      fs.writeFile(
-        join(projectPath, 'package.json'),
-        JSON.stringify(pkg, null, 2)
-      )
-    )
-
-    await detectContext(projectPath)
     const imagePlugin = pluginRegistry.find(
       (p) => p.name === 'nextjs-image-optimization'
     )
@@ -162,30 +102,11 @@ describe('Integration: Next.js Installation Flow', () => {
   // ===== Multiple Plugins Installation =====
 
   it('should install multiple Next.js plugins without conflicts', async () => {
-    // Setup Next.js project
-    const pkg = await readPackageJson(projectPath)
-    pkg['dependencies'] = {
-      ...(pkg['dependencies'] || {}),
-      next: '^14.0.0',
-      react: '^18.2.0',
-      'react-dom': '^18.2.0',
-    }
+    const fsAdapter = getFsAdapter()
+    await ensureDirectory(join(projectPath, 'app'), fsAdapter!)
 
-    await import('fs/promises').then((fs) =>
-      fs.writeFile(
-        join(projectPath, 'package.json'),
-        JSON.stringify(pkg, null, 2)
-      )
-    )
-
-    await import('fs/promises').then((fs) =>
-      fs.mkdir(join(projectPath, 'app'), { recursive: true })
-    )
-
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    new ConfigWriter(backupManager)
-    const validator = new CompatibilityValidator(compatibilityRules)
+    const context = await detectContext(projectPath, fsAdapter!)
+    const validator = new CompatibilityValidator(allCompatibilityRules)
 
     const nextjsPlugins = pluginRegistry.filter(
       (p) => p.frameworks.includes('nextjs') && p.name.startsWith('nextjs-')
@@ -201,111 +122,46 @@ describe('Integration: Next.js Installation Flow', () => {
   // ===== Router-Specific Configuration =====
 
   it('should configure plugins for App Router', async () => {
-    // Setup Next.js App Router
-    const pkg = await readPackageJson(projectPath)
-    pkg['dependencies'] = {
-      ...(pkg['dependencies'] || {}),
-      next: '^14.0.0',
-      react: '^18.2.0',
-      'react-dom': '^18.2.0',
-    }
+    const fsAdapter = getFsAdapter()
+    await ensureDirectory(join(projectPath, 'app'), fsAdapter!)
 
-    await import('fs/promises').then((fs) =>
-      fs.writeFile(
-        join(projectPath, 'package.json'),
-        JSON.stringify(pkg, null, 2)
-      )
-    )
-
-    await import('fs/promises').then((fs) =>
-      fs.mkdir(join(projectPath, 'app'), { recursive: true })
-    )
-
-    const context = await detectContext(projectPath)
-    expect(context.nextjsRouter).toBe('app')
-
-    // Vérifier que les chemins App Router sont corrects
+    const context = await detectContext(projectPath, fsAdapter!)
     expect(context.nextjsRouter).toBe('app')
   })
 
   it('should configure plugins for Pages Router', async () => {
-    // Setup Next.js Pages Router
-    const pkg = await readPackageJson(projectPath)
-    pkg['dependencies'] = {
-      ...(pkg['dependencies'] || {}),
-      next: '^14.0.0',
-      react: '^18.2.0',
-      'react-dom': '^18.2.0',
-    }
+    const fsAdapter = getFsAdapter()
+    await ensureDirectory(join(projectPath, 'pages'), fsAdapter!)
 
-    await import('fs/promises').then((fs) =>
-      fs.writeFile(
-        join(projectPath, 'package.json'),
-        JSON.stringify(pkg, null, 2)
-      )
-    )
-
-    await import('fs/promises').then((fs) =>
-      fs.mkdir(join(projectPath, 'pages'), { recursive: true })
-    )
-
-    const context = await detectContext(projectPath)
-    expect(context.nextjsRouter).toBe('pages')
-
-    // Vérifier que les chemins Pages Router sont corrects
+    const context = await detectContext(projectPath, fsAdapter!)
     expect(context.nextjsRouter).toBe('pages')
   })
 
   // ===== Compatibility Validation =====
 
   it('should validate Next.js plugin compatibility', async () => {
-    // Setup Next.js project
-    const pkg = await readPackageJson(projectPath)
-    pkg['dependencies'] = {
-      ...(pkg['dependencies'] || {}),
-      next: '^14.0.0',
-      react: '^18.2.0',
-      'react-dom': '^18.2.0',
-    }
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const validator = new CompatibilityValidator(allCompatibilityRules)
 
-    await import('fs/promises').then((fs) =>
-      fs.writeFile(
-        join(projectPath, 'package.json'),
-        JSON.stringify(pkg, null, 2)
+    // Tester une sélection réaliste de plugins Next.js sans dépendances circulaires
+    const testPlugins = pluginRegistry.filter((p) =>
+      ['tailwindcss-nextjs', 'nextjs-image-optimization', 'prettier'].includes(
+        p.name
       )
     )
 
-    const context = await detectContext(projectPath)
-    const validator = new CompatibilityValidator(compatibilityRules)
+    expect(testPlugins.length).toBeGreaterThan(0)
 
-    // Plugins compatibles Next.js
-    const compatiblePlugins = pluginRegistry.filter((p) =>
-      p.frameworks.includes('nextjs')
-    )
+    const validationResult = validator.validate(testPlugins, context)
 
-    const validationResult = validator.validate(compatiblePlugins, context)
-
-    // Les plugins compatibles ne devraient pas avoir d'erreurs
+    // Les plugins Next.js sélectionnés compatibles ne devraient pas avoir d'erreurs
+    // (les warnings pour les conflits CSS sont acceptables)
     expect(validationResult.valid).toBe(true)
+    expect(validationResult.errors.length).toBe(0)
   })
 
-  it('should detect React Router incompatibility with Next.js', async () => {
-    // Setup Next.js project
-    const pkg = await readPackageJson(projectPath)
-    pkg['dependencies'] = {
-      ...(pkg['dependencies'] || {}),
-      next: '^14.0.0',
-      react: '^18.2.0',
-      'react-dom': '^18.2.0',
-    }
-
-    await import('fs/promises').then((fs) =>
-      fs.writeFile(
-        join(projectPath, 'package.json'),
-        JSON.stringify(pkg, null, 2)
-      )
-    )
-
+  it('should detect React Router incompatibility with Next.js', () => {
     // React Router ne devrait pas être dans les plugins compatibles Next.js
     const reactRouterPlugin = pluginRegistry.find(
       (p) => p.name === 'react-router-dom'

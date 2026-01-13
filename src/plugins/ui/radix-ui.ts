@@ -115,8 +115,8 @@ export const radixUiPlugin: Plugin = {
    * Documentation : https://www.radix-ui.com/primitives/docs
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = join(ctx.projectRoot, ctx.srcDir)
@@ -125,7 +125,7 @@ export const radixUiPlugin: Plugin = {
     try {
       // 1. Créer le dossier components/radix si nécessaire
       const radixDir = join(srcDir, 'components', 'radix')
-      await ensureDirectory(radixDir)
+      await ensureDirectory(radixDir, ctx.fsAdapter)
 
       // 2. Créer src/components/radix/Dialog.tsx (exemple de Dialog)
       const dialogPath = join(radixDir, `Dialog.${extension}`)
@@ -195,7 +195,7 @@ export const radixUiPlugin: Plugin = {
    * Rollback de la configuration Radix UI
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Radix UI configuration rolled back')

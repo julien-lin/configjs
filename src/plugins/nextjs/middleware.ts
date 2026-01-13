@@ -57,8 +57,8 @@ export const nextjsMiddlewarePlugin: Plugin = {
    * Crée le fichier middleware.ts/js à la racine du projet
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -66,7 +66,7 @@ export const nextjsMiddlewarePlugin: Plugin = {
 
     try {
       const middlewarePath = join(projectRoot, `middleware.${extension}`)
-      const middlewareExists = await checkPathExists(middlewarePath)
+      const middlewareExists = await checkPathExists(middlewarePath, ctx.fsAdapter)
 
       if (middlewareExists) {
         logger.warn('middleware.ts already exists, skipping creation')
@@ -103,7 +103,7 @@ export const nextjsMiddlewarePlugin: Plugin = {
    * Rollback de la configuration
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Middleware configuration rolled back')

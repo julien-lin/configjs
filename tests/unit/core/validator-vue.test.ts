@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   CompatibilityValidator,
-  compatibilityRules,
+  allCompatibilityRules,
 } from '../../../src/core/validator.js'
 import type { Plugin, ProjectContext } from '../../../src/types/index.js'
 import { Category } from '../../../src/types/index.js'
@@ -52,7 +52,7 @@ function createVueContext(): ProjectContext {
 }
 
 describe('CompatibilityValidator - Vue.js', () => {
-  const validator = new CompatibilityValidator(compatibilityRules)
+  const validator = new CompatibilityValidator(allCompatibilityRules)
 
   describe('React Router avec Vue.js', () => {
     it('should return error when React Router is used with Vue.js', () => {

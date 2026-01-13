@@ -137,8 +137,8 @@ export const vuetifyPlugin: Plugin = {
    * - Met à jour vite.config.ts (ou .js) pour ajouter le plugin Vuetify
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const extension = ctx.typescript ? 'ts' : 'js'
@@ -146,7 +146,7 @@ export const vuetifyPlugin: Plugin = {
     try {
       // 1. Créer dossier plugins si nécessaire
       const pluginsDir = join(ctx.projectRoot, ctx.srcDir, 'plugins')
-      await ensureDirectory(pluginsDir)
+      await ensureDirectory(pluginsDir, ctx.fsAdapter)
 
       // 2. Créer fichier de configuration Vuetify
       const vuetifyConfigPath = join(pluginsDir, `vuetify.${extension}`)
@@ -164,7 +164,7 @@ export const vuetifyPlugin: Plugin = {
 
       // 3. Créer composant exemple
       const componentsDir = join(ctx.projectRoot, ctx.srcDir, 'components')
-      await ensureDirectory(componentsDir)
+      await ensureDirectory(componentsDir, ctx.fsAdapter)
 
       const componentPath = join(componentsDir, 'HelloVuetify.vue')
       const componentContent = getExampleComponent()
@@ -181,10 +181,10 @@ export const vuetifyPlugin: Plugin = {
 
       // 4. Mettre à jour main.ts (ou .js)
       const mainPath = join(ctx.projectRoot, ctx.srcDir, `main.${extension}`)
-      const mainExists = await checkPathExists(mainPath)
+      const mainExists = await checkPathExists(mainPath, ctx.fsAdapter)
 
       if (mainExists) {
-        const mainContent = await readFileContent(mainPath)
+        const mainContent = await readFileContent(mainPath, 'utf-8', ctx.fsAdapter)
         const updatedMainContent = updateMainFile(mainContent, extension)
 
         await writer.writeFile(mainPath, updatedMainContent, { backup: true })
@@ -199,10 +199,10 @@ export const vuetifyPlugin: Plugin = {
 
       // 5. Mettre à jour vite.config.ts (ou .js)
       const viteConfigPath = join(ctx.projectRoot, `vite.config.${extension}`)
-      const viteConfigExists = await checkPathExists(viteConfigPath)
+      const viteConfigExists = await checkPathExists(viteConfigPath, ctx.fsAdapter)
 
       if (viteConfigExists) {
-        const viteContent = await readFileContent(viteConfigPath)
+        const viteContent = await readFileContent(viteConfigPath, 'utf-8', ctx.fsAdapter)
         const updatedViteContent = updateViteConfig(viteContent)
 
         await writer.writeFile(viteConfigPath, updatedViteContent, {
@@ -236,7 +236,7 @@ export const vuetifyPlugin: Plugin = {
    * Rollback de la configuration Vuetify
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     await backupManager.restoreAll()
     logger.info('Vuetify configuration rolled back')
   },

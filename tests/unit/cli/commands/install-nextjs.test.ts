@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { installNextjs } from '../../../../src/cli/commands/install-nextjs.js'
+import { NextjsCommand } from '../../../../src/cli/commands/nextjs-command.js'
 import * as languagePrompt from '../../../../src/cli/prompts/language.js'
 import * as detector from '../../../../src/core/detector.js'
 import * as nextjsSetup from '../../../../src/cli/prompts/nextjs-setup.js'
@@ -26,7 +26,7 @@ vi.mock('../../../../src/plugins/registry.js', () => ({
   pluginRegistry: [],
 }))
 
-describe('install-nextjs', () => {
+describe('NextjsCommand', () => {
   const mockContext: ProjectContext = {
     framework: 'nextjs',
     frameworkVersion: '14.0.0',
@@ -91,7 +91,8 @@ describe('install-nextjs', () => {
     )
 
     try {
-      await installNextjs({})
+      const command = new NextjsCommand()
+      await command.execute({})
     } catch (error) {
       // Ignore process.exit errors in tests
       if (error instanceof Error && error.message === 'process.exit called') {
@@ -129,7 +130,8 @@ describe('install-nextjs', () => {
 
     const mockChdir = vi.spyOn(process, 'chdir').mockImplementation(() => {})
 
-    await installNextjs({})
+    const command = new NextjsCommand()
+    await command.execute({})
 
     expect(nextjsSetup.promptNextjsSetup).toHaveBeenCalled()
     expect(nextjsInstaller.createNextjsProject).toHaveBeenCalledWith(
@@ -149,7 +151,17 @@ describe('install-nextjs', () => {
 
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
-    await installNextjs({})
+    const command = new NextjsCommand()
+    try {
+      await command.execute({})
+    } catch (error) {
+      // Ignore process.exit errors in tests
+      if (error instanceof Error && error.message === 'process.exit called') {
+        // Expected behavior
+      } else {
+        throw error
+      }
+    }
 
     expect(nextjsSetup.promptNextjsSetup).toHaveBeenCalled()
     expect(nextjsInstaller.createNextjsProject).not.toHaveBeenCalled()
@@ -168,7 +180,8 @@ describe('install-nextjs', () => {
 
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
-    await installNextjs({})
+    const command = new NextjsCommand()
+    await command.execute({})
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('Framework détecté: react')
@@ -182,7 +195,8 @@ describe('install-nextjs', () => {
 
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
-    await installNextjs({})
+    const command = new NextjsCommand()
+    await command.execute({})
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('Aucune bibliothèque sélectionnée')
@@ -211,7 +225,8 @@ describe('install-nextjs', () => {
 
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
-    await installNextjs({})
+    const command = new NextjsCommand()
+    await command.execute({})
 
     expect(confirmation.promptConfirmation).toHaveBeenCalled()
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Annuler'))

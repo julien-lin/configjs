@@ -97,8 +97,8 @@ export const framerMotionPlugin: Plugin = {
    * Documentation : https://www.framer.com/motion
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = join(ctx.projectRoot, ctx.srcDir)
@@ -106,7 +106,7 @@ export const framerMotionPlugin: Plugin = {
     try {
       // 1. Créer le dossier components/animation si nécessaire
       const animationDir = join(srcDir, 'components', 'animation')
-      await ensureDirectory(animationDir)
+      await ensureDirectory(animationDir, ctx.fsAdapter)
 
       // 2. Créer src/components/animation/AnimatedBox.tsx (exemple)
       const animatedBoxPath = join(
@@ -166,7 +166,7 @@ export const framerMotionPlugin: Plugin = {
    * Rollback de la configuration Framer Motion
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Framer Motion configuration rolled back')

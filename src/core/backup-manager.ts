@@ -5,6 +5,7 @@ import {
   checkPathExists,
 } from '../utils/fs-helpers.js'
 import { logger } from '../utils/logger.js'
+import type { IFsAdapter } from './fs-adapter.js'
 
 /**
  * Gère les backups et restaurations de fichiers
@@ -32,6 +33,11 @@ export class BackupManager {
    * Map des backups : filePath -> content
    */
   private readonly backups: Map<string, string> = new Map()
+
+  /**
+   * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
+   */
+  constructor(private readonly fsAdapter?: IFsAdapter) {}
 
   /**
    * Sauvegarde le contenu d'un fichier avant modification
@@ -71,11 +77,11 @@ export class BackupManager {
   async backupFromDisk(filePath: string): Promise<void> {
     const fullPath = resolve(filePath)
 
-    if (!(await checkPathExists(fullPath))) {
+    if (!(await checkPathExists(fullPath, this.fsAdapter))) {
       throw new Error(`File not found for backup: ${fullPath}`)
     }
 
-    const content = await readFileContent(fullPath)
+    const content = await readFileContent(fullPath, 'utf-8', this.fsAdapter)
     this.backup(fullPath, content)
   }
 
@@ -104,7 +110,7 @@ export class BackupManager {
     }
 
     try {
-      await writeFileContent(fullPath, backupContent)
+      await writeFileContent(fullPath, backupContent, 'utf-8', this.fsAdapter)
       logger.debug(`Restored file from backup: ${fullPath}`)
     } catch (error) {
       const errorMessage =

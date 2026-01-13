@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import type { ProjectContext, Plugin } from '../../../src/types/index.js'
 import {
   CompatibilityValidator,
-  compatibilityRules,
+  allCompatibilityRules,
 } from '../../../src/core/validator.js'
 import { Category } from '../../../src/types/index.js'
 
@@ -11,7 +11,7 @@ describe('CompatibilityValidator - Next.js Rules', () => {
   let nextjsContext: ProjectContext
 
   beforeEach(() => {
-    validator = new CompatibilityValidator(compatibilityRules)
+    validator = new CompatibilityValidator(allCompatibilityRules)
     nextjsContext = {
       framework: 'nextjs',
       frameworkVersion: '14.0.0',

@@ -60,8 +60,8 @@ export const nextjsApiRoutesPlugin: Plugin = {
    * Crée un exemple d'API route
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -84,8 +84,8 @@ export const nextjsApiRoutesPlugin: Plugin = {
         ? join(projectRoot, ctx.srcDir, 'pages', 'api', `hello.${extension}`)
         : join(projectRoot, 'pages', 'api', `hello.${extension}`)
 
-      const appApiExists = await checkPathExists(appApiPath)
-      const pagesApiExists = await checkPathExists(pagesApiPath)
+      const appApiExists = await checkPathExists(appApiPath, ctx.fsAdapter)
+      const pagesApiExists = await checkPathExists(pagesApiPath, ctx.fsAdapter)
 
       // Si un fichier API existe déjà, ne rien faire
       if (appApiExists || pagesApiExists) {
@@ -154,7 +154,7 @@ export const nextjsApiRoutesPlugin: Plugin = {
    * Rollback de la configuration
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('API route configuration rolled back')

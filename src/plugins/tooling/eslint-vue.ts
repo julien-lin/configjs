@@ -107,8 +107,8 @@ export const eslintVuePlugin: Plugin = {
    * - eslint.config.js (flat config pour ESLint v9)
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -116,11 +116,11 @@ export const eslintVuePlugin: Plugin = {
     try {
       // 1. Créer ou modifier eslint.config.js
       const eslintConfigPath = join(projectRoot, 'eslint.config.js')
-      const eslintConfigExists = await checkPathExists(eslintConfigPath)
+      const eslintConfigExists = await checkPathExists(eslintConfigPath, ctx.fsAdapter)
 
       if (eslintConfigExists) {
         // Modifier le fichier existant pour ajouter la config Vue
-        const existingContent = await readFileContent(eslintConfigPath)
+        const existingContent = await readFileContent(eslintConfigPath, 'utf-8', ctx.fsAdapter)
         const updatedContent = updateESLintConfig(existingContent, ctx)
 
         if (updatedContent !== existingContent) {
@@ -170,7 +170,7 @@ export const eslintVuePlugin: Plugin = {
    * Rollback de la configuration ESLint Vue
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     await backupManager.restoreAll()
     logger.info('ESLint Vue configuration rolled back')
   },

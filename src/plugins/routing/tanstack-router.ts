@@ -108,8 +108,8 @@ export const tanstackRouterPlugin: Plugin = {
    * Documentation : https://tanstack.com/router/latest/docs/framework/react/quick-start
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -118,7 +118,7 @@ export const tanstackRouterPlugin: Plugin = {
     try {
       // 1. Créer le dossier routes si nécessaire
       const routesDir = join(srcDir, 'routes')
-      await ensureDirectory(routesDir)
+      await ensureDirectory(routesDir, ctx.fsAdapter)
 
       // 2. Créer src/routes/__root.tsx (route racine)
       const rootRoutePath = join(routesDir, `__root.${extension}`)
@@ -186,10 +186,10 @@ export const tanstackRouterPlugin: Plugin = {
 
       // 6. Modifier App.tsx pour intégrer RouterProvider
       const appPath = join(srcDir, `App.${extension}`)
-      const appExists = await checkPathExists(appPath)
+      const appExists = await checkPathExists(appPath, ctx.fsAdapter)
 
       if (appExists) {
-        const appContent = await readFileContent(appPath)
+        const appContent = await readFileContent(appPath, 'utf-8', ctx.fsAdapter)
         const modifiedAppContent = injectRouterProvider(
           appContent,
           ctx.typescript
@@ -240,7 +240,7 @@ export const tanstackRouterPlugin: Plugin = {
    * Rollback de la configuration TanStack Router
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('TanStack Router configuration rolled back')

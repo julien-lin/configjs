@@ -37,6 +37,7 @@ export const tailwindcssPlugin: Plugin = {
   version: '^4.1.18',
 
   frameworks: ['react', 'vue', 'svelte'],
+  incompatibleWith: ['react-bootstrap', 'styled-components', 'emotion'],
 
   /**
    * Détecte si TailwindCSS est déjà installé
@@ -103,8 +104,8 @@ export const tailwindcssPlugin: Plugin = {
    * Documentation : https://tailwindcss.com/docs/installation/using-vite
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -114,10 +115,10 @@ export const tailwindcssPlugin: Plugin = {
     try {
       // 1. Modifier vite.config.ts pour ajouter le plugin
       const viteConfigPath = join(projectRoot, `vite.config.${extension}`)
-      const viteConfigExists = await checkPathExists(viteConfigPath)
+      const viteConfigExists = await checkPathExists(viteConfigPath, ctx.fsAdapter)
 
       if (viteConfigExists) {
-        const viteConfigContent = await readFileContent(viteConfigPath)
+        const viteConfigContent = await readFileContent(viteConfigPath, 'utf-8', ctx.fsAdapter)
         const modifiedViteConfig = injectVitePlugin(
           viteConfigContent,
           ctx.typescript
@@ -161,9 +162,9 @@ export const tailwindcssPlugin: Plugin = {
 
       let cssFileModified = false
       for (const cssPath of cssFiles) {
-        const cssExists = await checkPathExists(cssPath)
+        const cssExists = await checkPathExists(cssPath, ctx.fsAdapter)
         if (cssExists) {
-          const cssContent = await readFileContent(cssPath)
+          const cssContent = await readFileContent(cssPath, 'utf-8', ctx.fsAdapter)
           const modifiedCss = injectTailwindImport(cssContent)
 
           await writer.writeFile(cssPath, modifiedCss, { backup: true })
@@ -215,7 +216,7 @@ export const tailwindcssPlugin: Plugin = {
    * Rollback de la configuration TailwindCSS
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('TailwindCSS configuration rolled back')

@@ -6,6 +6,7 @@ import type {
   InstallationReport,
   FileOperation,
 } from '../types/index.js'
+import type { IFs } from 'memfs'
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { CompatibilityValidator } from './validator.js'
 import type { ConfigWriter } from './config-writer.js'
@@ -55,15 +56,21 @@ export class Installer {
    * @param validator - Validateur de compatibilité
    * @param writer - Writer de configuration
    * @param backupManager - Gestionnaire de backups
+   * @param fs - Système de fichiers optionnel (par défaut: filesystem réel via memfs.useAsNodeFs)
    */
   constructor(
     private readonly ctx: ProjectContext,
     private readonly validator: CompatibilityValidator,
     // @ts-expect-error - writer will be used in future versions for plugin configuration
     private readonly writer: ConfigWriter,
-    private readonly backupManager: BackupManager
+    private readonly backupManager: BackupManager,
+    // fs parameter reserved for future memfs integration in Phase 3 Week 7
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _fs?: IFs
   ) {
-    this.tracker = new PluginTracker(ctx.projectRoot)
+    this.tracker = new PluginTracker(ctx.projectRoot, ctx.fsAdapter)
+    // Note: fsAdapter est déjà passé à ConfigWriter et BackupManager lors de leur création
+    // dans base-framework-command.ts. Ici, on garde fs pour référence future si nécessaire.
   }
 
   /**

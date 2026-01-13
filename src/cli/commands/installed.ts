@@ -11,7 +11,7 @@ export async function installedCommand(): Promise<void> {
     const ctx = await detectContext(process.cwd())
 
     // Charger le tracker
-    const tracker = new PluginTracker(ctx.projectRoot)
+    const tracker = new PluginTracker(ctx.projectRoot, ctx.fsAdapter)
     await tracker.load()
 
     const installedPlugins = tracker.getInstalledPlugins()

@@ -106,8 +106,8 @@ export const tanstackQueryPlugin: Plugin = {
    * Documentation : https://tanstack.com/query/latest/docs/framework/react/quick-start
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -116,7 +116,7 @@ export const tanstackQueryPlugin: Plugin = {
     try {
       // 1. Créer le dossier lib si nécessaire
       const libDir = join(srcDir, 'lib')
-      await ensureDirectory(libDir)
+      await ensureDirectory(libDir, ctx.fsAdapter)
 
       // 2. Créer src/lib/query-client.ts (configuration du QueryClient)
       const queryClientPath = join(libDir, `query-client.${extension}`)
@@ -136,7 +136,7 @@ export const tanstackQueryPlugin: Plugin = {
 
       // 3. Créer src/lib/queries/example.ts (exemple de query)
       const queriesDir = join(libDir, 'queries')
-      await ensureDirectory(queriesDir)
+      await ensureDirectory(queriesDir, ctx.fsAdapter)
 
       const exampleQueryPath = join(queriesDir, `example.${extension}`)
       const exampleQueryContent = ctx.typescript
@@ -155,7 +155,7 @@ export const tanstackQueryPlugin: Plugin = {
 
       // 4. Créer src/lib/mutations/example.ts (exemple de mutation)
       const mutationsDir = join(libDir, 'mutations')
-      await ensureDirectory(mutationsDir)
+      await ensureDirectory(mutationsDir, ctx.fsAdapter)
 
       const exampleMutationPath = join(mutationsDir, `example.${extension}`)
       const exampleMutationContent = ctx.typescript
@@ -174,10 +174,10 @@ export const tanstackQueryPlugin: Plugin = {
 
       // 5. Modifier App.tsx pour ajouter QueryClientProvider
       const appPath = join(srcDir, `App.${ctx.typescript ? 'tsx' : 'jsx'}`)
-      const appExists = await checkPathExists(appPath)
+      const appExists = await checkPathExists(appPath, ctx.fsAdapter)
 
       if (appExists) {
-        const appContent = await readFileContent(appPath)
+        const appContent = await readFileContent(appPath, 'utf-8', ctx.fsAdapter)
         const modifiedAppContent = injectQueryClientProvider(
           appContent,
           ctx.typescript
@@ -232,7 +232,7 @@ export const tanstackQueryPlugin: Plugin = {
    * Rollback de la configuration TanStack Query
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('TanStack Query configuration rolled back')

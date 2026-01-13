@@ -107,8 +107,8 @@ export const reactBootstrapPlugin: Plugin = {
    * Documentation : https://react-bootstrap.netlify.app/docs/getting-started/introduction
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -117,7 +117,7 @@ export const reactBootstrapPlugin: Plugin = {
     try {
       // 1. Créer le dossier components/bootstrap si nécessaire
       const bootstrapDir = join(srcDir, 'components', 'bootstrap')
-      await ensureDirectory(bootstrapDir)
+      await ensureDirectory(bootstrapDir, ctx.fsAdapter)
 
       // 2. Créer src/components/bootstrap/Example.tsx (exemple de composants)
       const examplePath = join(bootstrapDir, `Example.${extension}`)
@@ -137,10 +137,10 @@ export const reactBootstrapPlugin: Plugin = {
 
       // 3. Modifier src/index.tsx pour ajouter l'import du CSS Bootstrap
       const indexPath = join(srcDir, `index.${ctx.typescript ? 'tsx' : 'jsx'}`)
-      const indexExists = await checkPathExists(indexPath)
+      const indexExists = await checkPathExists(indexPath, ctx.fsAdapter)
 
       if (indexExists) {
-        const indexContent = await readFileContent(indexPath)
+        const indexContent = await readFileContent(indexPath, 'utf-8', ctx.fsAdapter)
         const modifiedIndexContent = injectBootstrapCSS(indexContent)
 
         if (modifiedIndexContent !== indexContent) {
@@ -196,7 +196,7 @@ export const reactBootstrapPlugin: Plugin = {
    * Rollback de la configuration React Bootstrap
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('React Bootstrap configuration rolled back')

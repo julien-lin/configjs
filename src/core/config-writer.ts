@@ -10,6 +10,7 @@ import {
 } from '../utils/fs-helpers.js'
 import type { BackupManager } from './backup-manager.js'
 import { logger } from '../utils/logger.js'
+import type { IFsAdapter } from './fs-adapter.js'
 
 /**
  * Options pour l'écriture de fichiers
@@ -58,8 +59,12 @@ export interface WriteOptions {
 export class ConfigWriter {
   /**
    * @param backupManager - Gestionnaire de backups à utiliser
+   * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
    */
-  constructor(private readonly backupManager: BackupManager) {}
+  constructor(
+    private readonly backupManager: BackupManager,
+    private readonly fsAdapter?: IFsAdapter
+  ) {}
 
   /**
    * Écrit ou modifie un fichier avec backup automatique
@@ -85,10 +90,10 @@ export class ConfigWriter {
     const fullPath = resolve(path)
 
     // Vérifier si le fichier existe pour backup
-    const fileExists = await checkPathExists(fullPath)
+    const fileExists = await checkPathExists(fullPath, this.fsAdapter)
     if (fileExists && backup) {
       try {
-        const existingContent = await readFileContent(fullPath)
+        const existingContent = await readFileContent(fullPath, 'utf-8', this.fsAdapter)
         this.backupManager.backup(fullPath, existingContent)
       } catch (error) {
         const errorMessage =
@@ -102,12 +107,12 @@ export class ConfigWriter {
     // Créer les dossiers parents si nécessaire
     if (shouldEnsureDir) {
       const parentDir = dirname(fullPath)
-      await ensureDirectory(parentDir)
+      await ensureDirectory(parentDir, this.fsAdapter)
     }
 
     // Écrire le fichier
     try {
-      await writeFileContent(fullPath, content)
+      await writeFileContent(fullPath, content, 'utf-8', this.fsAdapter)
       logger.debug(`Wrote file: ${fullPath}`)
     } catch (error) {
       const errorMessage =
@@ -138,7 +143,7 @@ export class ConfigWriter {
     const fullPath = resolve(path)
 
     // Vérifier que le fichier n'existe pas
-    if (await checkPathExists(fullPath)) {
+    if (await checkPathExists(fullPath, this.fsAdapter)) {
       throw new Error(`File already exists: ${fullPath}`)
     }
 
@@ -179,7 +184,7 @@ export class ConfigWriter {
     // Lire le package.json actuel
     let pkg: PackageJson
     try {
-      pkg = await readPackageJson(fullPath)
+      pkg = await readPackageJson(fullPath, this.fsAdapter)
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
@@ -194,7 +199,7 @@ export class ConfigWriter {
       // Backup déjà fait, ne pas le refaire
     } else {
       try {
-        const existingContent = await readFileContent(packageJsonPath)
+        const existingContent = await readFileContent(packageJsonPath, 'utf-8', this.fsAdapter)
         this.backupManager.backup(packageJsonPath, existingContent)
       } catch (error) {
         const errorMessage =
@@ -210,7 +215,7 @@ export class ConfigWriter {
 
     // Écrire
     try {
-      await writePackageJson(fullPath, modifiedPkg)
+      await writePackageJson(fullPath, modifiedPkg, this.fsAdapter)
       logger.debug(`Modified package.json: ${packageJsonPath}`)
     } catch (error) {
       const errorMessage =
@@ -245,12 +250,12 @@ export class ConfigWriter {
 
     // Lire le contenu existant
     let existingContent = ''
-    const fileExists = await checkPathExists(fullPath)
+    const fileExists = await checkPathExists(fullPath, this.fsAdapter)
 
     if (fileExists) {
       if (backup) {
         try {
-          existingContent = await readFileContent(fullPath)
+          existingContent = await readFileContent(fullPath, 'utf-8', this.fsAdapter)
           this.backupManager.backup(fullPath, existingContent)
         } catch (error) {
           const errorMessage =
@@ -260,7 +265,7 @@ export class ConfigWriter {
           )
         }
       } else {
-        existingContent = await readFileContent(fullPath)
+        existingContent = await readFileContent(fullPath, 'utf-8', this.fsAdapter)
       }
     }
 
@@ -300,12 +305,12 @@ export class ConfigWriter {
     const fullPath = resolve(filePath)
 
     // Vérifier que le fichier existe
-    if (!(await checkPathExists(fullPath))) {
+    if (!(await checkPathExists(fullPath, this.fsAdapter))) {
       throw new Error(`File not found: ${fullPath}`)
     }
 
     // Lire le contenu
-    const content = await readFileContent(fullPath)
+    const content = await readFileContent(fullPath, 'utf-8', this.fsAdapter)
 
     // Vérifier si l'import existe déjà
     if (content.includes(importStatement)) {

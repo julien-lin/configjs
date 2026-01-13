@@ -96,8 +96,8 @@ export const dateFnsPlugin: Plugin = {
    * Documentation : https://date-fns.org
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = join(ctx.projectRoot, ctx.srcDir)
@@ -105,7 +105,7 @@ export const dateFnsPlugin: Plugin = {
     try {
       // 1. Créer le dossier lib/utils si nécessaire
       const utilsDir = join(srcDir, 'lib', 'utils')
-      await ensureDirectory(utilsDir)
+      await ensureDirectory(utilsDir, ctx.fsAdapter)
 
       // 2. Créer src/lib/utils/date.ts (utilitaires de dates)
       const dateUtilsPath = join(
@@ -146,7 +146,7 @@ export const dateFnsPlugin: Plugin = {
    * Rollback de la configuration date-fns
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('date-fns configuration rolled back')

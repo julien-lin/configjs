@@ -97,8 +97,8 @@ export const reactIconsPlugin: Plugin = {
    * Documentation : https://react-icons.github.io/react-icons
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = join(ctx.projectRoot, ctx.srcDir)
@@ -106,7 +106,7 @@ export const reactIconsPlugin: Plugin = {
     try {
       // 1. Créer le dossier components/icons si nécessaire
       const iconsDir = join(srcDir, 'components', 'icons')
-      await ensureDirectory(iconsDir)
+      await ensureDirectory(iconsDir, ctx.fsAdapter)
 
       // 2. Créer src/components/icons/IconExample.tsx (exemple)
       const iconExamplePath = join(
@@ -163,7 +163,7 @@ export const reactIconsPlugin: Plugin = {
    * Rollback de la configuration React Icons
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('React Icons configuration rolled back')

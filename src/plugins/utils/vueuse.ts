@@ -97,8 +97,8 @@ export const vueusePlugin: Plugin = {
    * - src/composables/useExample.ts (ou .js) : Exemple d'utilisation
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -107,7 +107,7 @@ export const vueusePlugin: Plugin = {
     try {
       // 1. Créer le dossier composables si nécessaire
       const composablesDir = join(srcDir, 'composables')
-      await ensureDirectory(composablesDir)
+      await ensureDirectory(composablesDir, ctx.fsAdapter)
 
       // 2. Créer src/composables/useExample.ts (exemple d'utilisation)
       const examplePath = join(composablesDir, `useExample.${extension}`)
@@ -144,7 +144,7 @@ export const vueusePlugin: Plugin = {
    * Rollback de la configuration VueUse
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     await backupManager.restoreAll()
     logger.info('VueUse configuration rolled back')
   },

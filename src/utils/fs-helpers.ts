@@ -1,7 +1,8 @@
-import fs from 'fs-extra'
 import { resolve, dirname, extname } from 'path'
 import type { PackageJson } from 'type-fest'
 import { logger } from './logger.js'
+import type { IFsAdapter } from '../core/fs-adapter.js'
+import { createDefaultFsAdapter } from '../core/fs-adapter.js'
 
 /**
  * Normalise un chemin pour utiliser des slashes POSIX (/)
@@ -51,6 +52,7 @@ export interface TsConfig {
  * Lit le package.json d'un projet
  *
  * @param root - Chemin racine du projet
+ * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
  * @returns Le contenu du package.json parsé
  * @throws {Error} Si le fichier n'existe pas ou est invalide
  *
@@ -60,18 +62,21 @@ export interface TsConfig {
  * console.log(pkg.name) // 'my-project'
  * ```
  */
-export async function readPackageJson(root: string): Promise<PackageJson> {
+export async function readPackageJson(
+  root: string,
+  fsAdapter?: IFsAdapter
+): Promise<PackageJson> {
+  const adapter = fsAdapter || createDefaultFsAdapter()
   const packageJsonPath = resolve(root, 'package.json')
 
-  if (!(await fs.pathExists(packageJsonPath))) {
+  if (!(await adapter.pathExists(packageJsonPath))) {
     throw new Error(`package.json not found at ${packageJsonPath}`)
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const pkg = await fs.readJson(packageJsonPath)
+    const pkg = await adapter.readJson<PackageJson>(packageJsonPath)
     logger.debug(`Read package.json from ${packageJsonPath}`)
-    return pkg as PackageJson
+    return pkg
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     throw new Error(
@@ -85,6 +90,7 @@ export async function readPackageJson(root: string): Promise<PackageJson> {
  *
  * @param root - Chemin racine du projet
  * @param pkg - Objet package.json à écrire
+ * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
  * @returns Promise qui se résout quand l'écriture est terminée
  * @throws {Error} Si l'écriture échoue
  *
@@ -98,13 +104,15 @@ export async function readPackageJson(root: string): Promise<PackageJson> {
  */
 export async function writePackageJson(
   root: string,
-  pkg: PackageJson
+  pkg: PackageJson,
+  fsAdapter?: IFsAdapter
 ): Promise<void> {
+  const adapter = fsAdapter || createDefaultFsAdapter()
   const packageJsonPath = resolve(root, 'package.json')
 
   try {
     // Utiliser writeJson avec formatting pour préserver la structure
-    await fs.writeJson(packageJsonPath, pkg, {
+    await adapter.writeJson(packageJsonPath, pkg, {
       spaces: 2,
       EOL: '\n',
     })
@@ -119,6 +127,7 @@ export async function writePackageJson(
  * Lit le tsconfig.json d'un projet
  *
  * @param root - Chemin racine du projet
+ * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
  * @returns Le contenu du tsconfig.json parsé, ou null si non trouvé
  *
  * @example
@@ -129,7 +138,11 @@ export async function writePackageJson(
  * }
  * ```
  */
-export async function readTsConfig(root: string): Promise<TsConfig | null> {
+export async function readTsConfig(
+  root: string,
+  fsAdapter?: IFsAdapter
+): Promise<TsConfig | null> {
+  const adapter = fsAdapter || createDefaultFsAdapter()
   // Chercher tsconfig.json dans l'ordre de priorité
   const possiblePaths = [
     resolve(root, 'tsconfig.json'),
@@ -138,12 +151,11 @@ export async function readTsConfig(root: string): Promise<TsConfig | null> {
   ]
 
   for (const tsconfigPath of possiblePaths) {
-    if (await fs.pathExists(tsconfigPath)) {
+    if (await adapter.pathExists(tsconfigPath)) {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const config = await fs.readJson(tsconfigPath)
+        const config = await adapter.readJson<TsConfig>(tsconfigPath)
         logger.debug(`Read tsconfig.json from ${tsconfigPath}`)
-        return config as TsConfig
+        return config
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error)
@@ -163,25 +175,31 @@ export async function readTsConfig(root: string): Promise<TsConfig | null> {
  * Vérifie si un chemin existe
  *
  * @param path - Chemin à vérifier (relatif ou absolu)
+ * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
  * @returns true si le chemin existe, false sinon
  *
  * @example
  * ```typescript
- * const exists = await pathExists('/path/to/file')
+ * const exists = await checkPathExists('/path/to/file')
  * if (exists) {
  *   // Fichier existe
  * }
  * ```
  */
-export async function checkPathExists(path: string): Promise<boolean> {
+export async function checkPathExists(
+  path: string,
+  fsAdapter?: IFsAdapter
+): Promise<boolean> {
+  const adapter = fsAdapter || createDefaultFsAdapter()
   const fullPath = resolve(path)
-  return fs.pathExists(fullPath)
+  return adapter.pathExists(fullPath)
 }
 
 /**
  * Crée un dossier et tous ses parents si nécessaire
  *
  * @param path - Chemin du dossier à créer
+ * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
  * @returns Promise qui se résout quand le dossier est créé
  * @throws {Error} Si la création échoue
  *
@@ -190,11 +208,15 @@ export async function checkPathExists(path: string): Promise<boolean> {
  * await ensureDirectory('/path/to/new/directory')
  * ```
  */
-export async function ensureDirectory(path: string): Promise<void> {
+export async function ensureDirectory(
+  path: string,
+  fsAdapter?: IFsAdapter
+): Promise<void> {
+  const adapter = fsAdapter || createDefaultFsAdapter()
   const fullPath = resolve(path)
 
   try {
-    await fs.ensureDir(fullPath)
+    await adapter.mkdir(fullPath, { recursive: true })
     logger.debug(`Ensured directory exists: ${fullPath}`)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
@@ -207,6 +229,7 @@ export async function ensureDirectory(path: string): Promise<void> {
  *
  * @param src - Chemin source
  * @param dest - Chemin destination
+ * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
  * @returns Promise qui se résout quand la copie est terminée
  * @throws {Error} Si la copie échoue
  *
@@ -215,21 +238,26 @@ export async function ensureDirectory(path: string): Promise<void> {
  * await copyFile('/path/to/source.txt', '/path/to/dest.txt')
  * ```
  */
-export async function copyFile(src: string, dest: string): Promise<void> {
+export async function copyFile(
+  src: string,
+  dest: string,
+  fsAdapter?: IFsAdapter
+): Promise<void> {
+  const adapter = fsAdapter || createDefaultFsAdapter()
   const srcPath = resolve(src)
   const destPath = resolve(dest)
 
   // Vérifier que le fichier source existe
-  if (!(await fs.pathExists(srcPath))) {
+  if (!(await adapter.pathExists(srcPath))) {
     throw new Error(`Source file not found: ${srcPath}`)
   }
 
   // Créer le dossier parent de la destination si nécessaire
   const destDir = dirname(destPath)
-  await ensureDirectory(destDir)
+  await ensureDirectory(destDir, adapter)
 
   try {
-    await fs.copyFile(srcPath, destPath)
+    await adapter.copyFile(srcPath, destPath)
     logger.debug(`Copied file from ${srcPath} to ${destPath}`)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
@@ -243,6 +271,7 @@ export async function copyFile(src: string, dest: string): Promise<void> {
  * Crée un backup d'un fichier
  *
  * @param filePath - Chemin du fichier à sauvegarder
+ * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
  * @returns Chemin du fichier de backup créé
  * @throws {Error} Si le backup échoue
  *
@@ -252,10 +281,14 @@ export async function copyFile(src: string, dest: string): Promise<void> {
  * // backupPath = '/path/to/file.txt.backup'
  * ```
  */
-export async function backupFile(filePath: string): Promise<string> {
+export async function backupFile(
+  filePath: string,
+  fsAdapter?: IFsAdapter
+): Promise<string> {
+  const adapter = fsAdapter || createDefaultFsAdapter()
   const fullPath = resolve(filePath)
 
-  if (!(await fs.pathExists(fullPath))) {
+  if (!(await adapter.pathExists(fullPath))) {
     throw new Error(`File not found for backup: ${fullPath}`)
   }
 
@@ -266,7 +299,7 @@ export async function backupFile(filePath: string): Promise<string> {
 
   try {
     // Utiliser un nom avec timestamp pour éviter les conflits
-    await copyFile(fullPath, timestampedBackup)
+    await copyFile(fullPath, timestampedBackup, adapter)
     logger.debug(`Created backup: ${timestampedBackup}`)
     return timestampedBackup
   } catch (error) {
@@ -280,6 +313,7 @@ export async function backupFile(filePath: string): Promise<string> {
  *
  * @param backupPath - Chemin du fichier de backup
  * @param originalPath - Chemin du fichier original à restaurer
+ * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
  * @returns Promise qui se résout quand la restauration est terminée
  * @throws {Error} Si la restauration échoue
  *
@@ -290,17 +324,19 @@ export async function backupFile(filePath: string): Promise<string> {
  */
 export async function restoreBackup(
   backupPath: string,
-  originalPath: string
+  originalPath: string,
+  fsAdapter?: IFsAdapter
 ): Promise<void> {
+  const adapter = fsAdapter || createDefaultFsAdapter()
   const backupFullPath = resolve(backupPath)
   const originalFullPath = resolve(originalPath)
 
-  if (!(await fs.pathExists(backupFullPath))) {
+  if (!(await adapter.pathExists(backupFullPath))) {
     throw new Error(`Backup file not found: ${backupFullPath}`)
   }
 
   try {
-    await copyFile(backupFullPath, originalFullPath)
+    await copyFile(backupFullPath, originalFullPath, adapter)
     logger.debug(
       `Restored backup from ${backupFullPath} to ${originalFullPath}`
     )
@@ -315,6 +351,7 @@ export async function restoreBackup(
  *
  * @param filePath - Chemin du fichier
  * @param encoding - Encodage (défaut: 'utf-8')
+ * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
  * @returns Contenu du fichier
  * @throws {Error} Si la lecture échoue
  *
@@ -325,16 +362,18 @@ export async function restoreBackup(
  */
 export async function readFileContent(
   filePath: string,
-  encoding: BufferEncoding = 'utf-8'
+  encoding: BufferEncoding = 'utf-8',
+  fsAdapter?: IFsAdapter
 ): Promise<string> {
+  const adapter = fsAdapter || createDefaultFsAdapter()
   const fullPath = resolve(filePath)
 
-  if (!(await fs.pathExists(fullPath))) {
+  if (!(await adapter.pathExists(fullPath))) {
     throw new Error(`File not found: ${fullPath}`)
   }
 
   try {
-    const content = await fs.readFile(fullPath, encoding)
+    const content = await adapter.readFile(fullPath, encoding as BufferEncoding || 'utf-8')
     logger.debug(`Read file: ${fullPath}`)
     return content
   } catch (error) {
@@ -349,6 +388,7 @@ export async function readFileContent(
  * @param filePath - Chemin du fichier
  * @param content - Contenu à écrire
  * @param encoding - Encodage (défaut: 'utf-8')
+ * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
  * @returns Promise qui se résout quand l'écriture est terminée
  * @throws {Error} Si l'écriture échoue
  *
@@ -360,16 +400,18 @@ export async function readFileContent(
 export async function writeFileContent(
   filePath: string,
   content: string,
-  encoding: BufferEncoding = 'utf-8'
+  encoding: string = 'utf-8',
+  fsAdapter?: IFsAdapter
 ): Promise<void> {
+  const adapter = fsAdapter || createDefaultFsAdapter()
   const fullPath = resolve(filePath)
 
   // Créer le dossier parent si nécessaire
   const parentDir = dirname(fullPath)
-  await ensureDirectory(parentDir)
+  await ensureDirectory(parentDir, adapter)
 
   try {
-    await fs.writeFile(fullPath, content, encoding)
+    await adapter.writeFile(fullPath, content, encoding as BufferEncoding)
     logger.debug(`Wrote file: ${fullPath}`)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
@@ -382,6 +424,7 @@ export async function writeFileContent(
  *
  * @param filePath - Chemin du fichier
  * @param content - Contenu à ajouter
+ * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
  * @returns Promise qui se résout quand l'ajout est terminé
  * @throws {Error} Si l'ajout échoue
  *
@@ -392,19 +435,21 @@ export async function writeFileContent(
  */
 export async function appendToFile(
   filePath: string,
-  content: string
+  content: string,
+  fsAdapter?: IFsAdapter
 ): Promise<void> {
+  const adapter = fsAdapter || createDefaultFsAdapter()
   const fullPath = resolve(filePath)
 
   // Lire le contenu existant
   let existingContent = ''
-  if (await fs.pathExists(fullPath)) {
-    existingContent = await readFileContent(fullPath)
+  if (await adapter.pathExists(fullPath)) {
+    existingContent = await adapter.readFile(fullPath, 'utf-8')
   }
 
   // Ajouter le nouveau contenu
   const newContent = existingContent + content
 
   // Écrire le fichier
-  await writeFileContent(fullPath, newContent)
+  await adapter.writeFile(fullPath, newContent, 'utf-8')
 }
