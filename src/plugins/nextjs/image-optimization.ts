@@ -66,8 +66,8 @@ export const nextjsImageOptimizationPlugin: Plugin = {
    * Configure l'optimisation d'images dans next.config.js
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -75,10 +75,10 @@ export const nextjsImageOptimizationPlugin: Plugin = {
 
     try {
       const nextConfigPath = join(projectRoot, `next.config.${extension}`)
-      const nextConfigExists = await checkPathExists(nextConfigPath)
+      const nextConfigExists = await checkPathExists(nextConfigPath, ctx.fsAdapter)
 
       if (nextConfigExists) {
-        const existingContent = await readFileContent(nextConfigPath)
+        const existingContent = await readFileContent(nextConfigPath, 'utf-8', ctx.fsAdapter)
         const updatedContent = injectImageConfig(existingContent, extension)
 
         if (updatedContent !== existingContent) {
@@ -127,7 +127,7 @@ export const nextjsImageOptimizationPlugin: Plugin = {
    * Rollback de la configuration
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Image optimization configuration rolled back')

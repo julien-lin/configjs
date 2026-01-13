@@ -109,8 +109,8 @@ export const emotionPlugin: Plugin = {
    * Documentation : https://emotion.sh/docs/introduction
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -119,7 +119,7 @@ export const emotionPlugin: Plugin = {
     try {
       // 1. Créer le dossier components/emotion si nécessaire
       const emotionDir = join(srcDir, 'components', 'emotion')
-      await ensureDirectory(emotionDir)
+      await ensureDirectory(emotionDir, ctx.fsAdapter)
 
       // 2. Créer src/components/emotion/Button.tsx (exemple avec styled API)
       const buttonPath = join(emotionDir, `Button.${extension}`)
@@ -189,7 +189,7 @@ export const emotionPlugin: Plugin = {
    * Rollback de la configuration Emotion
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Emotion configuration rolled back')

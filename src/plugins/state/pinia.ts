@@ -110,8 +110,8 @@ export const piniaPlugin: Plugin = {
    * - src/main.ts (ou main.js) : Intègre Pinia
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -120,7 +120,7 @@ export const piniaPlugin: Plugin = {
     try {
       // 1. Créer le dossier stores si nécessaire
       const storesDir = join(srcDir, 'stores')
-      await ensureDirectory(storesDir)
+      await ensureDirectory(storesDir, ctx.fsAdapter)
 
       // 2. Créer src/stores/index.ts (configuration Pinia)
       const storesIndexPath = join(storesDir, `index.${extension}`)
@@ -156,8 +156,8 @@ export const piniaPlugin: Plugin = {
 
       // 4. Modifier src/main.ts (ou main.js) pour intégrer Pinia
       const mainPath = join(srcDir, `main.${extension}`)
-      if (await checkPathExists(mainPath)) {
-        const mainContent = await readFileContent(mainPath)
+      if (await checkPathExists(mainPath, ctx.fsAdapter)) {
+        const mainContent = await readFileContent(mainPath, 'utf-8', ctx.fsAdapter)
         const updatedMainContent = updateMainFile(mainContent, ctx.typescript)
 
         if (updatedMainContent !== mainContent) {
@@ -194,7 +194,7 @@ export const piniaPlugin: Plugin = {
    * Rollback de la configuration Pinia
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     await backupManager.restoreAll()
     logger.info('Pinia configuration rolled back')
   },

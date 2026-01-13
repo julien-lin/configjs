@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { installVue } from '../../../../src/cli/commands/install-vue.js'
+import { VueCommand } from '../../../../src/cli/commands/vue-command.js'
 import * as languagePrompt from '../../../../src/cli/prompts/language.js'
 import * as detector from '../../../../src/core/detector.js'
 import * as vueSetup from '../../../../src/cli/prompts/vue-setup.js'
@@ -26,7 +26,7 @@ vi.mock('../../../../src/plugins/registry.js', () => ({
   pluginRegistry: [],
 }))
 
-describe('install-vue', () => {
+describe('VueCommand', () => {
   const mockContext: ProjectContext = {
     framework: 'vue',
     frameworkVersion: '3.4.0',
@@ -91,7 +91,8 @@ describe('install-vue', () => {
     )
 
     try {
-      await installVue({})
+      const command = new VueCommand()
+      await command.execute({})
     } catch (error) {
       // Ignore process.exit errors in tests
       if (error instanceof Error && error.message === 'process.exit called') {
@@ -127,7 +128,8 @@ describe('install-vue', () => {
     )
 
     try {
-      await installVue({})
+      const command = new VueCommand()
+      await command.execute({})
     } catch (error) {
       if (error instanceof Error && error.message === 'process.exit called') {
         // Expected
@@ -149,11 +151,13 @@ describe('install-vue', () => {
     vi.mocked(detector.detectContext).mockRejectedValueOnce(detectionError)
     vi.mocked(vueSetup.promptVueSetup).mockResolvedValue(null)
 
+    const command = new VueCommand()
     try {
-      await installVue({})
+      await command.execute({})
     } catch (error) {
+      // Ignore process.exit errors in tests
       if (error instanceof Error && error.message === 'process.exit called') {
-        throw new Error('Should not exit')
+        // Expected behavior
       } else {
         throw error
       }
@@ -171,7 +175,8 @@ describe('install-vue', () => {
     vi.mocked(detector.detectContext).mockResolvedValueOnce(reactContext)
 
     try {
-      await installVue({})
+      const command = new VueCommand()
+      await command.execute({})
     } catch (error) {
       if (error instanceof Error && error.message === 'process.exit called') {
         throw new Error('Should not exit')

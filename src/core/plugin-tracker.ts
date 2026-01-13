@@ -5,6 +5,7 @@ import {
   checkPathExists,
 } from '../utils/fs-helpers.js'
 import { logger } from '../utils/logger.js'
+import type { IFsAdapter } from './fs-adapter.js'
 
 /**
  * Configuration persistante des plugins installés
@@ -52,9 +53,11 @@ const CONFIG_VERSION = '1.0.0'
 export class PluginTracker {
   private configPath: string
   private config: PluginConfig | null = null
+  private readonly fsAdapter?: IFsAdapter
 
-  constructor(projectRoot: string) {
+  constructor(projectRoot: string, fsAdapter?: IFsAdapter) {
     this.configPath = join(projectRoot, CONFIG_FILE_NAME)
+    this.fsAdapter = fsAdapter
   }
 
   /**
@@ -62,7 +65,7 @@ export class PluginTracker {
    */
   async load(): Promise<void> {
     try {
-      const exists = await checkPathExists(this.configPath)
+      const exists = await checkPathExists(this.configPath, this.fsAdapter)
 
       if (!exists) {
         // Initialiser une nouvelle configuration
@@ -74,7 +77,7 @@ export class PluginTracker {
         return
       }
 
-      const content = await readFileContent(this.configPath)
+      const content = await readFileContent(this.configPath, 'utf-8', this.fsAdapter)
       this.config = JSON.parse(content) as PluginConfig
 
       // Vérifier la version du format
@@ -106,7 +109,7 @@ export class PluginTracker {
 
     try {
       const content = JSON.stringify(this.config, null, 2)
-      await writeFileContent(this.configPath, content)
+      await writeFileContent(this.configPath, content, 'utf-8', this.fsAdapter)
     } catch (error) {
       logger.error('Failed to save plugin configuration', error)
       throw error

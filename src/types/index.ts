@@ -2,6 +2,8 @@
  * Types principaux pour confjs
  */
 
+import type { IFsAdapter } from '../core/fs-adapter.js'
+
 export type Framework = 'react' | 'vue' | 'svelte' | 'nextjs'
 export type Bundler = 'vite' | 'webpack' | 'cra' | 'rspack' | 'nextjs' | null
 export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun'
@@ -60,6 +62,9 @@ export interface ProjectContext {
   // Vue.js specific
   vueVersion?: '3' // Version Vue (3 uniquement, Vue 2 non supporté par Vite)
   vueApi?: 'composition' | 'options' // Composition API ou Options API
+
+  // Filesystem adapter (for testing with memfs)
+  fsAdapter?: IFsAdapter
 }
 
 export interface Plugin {

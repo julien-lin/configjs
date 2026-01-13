@@ -94,8 +94,8 @@ export const axiosPlugin: Plugin = {
    * Documentation : https://axios-http.com
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -104,7 +104,7 @@ export const axiosPlugin: Plugin = {
     try {
       // 1. Créer le dossier lib si nécessaire
       const libDir = join(srcDir, 'lib')
-      await ensureDirectory(libDir)
+      await ensureDirectory(libDir, ctx.fsAdapter)
 
       // 2. Créer src/lib/api.ts (instance axios configurée)
       const apiPath = join(libDir, `api.${extension}`)
@@ -155,7 +155,7 @@ export const axiosPlugin: Plugin = {
    * Rollback de la configuration Axios
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Axios configuration rolled back')

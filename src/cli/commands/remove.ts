@@ -12,7 +12,7 @@ export async function removeCommand(pluginName?: string): Promise<void> {
     const ctx = await detectContext(process.cwd())
 
     // Charger le tracker
-    const tracker = new PluginTracker(ctx.projectRoot)
+    const tracker = new PluginTracker(ctx.projectRoot, ctx.fsAdapter)
     await tracker.load()
 
     if (!pluginName) {

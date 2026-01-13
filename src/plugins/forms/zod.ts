@@ -97,8 +97,8 @@ export const zodPlugin: Plugin = {
    * Documentation : https://zod.dev
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = join(ctx.projectRoot, ctx.srcDir)
@@ -106,7 +106,7 @@ export const zodPlugin: Plugin = {
     try {
       // 1. Créer le dossier lib/schemas si nécessaire
       const schemasDir = join(srcDir, 'lib', 'schemas')
-      await ensureDirectory(schemasDir)
+      await ensureDirectory(schemasDir, ctx.fsAdapter)
 
       // 2. Créer src/lib/schemas/user.ts (exemple de schéma)
       const userSchemaPath = join(
@@ -166,7 +166,7 @@ export const zodPlugin: Plugin = {
    * Rollback de la configuration Zod
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Zod configuration rolled back')

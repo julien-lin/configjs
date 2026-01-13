@@ -3,10 +3,10 @@ import { Category } from '../types/index.js'
 import { logger } from '../utils/logger.js'
 
 /**
- * Registry centralisé de tous les plugins disponibles
+ * Registry centralisé de tous les plugins disponibles (36 plugins)
  *
  * Ce registry contient tous les plugins organisés par catégorie.
- * Les plugins sont chargés dynamiquement et validés au chargement.
+ * Les plugins utilisent le pattern builder pour la consistance.
  *
  * @example
  * ```typescript
@@ -20,111 +20,115 @@ import { logger } from '../utils/logger.js'
  * ```
  */
 
-// Import des plugins (seront ajoutés progressivement)
-import { reactRouterPlugin } from './routing/react-router.js'
-import { tanstackRouterPlugin } from './routing/tanstack-router.js'
-import { vueRouterPlugin } from './routing/vue-router.js'
-import { zustandPlugin } from './state/zustand.js'
-import { jotaiPlugin } from './state/jotai.js'
-import { reduxToolkitPlugin } from './state/redux-toolkit.js'
-import { piniaPlugin } from './state/pinia.js'
-import { axiosPlugin } from './http/axios.js'
-import { tanstackQueryPlugin } from './http/tanstack-query.js'
-import { tailwindcssPlugin } from './css/tailwindcss.js'
-import { styledComponentsPlugin } from './css/styled-components.js'
-import { emotionPlugin } from './css/emotion.js'
-import { reactBootstrapPlugin } from './css/react-bootstrap.js'
-import { reactHookFormPlugin } from './forms/react-hook-form.js'
-import { zodPlugin } from './forms/zod.js'
-import { shadcnUiPlugin } from './ui/shadcn-ui.js'
-import { radixUiPlugin } from './ui/radix-ui.js'
-import { reactIconsPlugin } from './ui/react-icons.js'
-import { reactHotToastPlugin } from './ui/react-hot-toast.js'
-import { framerMotionPlugin } from './animation/framer-motion.js'
-import { eslintPlugin } from './tooling/eslint.js'
-import { eslintVuePlugin } from './tooling/eslint-vue.js'
-import { prettierPlugin } from './tooling/prettier.js'
-import { huskyPlugin } from './tooling/husky.js'
-import { dateFnsPlugin } from './utils/date-fns.js'
-import { vueusePlugin } from './utils/vueuse.js'
-import { reactTestingLibraryPlugin } from './testing/react-testing-library.js'
-import { vueTestUtilsPlugin } from './testing/vue-test-utils.js'
-// UI frameworks
-import { vuetifyPlugin } from './ui/vuetify.js'
-// Next.js plugins
-import { tailwindcssNextjsPlugin } from './css/tailwindcss-nextjs.js'
-import { shadcnUiNextjsPlugin } from './ui/shadcn-ui-nextjs.js'
-import { reactHotToastNextjsPlugin } from './ui/react-hot-toast-nextjs.js'
-import { nextjsImageOptimizationPlugin } from './nextjs/image-optimization.js'
-import { nextjsFontOptimizationPlugin } from './nextjs/font-optimization.js'
-import { nextjsMiddlewarePlugin } from './nextjs/middleware.js'
-import { nextjsApiRoutesPlugin } from './nextjs/api-routes.js'
-// ... autres imports
+// ============================================
+// AUTO-GENERATED IMPORTS FROM BUILDER FILES
+// ============================================
+
+import { framerMotionPlugin } from './animation/framer-motion-builder.js'
+import { emotionPlugin } from './css/emotion-builder.js'
+import { reactBootstrapPlugin } from './css/react-bootstrap-builder.js'
+import { styledComponentsPlugin } from './css/styled-components-builder.js'
+import { tailwindcssPlugin } from './css/tailwindcss-builder.js'
+import { tailwindcssNextjsPlugin } from './css/tailwindcss-nextjs-builder.js'
+import { reactHookFormPlugin } from './forms/react-hook-form-builder.js'
+import { zodPlugin } from './forms/zod-builder.js'
+import { axiosPlugin } from './http/axios-builder.js'
+import { tanstackQueryPlugin } from './http/tanstack-query-builder.js'
+import { nextjsApiRoutesPlugin } from './nextjs/api-routes-builder.js'
+import { nextjsFontOptimizationPlugin } from './nextjs/font-optimization-builder.js'
+import { nextjsImageOptimizationPlugin } from './nextjs/image-optimization-builder.js'
+import { nextjsMiddlewarePlugin } from './nextjs/middleware-builder.js'
+import { reactRouterPlugin } from './routing/react-router-builder.js'
+import { tanstackRouterPlugin } from './routing/tanstack-router-builder.js'
+import { vueRouterPlugin } from './routing/vue-router-builder.js'
+import { jotaiPlugin } from './state/jotai-builder.js'
+import { piniaPlugin } from './state/pinia-builder.js'
+import { reduxToolkitPlugin } from './state/redux-toolkit-builder.js'
+import { zustandPlugin } from './state/zustand-builder.js'
+import { reactTestingLibraryPlugin } from './testing/react-testing-library-builder.js'
+import { vueTestUtilsPlugin } from './testing/vue-test-utils-builder.js'
+import { eslintPlugin } from './tooling/eslint-builder.js'
+import { eslintVuePlugin } from './tooling/eslint-vue-builder.js'
+import { huskyPlugin } from './tooling/husky-builder.js'
+import { prettierPlugin } from './tooling/prettier-builder.js'
+import { radixUiPlugin } from './ui/radix-ui-builder.js'
+import { reactHotToastPlugin } from './ui/react-hot-toast-builder.js'
+import { reactHotToastNextjsPlugin } from './ui/react-hot-toast-nextjs-builder.js'
+import { reactIconsPlugin } from './ui/react-icons-builder.js'
+import { shadcnUiPlugin } from './ui/shadcn-ui-builder.js'
+import { shadcnUiNextjsPlugin } from './ui/shadcn-ui-nextjs-builder.js'
+import { vuetifyPlugin } from './ui/vuetify-builder.js'
+import { dateFnsPlugin } from './utils/date-fns-builder.js'
+import { vueusePlugin } from './utils/vueuse-builder.js'
 
 /**
  * Registry de tous les plugins disponibles
- *
- * Les plugins sont organisés par catégorie :
- * - ROUTING : React Router, TanStack Router, etc.
- * - STATE : Zustand, Redux Toolkit, Jotai, etc.
- * - HTTP : Axios, etc.
- * - CSS : TailwindCSS, Bootstrap, etc.
- * - TOOLING : ESLint, Prettier, Husky, etc.
  */
 export const pluginRegistry: Plugin[] = [
-  // Routing
-  reactRouterPlugin,
-  tanstackRouterPlugin,
-  vueRouterPlugin,
-  // State
-  zustandPlugin,
-  jotaiPlugin,
-  reduxToolkitPlugin,
-  piniaPlugin,
+  // ANIMATION
+  framerMotionPlugin,
+
+  // CSS
+  emotionPlugin,
+  reactBootstrapPlugin,
+  styledComponentsPlugin,
+  tailwindcssPlugin,
+  tailwindcssNextjsPlugin,
+
+  // FORMS
+  reactHookFormPlugin,
+  zodPlugin,
+
   // HTTP
   axiosPlugin,
   tanstackQueryPlugin,
-  // CSS
-  tailwindcssPlugin,
-  tailwindcssNextjsPlugin,
-  styledComponentsPlugin,
-  emotionPlugin,
-  reactBootstrapPlugin,
-  // Forms
-  reactHookFormPlugin,
-  zodPlugin,
-  // UI
-  shadcnUiPlugin,
-  shadcnUiNextjsPlugin,
-  radixUiPlugin,
-  reactIconsPlugin,
-  reactHotToastPlugin,
-  reactHotToastNextjsPlugin,
-  framerMotionPlugin,
-  vuetifyPlugin,
-  // Tooling
+
+  // NEXTJS
+  nextjsApiRoutesPlugin,
+  nextjsFontOptimizationPlugin,
+  nextjsImageOptimizationPlugin,
+  nextjsMiddlewarePlugin,
+
+  // ROUTING
+  reactRouterPlugin,
+  tanstackRouterPlugin,
+  vueRouterPlugin,
+
+  // STATE
+  jotaiPlugin,
+  piniaPlugin,
+  reduxToolkitPlugin,
+  zustandPlugin,
+
+  // TESTING
+  reactTestingLibraryPlugin,
+  vueTestUtilsPlugin,
+
+  // TOOLING
   eslintPlugin,
   eslintVuePlugin,
-  prettierPlugin,
   huskyPlugin,
+  prettierPlugin,
+
+  // UI
+  radixUiPlugin,
+  reactHotToastPlugin,
+  reactHotToastNextjsPlugin,
+  reactIconsPlugin,
+  shadcnUiPlugin,
+  shadcnUiNextjsPlugin,
+  vuetifyPlugin,
+
+  // UTILS
   dateFnsPlugin,
   vueusePlugin,
-  // Testing
-  vueTestUtilsPlugin,
-  reactTestingLibraryPlugin,
-  // Next.js specific
-  nextjsImageOptimizationPlugin,
-  nextjsFontOptimizationPlugin,
-  nextjsMiddlewarePlugin,
-  nextjsApiRoutesPlugin,
-  // etc.
 ]
+
+// Reste du code du registry (validate, getPluginById, etc.)
+// ... (copié du fichier original)
 
 /**
  * Valide qu'un plugin respecte l'interface Plugin
- *
- * @param plugin - Plugin à valider
- * @returns true si le plugin est valide, false sinon
  */
 function validatePlugin(plugin: Plugin): boolean {
   const requiredFields: (keyof Plugin)[] = [
@@ -145,7 +149,6 @@ function validatePlugin(plugin: Plugin): boolean {
     }
   }
 
-  // Vérifier que category est valide
   if (!Object.values(Category).includes(plugin.category)) {
     logger.error(
       `Plugin validation failed: invalid category '${plugin.category}'`,
@@ -156,14 +159,27 @@ function validatePlugin(plugin: Plugin): boolean {
     return false
   }
 
-  // Vérifier que frameworks est un tableau non vide
   if (!Array.isArray(plugin.frameworks) || plugin.frameworks.length === 0) {
     logger.error(
-      `Plugin validation failed: frameworks must be a non-empty array`,
+      `Plugin validation failed: 'frameworks' must be a non-empty array`,
       {
         plugin: plugin.name,
       }
     )
+    return false
+  }
+
+  if (typeof plugin.install !== 'function') {
+    logger.error(`Plugin validation failed: 'install' must be a function`, {
+      plugin: plugin.name,
+    })
+    return false
+  }
+
+  if (typeof plugin.configure !== 'function') {
+    logger.error(`Plugin validation failed: 'configure' must be a function`, {
+      plugin: plugin.name,
+    })
     return false
   }
 
@@ -172,9 +188,6 @@ function validatePlugin(plugin: Plugin): boolean {
 
 /**
  * Valide tous les plugins du registry au chargement
- *
- * @param plugins - Liste des plugins à valider
- * @returns Liste des plugins valides
  */
 function validateRegistry(plugins: Plugin[]): Plugin[] {
   const validPlugins: Plugin[] = []
@@ -199,66 +212,39 @@ function validateRegistry(plugins: Plugin[]): Plugin[] {
   return validPlugins
 }
 
-/**
- * Obtient tous les plugins d'une catégorie spécifique
- *
- * @param category - Catégorie des plugins à récupérer
- * @returns Liste des plugins de la catégorie
- *
- * @example
- * ```typescript
- * const routingPlugins = getPluginsByCategory(Category.ROUTING)
- * // Retourne : [reactRouterPlugin, tanstackRouterPlugin]
- * ```
- */
-export function getPluginsByCategory(category: Category): Plugin[] {
-  return pluginRegistry.filter((plugin) => plugin.category === category)
+// Valider le registry au chargement
+// NOTE: Les tests vont modifier pluginRegistry, donc validatedRegistry doit être dynamique
+function getValidatedRegistry(): Plugin[] {
+  return validateRegistry(pluginRegistry)
 }
 
 /**
- * Obtient un plugin par son identifiant (name)
- *
- * @param id - Identifiant du plugin (name)
- * @returns Plugin trouvé ou undefined
- *
- * @example
- * ```typescript
- * const router = getPluginById('react-router-dom')
- * if (router) {
- *   // Utiliser le plugin
- * }
- * ```
+ * Obtient un plugin par son ID (nom du package)
  */
 export function getPluginById(id: string): Plugin | undefined {
-  return pluginRegistry.find((plugin) => plugin.name === id)
+  return getValidatedRegistry().find((p) => p.name === id)
+}
+
+/**
+ * Obtient les plugins par catégorie
+ */
+export function getPluginsByCategory(category: Category): Plugin[] {
+  return getValidatedRegistry().filter((p) => p.category === category)
 }
 
 /**
  * Obtient les plugins compatibles avec un contexte de projet donné
- *
- * @param ctx - Contexte du projet
- * @returns Liste des plugins compatibles avec le contexte
- *
- * @example
- * ```typescript
- * const ctx = await detectContext(projectRoot)
- * const compatiblePlugins = getCompatiblePlugins(ctx)
- * // Retourne uniquement les plugins compatibles avec React + TypeScript + Vite
- * ```
  */
 export function getCompatiblePlugins(ctx: ProjectContext): Plugin[] {
-  return pluginRegistry.filter((plugin) => {
-    // Vérifier le framework
+  return getValidatedRegistry().filter((plugin) => {
     if (!plugin.frameworks.includes(ctx.framework)) {
       return false
     }
 
-    // Vérifier TypeScript si requis
     if (plugin.requiresTypeScript === true && !ctx.typescript) {
       return false
     }
 
-    // Vérifier le bundler si spécifié
     if (plugin.bundlers && plugin.bundlers.length > 0) {
       if (ctx.bundler === null || !plugin.bundlers.includes(ctx.bundler)) {
         return false
@@ -271,64 +257,39 @@ export function getCompatiblePlugins(ctx: ProjectContext): Plugin[] {
 
 /**
  * Obtient les plugins compatibles avec un plugin donné et un contexte
- *
- * @param plugin - Plugin de référence
- * @param ctx - Contexte du projet
- * @returns Liste des plugins compatibles
- *
- * @example
- * ```typescript
- * const compatible = getCompatiblePluginsForPlugin(reactRouterPlugin, ctx)
- * // Retourne les plugins qui ne sont pas dans incompatibleWith
- * ```
  */
 export function getCompatiblePluginsForPlugin(
   plugin: Plugin,
   ctx: ProjectContext
 ): Plugin[] {
-  const allCompatible = getCompatiblePlugins(ctx)
+  const compatible = getCompatiblePlugins(ctx)
 
-  // Filtrer les plugins incompatibles
-  if (plugin.incompatibleWith && plugin.incompatibleWith.length > 0) {
-    const incompatible = plugin.incompatibleWith
-    return allCompatible.filter((p) => !incompatible.includes(p.name))
+  if (plugin.incompatibleWith) {
+    return compatible.filter((p) => !plugin.incompatibleWith!.includes(p.name))
   }
 
-  return allCompatible
+  return compatible
 }
 
 /**
  * Recherche des plugins par nom, description ou catégorie
- *
- * @param query - Terme de recherche
- * @returns Liste des plugins correspondant à la recherche
- *
- * @example
- * ```typescript
- * const results = searchPlugins('router')
- * // Retourne : [reactRouterPlugin, tanstackRouterPlugin]
- * ```
  */
 export function searchPlugins(query: string): Plugin[] {
   const lowerQuery = query.toLowerCase()
 
-  return pluginRegistry.filter((plugin) => {
-    // Recherche dans le nom
+  return getValidatedRegistry().filter((plugin) => {
     if (plugin.name.toLowerCase().includes(lowerQuery)) {
       return true
     }
 
-    // Recherche dans le displayName
     if (plugin.displayName.toLowerCase().includes(lowerQuery)) {
       return true
     }
 
-    // Recherche dans la description
     if (plugin.description.toLowerCase().includes(lowerQuery)) {
       return true
     }
 
-    // Recherche dans la catégorie
     if (plugin.category.toLowerCase().includes(lowerQuery)) {
       return true
     }
@@ -339,87 +300,52 @@ export function searchPlugins(query: string): Plugin[] {
 
 /**
  * Obtient tous les plugins disponibles pour un framework spécifique
- *
- * @param framework - Framework cible
- * @returns Liste des plugins compatibles avec le framework
- *
- * @example
- * ```typescript
- * const reactPlugins = getPluginsByFramework('react')
- * ```
  */
 export function getPluginsByFramework(framework: Framework): Plugin[] {
-  return pluginRegistry.filter((plugin) =>
-    plugin.frameworks.includes(framework)
-  )
+  return getValidatedRegistry().filter((p) => p.frameworks.includes(framework))
 }
 
 /**
  * Obtient les plugins déjà installés dans le projet
- *
- * @param ctx - Contexte du projet
- * @returns Liste des plugins détectés comme installés
- *
- * @example
- * ```typescript
- * const installed = getInstalledPlugins(ctx)
- * // Retourne les plugins dont detect() retourne true
- * ```
  */
 export async function getInstalledPlugins(
   ctx: ProjectContext
 ): Promise<Plugin[]> {
-  const installed: Plugin[] = []
+  const plugins = getValidatedRegistry()
+  const result: Plugin[] = []
 
-  for (const plugin of pluginRegistry) {
-    if (plugin.detect) {
-      try {
-        const isInstalled = await Promise.resolve(plugin.detect(ctx))
-        if (isInstalled) {
-          installed.push(plugin)
-        }
-      } catch (error) {
-        logger.warn(`Error detecting plugin ${plugin.name}:`, error)
+  for (const p of plugins) {
+    if (!p.detect) continue
+    try {
+      const isDetected = await p.detect(ctx)
+      if (isDetected) {
+        result.push(p)
       }
+    } catch (error) {
+      // Gère gracieusement les erreurs de détection
+      // Log l'erreur pour débogage
+      logger.warn(
+        `Detection failed for plugin ${p.name}: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
-  return installed
+  return result
 }
 
 /**
- * Obtient les plugins recommandés pour un contexte donné
- *
- * @param ctx - Contexte du projet
- * @returns Liste des plugins recommandés (par catégorie)
- *
- * @example
- * ```typescript
- * const recommended = getRecommendedPlugins(ctx)
- * // Retourne un plugin recommandé par catégorie
- * ```
+ * Obtient les plugins recommandés (un par catégorie) compatibles avec le contexte
  */
 export function getRecommendedPlugins(ctx: ProjectContext): Plugin[] {
   const compatible = getCompatiblePlugins(ctx)
-  const recommended: Plugin[] = []
-  const categoriesSeen = new Set<Category>()
+  const categoryMap = new Map<string, Plugin>()
 
-  // Pour chaque catégorie, prendre le premier plugin compatible
   for (const plugin of compatible) {
-    if (!categoriesSeen.has(plugin.category)) {
-      recommended.push(plugin)
-      categoriesSeen.add(plugin.category)
+    const category = plugin.category
+    if (!categoryMap.has(category)) {
+      categoryMap.set(category, plugin)
     }
   }
 
-  return recommended
-}
-
-// Validation du registry au chargement
-const validatedRegistry = validateRegistry(pluginRegistry)
-
-if (validatedRegistry.length !== pluginRegistry.length) {
-  logger.warn(
-    `Registry validation: ${pluginRegistry.length - validatedRegistry.length} plugins were excluded`
-  )
+  return Array.from(categoryMap.values())
 }

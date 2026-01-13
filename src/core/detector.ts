@@ -13,6 +13,8 @@ import {
 } from '../utils/fs-helpers.js'
 import { detectPackageManager } from '../utils/package-manager.js'
 import { logger } from '../utils/logger.js'
+import type { IFsAdapter } from './fs-adapter.js'
+import { createDefaultFsAdapter } from './fs-adapter.js'
 
 /**
  * Cache pour les résultats de détection
@@ -110,7 +112,8 @@ function detectFramework(pkg: Record<string, unknown>): {
  */
 async function detectBundler(
   projectRoot: string,
-  pkg: Record<string, unknown>
+  pkg: Record<string, unknown>,
+  fsAdapter?: IFsAdapter
 ): Promise<{ bundler: Bundler; version: string | null }> {
   const deps = {
     ...((pkg['dependencies'] as Record<string, string>) || {}),
@@ -121,10 +124,10 @@ async function detectBundler(
   if (deps['next']) {
     // Vérifier la présence de next.config.js ou next.config.ts
     const nextConfigExists =
-      (await checkPathExists(join(projectRoot, 'next.config.js'))) ||
-      (await checkPathExists(join(projectRoot, 'next.config.ts'))) ||
-      (await checkPathExists(join(projectRoot, 'next.config.mjs'))) ||
-      (await checkPathExists(join(projectRoot, 'next.config.cjs')))
+      (await checkPathExists(join(projectRoot, 'next.config.js'), fsAdapter)) ||
+      (await checkPathExists(join(projectRoot, 'next.config.ts'), fsAdapter)) ||
+      (await checkPathExists(join(projectRoot, 'next.config.mjs'), fsAdapter)) ||
+      (await checkPathExists(join(projectRoot, 'next.config.cjs'), fsAdapter))
 
     if (nextConfigExists) {
       return {
@@ -137,10 +140,10 @@ async function detectBundler(
   // Détection Vite (prioritaire pour Vue.js)
   if (deps['vite']) {
     const viteConfigExists =
-      (await checkPathExists(join(projectRoot, 'vite.config.js'))) ||
-      (await checkPathExists(join(projectRoot, 'vite.config.ts'))) ||
-      (await checkPathExists(join(projectRoot, 'vite.config.mjs'))) ||
-      (await checkPathExists(join(projectRoot, 'vite.config.cjs')))
+      (await checkPathExists(join(projectRoot, 'vite.config.js'), fsAdapter)) ||
+      (await checkPathExists(join(projectRoot, 'vite.config.ts'), fsAdapter)) ||
+      (await checkPathExists(join(projectRoot, 'vite.config.mjs'), fsAdapter)) ||
+      (await checkPathExists(join(projectRoot, 'vite.config.cjs'), fsAdapter))
 
     if (viteConfigExists) {
       return {
@@ -153,7 +156,8 @@ async function detectBundler(
   // Détection Vue CLI (legacy, pour projets Vue existants)
   if (deps['vue'] && deps['@vue/cli-service']) {
     const vueConfigExists = await checkPathExists(
-      join(projectRoot, 'vue.config.js')
+      join(projectRoot, 'vue.config.js'),
+      fsAdapter
     )
 
     if (vueConfigExists) {
@@ -175,8 +179,8 @@ async function detectBundler(
   // Détection Webpack
   if (deps['webpack']) {
     const webpackConfigExists =
-      (await checkPathExists(join(projectRoot, 'webpack.config.js'))) ||
-      (await checkPathExists(join(projectRoot, 'webpack.config.ts')))
+      (await checkPathExists(join(projectRoot, 'webpack.config.js'), fsAdapter)) ||
+      (await checkPathExists(join(projectRoot, 'webpack.config.ts'), fsAdapter))
 
     if (webpackConfigExists) {
       return {
@@ -210,9 +214,10 @@ async function detectBundler(
  * @internal
  */
 async function detectTypeScript(
-  projectRoot: string
+  projectRoot: string,
+  fsAdapter?: IFsAdapter
 ): Promise<{ typescript: boolean; tsconfigPath?: string }> {
-  const tsConfig = await readTsConfig(projectRoot)
+  const tsConfig = await readTsConfig(projectRoot, fsAdapter)
 
   if (tsConfig) {
     // Chercher le chemin exact du tsconfig
@@ -223,7 +228,7 @@ async function detectTypeScript(
     ]
 
     for (const path of possiblePaths) {
-      if (await checkPathExists(path)) {
+      if (await checkPathExists(path, fsAdapter)) {
         return {
           typescript: true,
           tsconfigPath: path,
@@ -250,12 +255,15 @@ async function detectTypeScript(
  *
  * @internal
  */
-async function detectSrcDir(projectRoot: string): Promise<string> {
+async function detectSrcDir(
+  projectRoot: string,
+  fsAdapter?: IFsAdapter
+): Promise<string> {
   const possibleDirs = ['src', 'app', 'source', 'lib']
 
   for (const dir of possibleDirs) {
     const dirPath = join(projectRoot, dir)
-    if (await checkPathExists(dirPath)) {
+    if (await checkPathExists(dirPath, fsAdapter)) {
       return dir
     }
   }
@@ -272,12 +280,15 @@ async function detectSrcDir(projectRoot: string): Promise<string> {
  *
  * @internal
  */
-async function detectPublicDir(projectRoot: string): Promise<string> {
+async function detectPublicDir(
+  projectRoot: string,
+  fsAdapter?: IFsAdapter
+): Promise<string> {
   const possibleDirs = ['public', 'static', 'assets']
 
   for (const dir of possibleDirs) {
     const dirPath = join(projectRoot, dir)
-    if (await checkPathExists(dirPath)) {
+    if (await checkPathExists(dirPath, fsAdapter)) {
       return dir
     }
   }
@@ -297,7 +308,8 @@ async function detectPublicDir(projectRoot: string): Promise<string> {
  */
 async function detectNextjsRouter(
   projectRoot: string,
-  srcDir: string
+  srcDir: string,
+  fsAdapter?: IFsAdapter
 ): Promise<'app' | 'pages' | undefined> {
   // Vérifier dans srcDir d'abord, puis à la racine
   const appDirInSrc = join(projectRoot, srcDir, 'app')
@@ -306,11 +318,11 @@ async function detectNextjsRouter(
   const pagesDirAtRoot = join(projectRoot, 'pages')
 
   const appDirExists =
-    (await checkPathExists(appDirInSrc)) ||
-    (await checkPathExists(appDirAtRoot))
+    (await checkPathExists(appDirInSrc, fsAdapter)) ||
+    (await checkPathExists(appDirAtRoot, fsAdapter))
   const pagesDirExists =
-    (await checkPathExists(pagesDirInSrc)) ||
-    (await checkPathExists(pagesDirAtRoot))
+    (await checkPathExists(pagesDirInSrc, fsAdapter)) ||
+    (await checkPathExists(pagesDirAtRoot, fsAdapter))
 
   // Si les deux existent, prioriser App Router (nouveau système)
   if (appDirExists) {
@@ -336,13 +348,14 @@ async function detectNextjsRouter(
  */
 async function detectVueApi(
   projectRoot: string,
-  srcDir: string
+  srcDir: string,
+  fsAdapter?: IFsAdapter
 ): Promise<'composition' | 'options' | undefined> {
-  const { readdir, readFile } = await import('fs/promises')
+  const adapter = fsAdapter || createDefaultFsAdapter()
   const srcPath = join(projectRoot, srcDir)
 
   // Vérifier si le dossier src existe
-  if (!(await checkPathExists(srcPath))) {
+  if (!(await checkPathExists(srcPath, adapter))) {
     return undefined
   }
 
@@ -350,12 +363,13 @@ async function detectVueApi(
     // Chercher les fichiers .vue dans src et ses sous-dossiers
     const files: string[] = []
     async function findVueFiles(dir: string): Promise<void> {
-      const entries = await readdir(dir, { withFileTypes: true })
-      for (const entry of entries) {
-        const fullPath = join(dir, entry.name)
-        if (entry.isDirectory()) {
+      const entries = await adapter.readdir(dir)
+      for (const entryName of entries) {
+        const fullPath = join(dir, entryName)
+        const stat = await adapter.stat(fullPath)
+        if (stat.isDirectory()) {
           await findVueFiles(fullPath)
-        } else if (entry.name.endsWith('.vue')) {
+        } else if (entryName.endsWith('.vue')) {
           files.push(fullPath)
         }
       }
@@ -370,7 +384,7 @@ async function detectVueApi(
     for (const file of files.slice(0, 10)) {
       // Limiter à 10 fichiers pour performance
       try {
-        const content = await readFile(file, 'utf-8')
+        const content = await adapter.readFile(file, 'utf-8')
         // Détecter Composition API : présence de <script setup> ou setup()
         if (
           content.includes('<script setup>') ||
@@ -416,10 +430,11 @@ async function detectVueApi(
  * @internal
  */
 async function detectGit(
-  projectRoot: string
+  projectRoot: string,
+  fsAdapter?: IFsAdapter
 ): Promise<{ hasGit: boolean; gitHooksPath?: string }> {
   const gitDir = join(projectRoot, '.git')
-  const hasGit = await checkPathExists(gitDir)
+  const hasGit = await checkPathExists(gitDir, fsAdapter)
 
   if (!hasGit) {
     return { hasGit: false }
@@ -427,7 +442,7 @@ async function detectGit(
 
   // Chercher le dossier hooks
   const hooksPath = join(gitDir, 'hooks')
-  const hasHooks = await checkPathExists(hooksPath)
+  const hasHooks = await checkPathExists(hooksPath, fsAdapter)
 
   return {
     hasGit: true,
@@ -446,7 +461,8 @@ async function detectGit(
  */
 async function detectLockfile(
   projectRoot: string,
-  packageManager: PackageManager
+  packageManager: PackageManager,
+  fsAdapter?: IFsAdapter
 ): Promise<string> {
   const lockfiles: Record<PackageManager, string> = {
     npm: 'package-lock.json',
@@ -458,7 +474,7 @@ async function detectLockfile(
   const lockfile = lockfiles[packageManager]
   const lockfilePath = join(projectRoot, lockfile)
 
-  if (await checkPathExists(lockfilePath)) {
+  if (await checkPathExists(lockfilePath, fsAdapter)) {
     return lockfile
   }
 
@@ -494,7 +510,8 @@ async function detectLockfile(
  * ```
  */
 export async function detectContext(
-  projectRoot: string
+  projectRoot: string,
+  fsAdapter?: IFsAdapter
 ): Promise<ProjectContext> {
   const fullPath = resolve(projectRoot)
 
@@ -512,7 +529,7 @@ export async function detectContext(
   // Vérifier que package.json existe
   let pkg: Record<string, unknown>
   try {
-    pkg = await readPackageJson(fullPath)
+    pkg = await readPackageJson(fullPath, fsAdapter)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     throw new DetectionError(
@@ -532,28 +549,28 @@ export async function detectContext(
     gitInfo,
   ] = await Promise.all([
     Promise.resolve(detectFramework(pkg)),
-    detectTypeScript(fullPath),
-    detectBundler(fullPath, pkg),
+    detectTypeScript(fullPath, fsAdapter),
+    detectBundler(fullPath, pkg, fsAdapter),
     detectPackageManager(fullPath),
-    detectSrcDir(fullPath),
-    detectPublicDir(fullPath),
-    detectGit(fullPath),
+    detectSrcDir(fullPath, fsAdapter),
+    detectPublicDir(fullPath, fsAdapter),
+    detectGit(fullPath, fsAdapter),
   ])
 
   // Détecter le lockfile
-  const lockfile = await detectLockfile(fullPath, packageManager)
+  const lockfile = await detectLockfile(fullPath, packageManager, fsAdapter)
 
   // Détecter le router Next.js si applicable
   const nextjsRouter =
     frameworkInfo.framework === 'nextjs'
-      ? await detectNextjsRouter(fullPath, srcDir)
+      ? await detectNextjsRouter(fullPath, srcDir, fsAdapter)
       : undefined
 
   // Détecter Vue.js version et API style si applicable
   const vueVersion = frameworkInfo.framework === 'vue' ? '3' : undefined // Vue 3 uniquement
   const vueApi =
     frameworkInfo.framework === 'vue'
-      ? await detectVueApi(fullPath, srcDir)
+      ? await detectVueApi(fullPath, srcDir, fsAdapter)
       : undefined
 
   // Extraire les dépendances
@@ -602,6 +619,9 @@ export async function detectContext(
     // Vue.js specific
     vueVersion,
     vueApi,
+
+    // Filesystem adapter (for testing with memfs)
+    fsAdapter,
   }
 
   // Mettre en cache

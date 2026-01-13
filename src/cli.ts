@@ -31,8 +31,9 @@ program
       install?: boolean
     }) => {
       try {
-        const { installReact } = await import('./cli/commands/install.js')
-        await installReact(options)
+        const { ReactCommand } = await import('./cli/commands/react-command.js')
+        const command = new ReactCommand()
+        await command.execute(options)
       } catch (error) {
         console.error('Error:', error)
         process.exit(1)
@@ -61,9 +62,10 @@ program
       install?: boolean
     }) => {
       try {
-        const { installNextjs } =
-          await import('./cli/commands/install-nextjs.js')
-        await installNextjs(options)
+        const { NextjsCommand } =
+          await import('./cli/commands/nextjs-command.js')
+        const command = new NextjsCommand()
+        await command.execute(options)
       } catch (error) {
         console.error('Error:', error)
         process.exit(1)
@@ -92,8 +94,9 @@ program
       install?: boolean
     }) => {
       try {
-        const { installVue } = await import('./cli/commands/install-vue.js')
-        await installVue(options)
+        const { VueCommand } = await import('./cli/commands/vue-command.js')
+        const command = new VueCommand()
+        await command.execute(options)
       } catch (error) {
         console.error('Error:', error)
         process.exit(1)

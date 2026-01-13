@@ -100,8 +100,8 @@ export const reactHotToastPlugin: Plugin = {
    * Documentation : https://react-hot-toast.com
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = join(ctx.projectRoot, ctx.srcDir)
@@ -116,15 +116,15 @@ export const reactHotToastPlugin: Plugin = {
       let targetPath: string | null = null
       let targetContent = ''
 
-      if (await checkPathExists(appPath)) {
+      if (await checkPathExists(appPath, ctx.fsAdapter)) {
         targetPath = appPath
-        targetContent = await readFileContent(appPath)
-      } else if (await checkPathExists(mainPath)) {
+        targetContent = await readFileContent(appPath, 'utf-8', ctx.fsAdapter)
+      } else if (await checkPathExists(mainPath, ctx.fsAdapter)) {
         targetPath = mainPath
-        targetContent = await readFileContent(mainPath)
-      } else if (await checkPathExists(indexPath)) {
+        targetContent = await readFileContent(mainPath, 'utf-8', ctx.fsAdapter)
+      } else if (await checkPathExists(indexPath, ctx.fsAdapter)) {
         targetPath = indexPath
-        targetContent = await readFileContent(indexPath)
+        targetContent = await readFileContent(indexPath, 'utf-8', ctx.fsAdapter)
       }
 
       if (targetPath && targetContent) {
@@ -182,7 +182,7 @@ export const reactHotToastPlugin: Plugin = {
    * Rollback de la configuration React Hot Toast
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('React Hot Toast configuration rolled back')

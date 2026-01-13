@@ -99,8 +99,8 @@ export const prettierPlugin: Plugin = {
    * Documentation : https://prettier.io/docs/en/configuration.html
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -108,7 +108,7 @@ export const prettierPlugin: Plugin = {
     try {
       // 1. Créer .prettierrc.json
       const prettierrcPath = join(projectRoot, '.prettierrc.json')
-      const prettierrcExists = await checkPathExists(prettierrcPath)
+      const prettierrcExists = await checkPathExists(prettierrcPath, ctx.fsAdapter)
 
       if (prettierrcExists) {
         logger.warn('.prettierrc.json already exists, skipping creation')
@@ -128,7 +128,7 @@ export const prettierPlugin: Plugin = {
 
       // 2. Créer .prettierignore
       const prettierignorePath = join(projectRoot, '.prettierignore')
-      const prettierignoreExists = await checkPathExists(prettierignorePath)
+      const prettierignoreExists = await checkPathExists(prettierignorePath, ctx.fsAdapter)
 
       if (prettierignoreExists) {
         logger.warn('.prettierignore already exists, skipping creation')
@@ -148,10 +148,10 @@ export const prettierPlugin: Plugin = {
 
       // 3. Ajouter les scripts dans package.json si nécessaire
       const packageJsonPath = join(projectRoot, 'package.json')
-      const packageJsonExists = await checkPathExists(packageJsonPath)
+      const packageJsonExists = await checkPathExists(packageJsonPath, ctx.fsAdapter)
 
       if (packageJsonExists) {
-        const packageJsonContent = await readFileContent(packageJsonPath)
+        const packageJsonContent = await readFileContent(packageJsonPath, 'utf-8', ctx.fsAdapter)
         const packageJson = JSON.parse(packageJsonContent) as {
           scripts?: Record<string, string>
         }
@@ -209,7 +209,7 @@ export const prettierPlugin: Plugin = {
    * Rollback de la configuration Prettier
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Prettier configuration rolled back')

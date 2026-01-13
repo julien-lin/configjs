@@ -105,8 +105,8 @@ export const vueTestUtilsPlugin: Plugin = {
    * - src/components/__tests__/Example.spec.ts : Exemple de test
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const extension = ctx.typescript ? 'ts' : 'js'
@@ -136,7 +136,7 @@ export const vueTestUtilsPlugin: Plugin = {
         'components',
         '__tests__'
       )
-      await ensureDirectory(testsDir)
+      await ensureDirectory(testsDir, ctx.fsAdapter)
 
       // 3. Créer exemple de test
       const testFilePath = join(testsDir, `Example.spec.${extension}`)
@@ -189,7 +189,7 @@ export const vueTestUtilsPlugin: Plugin = {
    * Rollback de la configuration Vue Test Utils
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     await backupManager.restoreAll()
     logger.info('Vue Test Utils configuration rolled back')
   },

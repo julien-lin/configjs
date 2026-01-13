@@ -4,7 +4,7 @@ import { existsSync } from 'fs'
 import { pluginRegistry } from '../../plugins/registry.js'
 import {
   CompatibilityValidator,
-  compatibilityRules,
+  allCompatibilityRules,
 } from '../../core/validator.js'
 import { logger } from '../../utils/logger.js'
 
@@ -91,7 +91,7 @@ export async function checkCompatibility(options: {
     // 3. Validation
     console.log('\n🔍 Analyse de compatibilité...\n')
 
-    const validator = new CompatibilityValidator(compatibilityRules)
+    const validator = new CompatibilityValidator(allCompatibilityRules)
     const validation = validator.validate(
       selectedPlugins as typeof pluginRegistry
     )

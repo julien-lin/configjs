@@ -65,8 +65,8 @@ export const nextjsFontOptimizationPlugin: Plugin = {
    * Configure l'optimisation de polices dans app/layout.tsx ou pages/_app.tsx
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -95,16 +95,16 @@ export const nextjsFontOptimizationPlugin: Plugin = {
       let targetContent = ''
 
       if (isAppRouter) {
-        const appLayoutExists = await checkPathExists(appLayoutPath)
+        const appLayoutExists = await checkPathExists(appLayoutPath, ctx.fsAdapter)
         if (appLayoutExists) {
           targetPath = appLayoutPath
-          targetContent = await readFileContent(appLayoutPath)
+          targetContent = await readFileContent(appLayoutPath, 'utf-8', ctx.fsAdapter)
         }
       } else {
-        const pagesAppExists = await checkPathExists(pagesAppPath)
+        const pagesAppExists = await checkPathExists(pagesAppPath, ctx.fsAdapter)
         if (pagesAppExists) {
           targetPath = pagesAppPath
-          targetContent = await readFileContent(pagesAppPath)
+          targetContent = await readFileContent(pagesAppPath, 'utf-8', ctx.fsAdapter)
         }
       }
 
@@ -155,7 +155,7 @@ export const nextjsFontOptimizationPlugin: Plugin = {
    * Rollback de la configuration
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Font optimization configuration rolled back')

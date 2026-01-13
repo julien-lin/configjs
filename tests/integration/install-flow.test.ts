@@ -1,6 +1,6 @@
 /**
  * Integration Tests: Installation Flow
- * Teste les workflows réels d'installation de plugins
+ * Teste les workflows réels d'installation de plugins avec memfs
  *
  * @group integration
  */
@@ -13,7 +13,8 @@ import {
   readPackageJson,
   fileExists,
   verifyProjectSetup,
-} from './test-utils.js'
+  getFsAdapter,
+} from './memfs-test-utils.js'
 import { Installer } from '../../src/core/installer.js'
 import {
   CompatibilityValidator,
@@ -27,41 +28,49 @@ import type { Plugin } from '../../src/types/index.js'
 import { Category } from '../../src/types/index.js'
 import type { Framework } from '../../src/types/index.js'
 
-describe('Integration: Installation Flow', () => {
+describe('Integration: Installation Flow (memfs)', () => {
   let projectPath: string
 
-  beforeEach(async () => {
-    projectPath = await createTestProject('install-flow-test')
+  beforeEach(() => {
+    projectPath = createTestProject('install-flow-test', 'react', {
+      typescript: true,
+      packageManager: 'npm',
+    })
   })
 
-  afterEach(async () => {
-    await cleanupTestProject(projectPath)
+  afterEach(() => {
+    cleanupTestProject(projectPath)
   })
 
   // ===== Basic Installation Tests =====
 
   it('should initialize a minimal React project structure', async () => {
     // Vérifier les fichiers de base
-    const hasPackageJson = await fileExists(join(projectPath, 'package.json'))
+    const hasPackageJson = fileExists(join(projectPath, 'package.json'))
     expect(hasPackageJson).toBe(true)
 
-    const pkg = await readPackageJson(projectPath)
-    expect(pkg['name']).toMatch(/install-flow-test/)
+    const pkg = readPackageJson(projectPath)
+    expect(pkg['name']).toBeDefined()
     expect(pkg['dependencies']).toHaveProperty('react')
 
-    const context = await detectContext(projectPath)
+    const fsAdapter = getFsAdapter()
+    expect(fsAdapter).toBeDefined()
+
+    const context = await detectContext(projectPath, fsAdapter!)
     expect(context.framework).toBe('react')
   })
 
   it('should detect React project correctly', async () => {
-    const context = await detectContext(projectPath)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
     expect(context.framework).toBe('react')
     expect(context.projectRoot).toBeDefined()
     expect(context.packageManager).toBeDefined()
   })
 
   it('should validate project structure before installation', async () => {
-    const context = await detectContext(projectPath)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
     expect(context.framework).toBe('react')
     expect(context.projectRoot).toBeDefined()
   })
@@ -69,9 +78,10 @@ describe('Integration: Installation Flow', () => {
   // ===== Single Plugin Installation =====
 
   it('should install single plugin without errors', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -95,9 +105,10 @@ describe('Integration: Installation Flow', () => {
   })
 
   it('should add plugin dependencies to package.json', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -119,9 +130,10 @@ describe('Integration: Installation Flow', () => {
   })
 
   it('should create plugin configuration files', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -148,9 +160,10 @@ describe('Integration: Installation Flow', () => {
   // ===== Multi-Plugin Installation =====
 
   it('should install multiple complementary plugins', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -176,9 +189,10 @@ describe('Integration: Installation Flow', () => {
   })
 
   it('should maintain installation order and dependencies', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -202,9 +216,10 @@ describe('Integration: Installation Flow', () => {
   })
 
   it('should create appropriate config files for each plugin', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -229,9 +244,10 @@ describe('Integration: Installation Flow', () => {
   // ===== Compatibility Tests =====
 
   it('should handle compatible plugin combinations', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -269,9 +285,10 @@ describe('Integration: Installation Flow', () => {
   // ===== State Management =====
 
   it('should install state management library', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -295,9 +312,10 @@ describe('Integration: Installation Flow', () => {
   // ===== CSS Solutions =====
 
   it('should install CSS/styling framework correctly', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -324,9 +342,10 @@ describe('Integration: Installation Flow', () => {
   // ===== DevTools Installation =====
 
   it('should install development tools without breaking project', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -347,16 +366,17 @@ describe('Integration: Installation Flow', () => {
     expect(result.success).toBe(true)
 
     // Vérifier que le projet reste valide
-    const pkg = await readPackageJson(projectPath)
+    const pkg = readPackageJson(projectPath)
     expect(pkg).toBeDefined()
   })
 
   // ===== Error Handling Tests =====
 
   it('should handle installation errors gracefully', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -393,9 +413,10 @@ describe('Integration: Installation Flow', () => {
   // ===== Dry Run Tests =====
 
   it('should support --no-install option without modifying project', async () => {
-    const context = await detectContext(projectPath)
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
@@ -412,7 +433,7 @@ describe('Integration: Installation Flow', () => {
         skipPackageInstall: true,
       })
 
-      const pkg = await readPackageJson(projectPath)
+      const pkg = readPackageJson(projectPath)
       // En mode skipPackageInstall, les dépendances ne devraient pas être modifiées
       expect(pkg['dependencies']?.zustand).toBeUndefined()
     }
@@ -421,7 +442,8 @@ describe('Integration: Installation Flow', () => {
   // ===== Configuration Persistence =====
 
   it('should persist configuration across multiple installations', async () => {
-    const context = await detectContext(projectPath)
+    const fsAdapter = getFsAdapter()
+    const context = await detectContext(projectPath, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
 
     const zustandPlugin = pluginRegistry.find((p) => p.name === 'zustand')
@@ -429,8 +451,8 @@ describe('Integration: Installation Flow', () => {
 
     if (zustandPlugin) {
       // Première installation
-      const backupManager1 = new BackupManager()
-      const configWriter1 = new ConfigWriter(backupManager1)
+      const backupManager1 = new BackupManager(fsAdapter!)
+      const configWriter1 = new ConfigWriter(backupManager1, fsAdapter!)
       const installer1 = new Installer(
         context,
         validator,
@@ -444,8 +466,8 @@ describe('Integration: Installation Flow', () => {
       expect(result1.success).toBe(true)
 
       // Deuxième installation (avec de nouvelles instances pour éviter les conflits de cache)
-      const backupManager2 = new BackupManager()
-      const configWriter2 = new ConfigWriter(backupManager2)
+      const backupManager2 = new BackupManager(fsAdapter!)
+      const configWriter2 = new ConfigWriter(backupManager2, fsAdapter!)
       const installer2 = new Installer(
         context,
         validator,
@@ -465,8 +487,9 @@ describe('Integration: Installation Flow', () => {
   // ===== Full Workflow Test =====
 
   it('should complete full installation workflow', async () => {
+    const fsAdapter = getFsAdapter()
     // Détection
-    const context = await detectContext(projectPath)
+    const context = await detectContext(projectPath, fsAdapter!)
     expect(context.framework).toBe('react')
 
     // Validation
@@ -482,8 +505,8 @@ describe('Integration: Installation Flow', () => {
     expect(validation.valid).toBe(true)
 
     // Installation
-    const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(fsAdapter!)
+    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const installer = new Installer(
       context,
       validator,

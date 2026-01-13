@@ -96,10 +96,13 @@ describe('E2E: Vue.js CLI', () => {
   // ===== Vue.js Plugin Installation =====
 
   it('should install Vue.js compatible plugins', async () => {
-    // Créer projet Vue.js
+    // Créer projet Vue.js (supprimer React, ajouter Vue)
     const pkg = await readPackageJson(projectPath)
+    const deps = { ...(pkg['dependencies'] || {}) }
+    delete deps['react']
+    delete deps['react-dom']
     pkg['dependencies'] = {
-      ...(pkg['dependencies'] || {}),
+      ...deps,
       vue: '^3.4.0',
     }
 
@@ -125,14 +128,18 @@ describe('E2E: Vue.js CLI', () => {
     // Vérifier que le projet est configuré
     const updatedPkg = await readPackageJson(projectPath)
     expect(updatedPkg['dependencies']).toHaveProperty('vue')
-    expect(updatedPkg['dependencies']['vue']).toMatch(/^3\./)
+    // La version peut être '^3.4.0' ou '3.4.0', donc on vérifie qu'elle contient '3.'
+    expect(String(updatedPkg['dependencies']['vue'])).toMatch(/3\./)
   })
 
   it('should reject Vue 2 projects', async () => {
-    // Créer projet Vue 2
+    // Créer projet Vue 2 (supprimer React, ajouter Vue 2)
     const pkg = await readPackageJson(projectPath)
+    const deps = { ...(pkg['dependencies'] || {}) }
+    delete deps['react']
+    delete deps['react-dom']
     pkg['dependencies'] = {
-      ...(pkg['dependencies'] || {}),
+      ...deps,
       vue: '^2.7.0',
     }
 
@@ -145,7 +152,8 @@ describe('E2E: Vue.js CLI', () => {
 
     // Vue 2 devrait être rejeté
     const updatedPkg = await readPackageJson(projectPath)
-    expect(updatedPkg['dependencies']['vue']).toMatch(/^2\./)
+    // La version peut être '^2.7.0' ou '2.7.0', donc on vérifie qu'elle contient '2.'
+    expect(String(updatedPkg['dependencies']['vue'])).toMatch(/2\./)
     // Note: La détection rejette Vue 2 dans detector.ts
   })
 

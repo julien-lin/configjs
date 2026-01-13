@@ -95,8 +95,8 @@ export const zustandPlugin: Plugin = {
    * Documentation : https://zustand.docs.pmnd.rs/getting-started/introduction
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -105,7 +105,7 @@ export const zustandPlugin: Plugin = {
     try {
       // 1. Créer le dossier store si nécessaire
       const storeDir = join(srcDir, 'store')
-      await ensureDirectory(storeDir)
+      await ensureDirectory(storeDir, ctx.fsAdapter)
 
       // 2. Créer src/store/index.ts (store principal)
       const storePath = join(storeDir, `index.${extension}`)
@@ -158,7 +158,7 @@ export const zustandPlugin: Plugin = {
    * Rollback de la configuration Zustand
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('Zustand configuration rolled back')

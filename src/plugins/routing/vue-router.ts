@@ -102,8 +102,8 @@ export const vueRouterPlugin: Plugin = {
    * - src/App.vue : Ajoute router-view
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -112,11 +112,11 @@ export const vueRouterPlugin: Plugin = {
     try {
       // 1. Créer le dossier router si nécessaire
       const routerDir = join(srcDir, 'router')
-      await ensureDirectory(routerDir)
+      await ensureDirectory(routerDir, ctx.fsAdapter)
 
       // 2. Créer le dossier views si nécessaire
       const viewsDir = join(srcDir, 'views')
-      await ensureDirectory(viewsDir)
+      await ensureDirectory(viewsDir, ctx.fsAdapter)
 
       // 3. Créer src/router/index.ts (configuration du router)
       const routerIndexPath = join(routerDir, `index.${extension}`)
@@ -165,8 +165,8 @@ export const vueRouterPlugin: Plugin = {
 
       // 6. Modifier src/main.ts (ou main.js) pour intégrer le router
       const mainPath = join(srcDir, `main.${extension}`)
-      if (await checkPathExists(mainPath)) {
-        const mainContent = await readFileContent(mainPath)
+      if (await checkPathExists(mainPath, ctx.fsAdapter)) {
+        const mainContent = await readFileContent(mainPath, 'utf-8', ctx.fsAdapter)
         const updatedMainContent = updateMainFile(mainContent, ctx.typescript)
 
         if (updatedMainContent !== mainContent) {
@@ -186,8 +186,8 @@ export const vueRouterPlugin: Plugin = {
 
       // 7. Modifier src/App.vue pour ajouter router-view
       const appPath = join(srcDir, 'App.vue')
-      if (await checkPathExists(appPath)) {
-        const appContent = await readFileContent(appPath)
+      if (await checkPathExists(appPath, ctx.fsAdapter)) {
+        const appContent = await readFileContent(appPath, 'utf-8', ctx.fsAdapter)
         const updatedAppContent = updateAppFile(appContent)
 
         if (updatedAppContent !== appContent) {
@@ -224,7 +224,7 @@ export const vueRouterPlugin: Plugin = {
    * Rollback de la configuration Vue Router
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     await backupManager.restoreAll()
     logger.info('Vue Router configuration rolled back')
   },

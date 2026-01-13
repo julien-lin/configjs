@@ -7,6 +7,8 @@ import type {
   ProjectContext,
 } from '../types/index.js'
 import { logger } from '../utils/logger.js'
+import { generateCompatibilityRules } from './compatibility-generator.js'
+import { pluginRegistry } from '../plugins/registry.js'
 
 /**
  * Valide la compatibilité entre plugins selon des règles définies
@@ -19,7 +21,7 @@ import { logger } from '../utils/logger.js'
  *
  * @example
  * ```typescript
- * const validator = new CompatibilityValidator(compatibilityRules)
+ * const validator = new CompatibilityValidator(allCompatibilityRules)
  * const result = validator.validate([reactRouterPlugin, zustandPlugin])
  *
  * if (!result.valid) {
@@ -108,14 +110,42 @@ export class CompatibilityValidator {
       }
     }
 
+    // Vérifier les exclusivités et séparer par sévérité
+    const exclusivityResults = this.checkExclusivity(
+      plugins,
+      pluginNames,
+      applicableRules
+    )
+    const exclusivityErrors: ValidationError[] = []
+    const exclusivityWarnings: ValidationWarning[] = []
+
+    for (const result of exclusivityResults) {
+      // Trouver la règle EXCLUSIVE qui a généré ce résultat
+      // result.plugins est un sous-ensemble de rule.plugins (les plugins sélectionnés)
+      const rule = applicableRules.find(
+        (r) =>
+          r.type === 'EXCLUSIVE' &&
+          result.plugins?.every((p) => r.plugins?.includes(p))
+      )
+      if (rule?.severity === 'warning') {
+        exclusivityWarnings.push(result)
+      } else {
+        exclusivityErrors.push(result)
+      }
+    }
+
     const errors = [
-      ...this.checkExclusivity(plugins, pluginNames, applicableRules),
+      ...exclusivityErrors,
       ...conflictErrors,
       ...this.checkDependencies(plugins, pluginNames, applicableRules, ctx),
       ...frameworkErrors,
     ]
 
-    const warnings = [...conflictWarnings, ...frameworkWarnings]
+    const warnings = [
+      ...exclusivityWarnings,
+      ...conflictWarnings,
+      ...frameworkWarnings,
+    ]
     const suggestions = this.checkRecommendations(
       plugins,
       pluginNames,
@@ -172,7 +202,15 @@ export class CompatibilityValidator {
           pluginNames.has(pluginName)
         )
 
-        if (conflictingPlugins.length > 0) {
+        // Pour les règles framework-spécifiques :
+        // - Si rule.plugins a 1 élément : le plugin est incompatible avec le framework
+        // - Si rule.plugins a 2+ éléments : les plugins sont incompatibles entre eux (dans ce framework)
+        const isFrameworkIncompatible = rule.plugins.length === 1
+        const shouldReportConflict = isFrameworkIncompatible
+          ? conflictingPlugins.length > 0
+          : conflictingPlugins.length > 1
+
+        if (shouldReportConflict) {
           conflicts.push({
             type: 'CONFLICT',
             plugins: conflictingPlugins,
@@ -257,6 +295,7 @@ export class CompatibilityValidator {
         pluginNames.has(pluginName)
       )
 
+      // Un conflit nécessite AU MOINS 2 plugins de la règle présents
       if (conflictingPlugins.length > 1) {
         conflicts.push({
           type: 'CONFLICT',
@@ -384,42 +423,35 @@ export class CompatibilityValidator {
 }
 
 /**
- * Règles de compatibilité par défaut
+ * Règles de compatibilité générées automatiquement
  *
- * Ces règles définissent les incompatibilités, dépendances et recommandations
- * entre les différents plugins supportés par confjs.
+ * Ces règles sont générées automatiquement à partir des métadonnées des plugins
+ * (incompatibleWith, requires, recommends) et des catégories.
+ *
+ * Les règles sont générées au démarrage pour garantir qu'elles sont toujours à jour.
  */
-export const compatibilityRules: CompatibilityRule[] = [
-  // Exclusivités - State Management
-  {
-    type: 'EXCLUSIVE',
-    plugins: ['@reduxjs/toolkit', 'zustand', 'jotai'],
-    reason: 'Une seule solution de state management est recommandée',
-    severity: 'error',
-    allowOverride: false,
-  },
+export const compatibilityRules: CompatibilityRule[] =
+  generateCompatibilityRules(pluginRegistry)
 
-  // Conflits - CSS Frameworks
-  {
-    type: 'CONFLICT',
-    plugins: ['tailwindcss', 'bootstrap'],
-    reason: 'Approches CSS potentiellement conflictuelles',
-    severity: 'warning',
-    allowOverride: true,
-  },
-
-  // Recommandations - React Router
-  {
-    type: 'RECOMMENDS',
-    plugin: 'react-router-dom',
-    recommends: ['@types/react-router-dom'],
-    reason:
-      'Types TypeScript recommandés pour une meilleure expérience de développement',
-    severity: 'info',
-  },
-
+/**
+ * Règles de compatibilité supplémentaires (hardcodées)
+ *
+ * Ces règles ne peuvent pas être générées automatiquement car elles nécessitent
+ * une logique métier spécifique (incompatibilités framework-spécifiques, etc.)
+ *
+ * Note: Les règles EXCLUSIVE, CONFLICT entre plugins, REQUIRES et RECOMMENDS
+ * sont maintenant générées automatiquement depuis les métadonnées des plugins.
+ *
+ * Ces règles couvrent UNIQUEMENT:
+ * - Les conflits avec un framework spécifique (ex: React Router incompatible avec Next.js)
+ * - Les recommandations spécifiques au framework (ex: shadcn-ui-nextjs pour Next.js)
+ */
+const additionalCompatibilityRules: CompatibilityRule[] = [
+  // ====================================================================
   // Règles spécifiques Next.js
-  // React Router incompatible avec Next.js
+  // ====================================================================
+
+  // React Router incompatible avec Next.js (routing intégré)
   {
     type: 'CONFLICT',
     plugins: ['react-router-dom'],
@@ -452,8 +484,11 @@ export const compatibilityRules: CompatibilityRule[] = [
     severity: 'info',
   },
 
+  // ====================================================================
   // Règles spécifiques Vue.js
-  // React Router incompatible avec Vue.js
+  // ====================================================================
+
+  // React Router incompatible avec Vue.js (utiliser Vue Router)
   {
     type: 'CONFLICT',
     plugins: ['react-router-dom'],
@@ -464,7 +499,7 @@ export const compatibilityRules: CompatibilityRule[] = [
     allowOverride: false,
   },
 
-  // Zustand/Redux incompatible avec Vue.js
+  // State management React incompatible avec Vue.js
   {
     type: 'CONFLICT',
     plugins: ['zustand', '@reduxjs/toolkit', 'jotai'],
@@ -475,7 +510,7 @@ export const compatibilityRules: CompatibilityRule[] = [
     allowOverride: false,
   },
 
-  // Shadcn/ui incompatible avec Vue.js
+  // Shadcn/ui incompatible avec Vue.js (spécifique React)
   {
     type: 'CONFLICT',
     plugins: ['shadcn-ui'],
@@ -507,4 +542,11 @@ export const compatibilityRules: CompatibilityRule[] = [
     severity: 'warning',
     allowOverride: true,
   },
+]
+
+// Fusionner les règles générées avec les règles supplémentaires
+// TODO: Migrer toutes les règles supplémentaires vers le système de génération automatique
+export const allCompatibilityRules: CompatibilityRule[] = [
+  ...compatibilityRules,
+  ...additionalCompatibilityRules,
 ]

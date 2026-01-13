@@ -98,8 +98,8 @@ export const reactHotToastNextjsPlugin: Plugin = {
    * - Toaster dans app/layout.tsx (App Router) ou pages/_app.tsx (Pages Router)
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -129,10 +129,10 @@ export const reactHotToastNextjsPlugin: Plugin = {
 
       if (isAppRouter) {
         // App Router
-        const appLayoutExists = await checkPathExists(appLayoutPath)
+        const appLayoutExists = await checkPathExists(appLayoutPath, ctx.fsAdapter)
         if (appLayoutExists) {
           targetPath = appLayoutPath
-          targetContent = await readFileContent(appLayoutPath)
+          targetContent = await readFileContent(appLayoutPath, 'utf-8', ctx.fsAdapter)
         } else {
           // Créer app/layout.tsx par défaut
           targetPath = appLayoutPath
@@ -142,10 +142,10 @@ export const reactHotToastNextjsPlugin: Plugin = {
         }
       } else {
         // Pages Router
-        const pagesAppExists = await checkPathExists(pagesAppPath)
+        const pagesAppExists = await checkPathExists(pagesAppPath, ctx.fsAdapter)
         if (pagesAppExists) {
           targetPath = pagesAppPath
-          targetContent = await readFileContent(pagesAppPath)
+          targetContent = await readFileContent(pagesAppPath, 'utf-8', ctx.fsAdapter)
         } else {
           // Créer pages/_app.tsx par défaut
           targetPath = pagesAppPath
@@ -199,7 +199,7 @@ export const reactHotToastNextjsPlugin: Plugin = {
    * Rollback de la configuration React Hot Toast
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('React Hot Toast configuration rolled back')

@@ -121,7 +121,10 @@ test(validator): add tests for compatibility rules
 confjs/
 ├── src/
 │   ├── cli/          # CLI commands et UI
-│   ├── core/         # Core logic (detector, validator, installer)
+│   │   ├── commands/ # Commandes de framework (ReactCommand, NextjsCommand, etc.)
+│   │   ├── prompts/  # Prompts interactifs
+│   │   └── utils/    # Utilitaires CLI (installers)
+│   ├── core/         # Core logic (detector, validator, installer, framework-registry)
 │   ├── plugins/      # Plugin implementations
 │   ├── utils/        # Utilities
 │   └── types/        # Type definitions
@@ -131,6 +134,22 @@ confjs/
 │   └── e2e/          # Tests end-to-end
 └── docs/             # Documentation additionnelle
 ```
+
+### Architecture des commandes
+
+confjs utilise une architecture modulaire basée sur **BaseFrameworkCommand** et le **Framework Registry**.
+
+**Voir [ARCHITECTURE.md](./ARCHITECTURE.md) pour les détails complets.**
+
+#### Ajouter un nouveau framework
+
+1. **Ajouter au type `Framework`** (`src/types/index.ts`)
+2. **Ajouter au Framework Registry** (`src/core/framework-registry.ts`)
+3. **Créer la commande** (`src/cli/commands/[framework]-command.ts`)
+4. **Enregistrer dans CLI** (`src/cli.ts`)
+5. **Mettre à jour le détecteur** (`src/core/detector.ts`)
+
+**Exemple complet :** Voir [ARCHITECTURE.md](./ARCHITECTURE.md#-ajouter-un-nouveau-framework)
 
 ### Développer un plugin
 

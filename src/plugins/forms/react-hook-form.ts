@@ -95,8 +95,8 @@ export const reactHookFormPlugin: Plugin = {
    * Documentation : https://react-hook-form.com/get-started
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager()
-    const writer = new ConfigWriter(backupManager)
+    const backupManager = new BackupManager(ctx.fsAdapter)
+    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -105,7 +105,7 @@ export const reactHookFormPlugin: Plugin = {
     try {
       // 1. Créer le dossier components/forms si nécessaire
       const formsDir = join(srcDir, 'components', 'forms')
-      await ensureDirectory(formsDir)
+      await ensureDirectory(formsDir, ctx.fsAdapter)
 
       // 2. Créer src/components/forms/ExampleForm.tsx (exemple basique)
       const exampleFormPath = join(formsDir, `ExampleForm.${extension}`)
@@ -175,7 +175,7 @@ export const reactHookFormPlugin: Plugin = {
    * Rollback de la configuration React Hook Form
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager()
+    const backupManager = new BackupManager(_ctx.fsAdapter)
     try {
       await backupManager.restoreAll()
       logger.info('React Hook Form configuration rolled back')
