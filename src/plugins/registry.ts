@@ -34,6 +34,8 @@ import { reactHookFormPlugin } from './forms/react-hook-form-builder.js'
 import { zodPlugin } from './forms/zod-builder.js'
 import { axiosPlugin } from './http/axios-builder.js'
 import { tanstackQueryPlugin } from './http/tanstack-query-builder.js'
+import { tanstackVueQueryPlugin } from './http/tanstack-query-vue-builder.js'
+import { vueI18nPlugin } from './i18n/vue-i18n-builder.js'
 import { nextjsApiRoutesPlugin } from './nextjs/api-routes-builder.js'
 import { nextjsFontOptimizationPlugin } from './nextjs/font-optimization-builder.js'
 import { nextjsImageOptimizationPlugin } from './nextjs/image-optimization-builder.js'
@@ -46,11 +48,17 @@ import { piniaPlugin } from './state/pinia-builder.js'
 import { reduxToolkitPlugin } from './state/redux-toolkit-builder.js'
 import { zustandPlugin } from './state/zustand-builder.js'
 import { reactTestingLibraryPlugin } from './testing/react-testing-library-builder.js'
+import { vueTestingLibraryPlugin } from './testing/vue-testing-library-builder.js'
 import { vueTestUtilsPlugin } from './testing/vue-test-utils-builder.js'
 import { eslintPlugin } from './tooling/eslint-builder.js'
 import { eslintVuePlugin } from './tooling/eslint-vue-builder.js'
 import { huskyPlugin } from './tooling/husky-builder.js'
+import { commitlintPlugin } from './tooling/commitlint-builder.js'
+import { lintStagedPlugin } from './tooling/lint-staged-builder.js'
 import { prettierPlugin } from './tooling/prettier-builder.js'
+import { unpluginAutoImportPlugin } from './tooling/unplugin-auto-import-builder.js'
+import { unpluginVueComponentsPlugin } from './tooling/unplugin-vue-components-builder.js'
+import { vueTscPlugin } from './tooling/vue-tsc-builder.js'
 import { radixUiPlugin } from './ui/radix-ui-builder.js'
 import { reactHotToastPlugin } from './ui/react-hot-toast-builder.js'
 import { reactHotToastNextjsPlugin } from './ui/react-hot-toast-nextjs-builder.js'
@@ -82,6 +90,10 @@ export const pluginRegistry: Plugin[] = [
   // HTTP
   axiosPlugin,
   tanstackQueryPlugin,
+  tanstackVueQueryPlugin,
+
+  // I18N
+  vueI18nPlugin,
 
   // NEXTJS
   nextjsApiRoutesPlugin,
@@ -102,13 +114,19 @@ export const pluginRegistry: Plugin[] = [
 
   // TESTING
   reactTestingLibraryPlugin,
+  vueTestingLibraryPlugin,
   vueTestUtilsPlugin,
 
   // TOOLING
   eslintPlugin,
   eslintVuePlugin,
   huskyPlugin,
+  commitlintPlugin,
+  lintStagedPlugin,
   prettierPlugin,
+  unpluginAutoImportPlugin,
+  unpluginVueComponentsPlugin,
+  vueTscPlugin,
 
   // UI
   radixUiPlugin,

@@ -47,46 +47,13 @@ export async function createVueProject(
     await execa('npm', args, {
       cwd: currentDir,
       stdio: 'inherit',
+      env: {
+        ...process.env,
+        npm_config_yes: 'true',
+      },
     })
 
     logger.info(t.vue.success)
-
-    // Installer les dépendances optionnelles après création
-    const optionalDeps: string[] = []
-
-    if (options.router) {
-      optionalDeps.push('vue-router@4')
-    }
-
-    if (options.pinia) {
-      optionalDeps.push('pinia')
-    }
-
-    if (options.vitest) {
-      optionalDeps.push('vitest', '@vue/test-utils', '@vitest/ui')
-    }
-
-    if (options.eslint) {
-      optionalDeps.push(
-        'eslint',
-        'eslint-plugin-vue',
-        '@vue/eslint-config-prettier'
-      )
-    }
-
-    if (options.prettier) {
-      optionalDeps.push('prettier', 'eslint-config-prettier')
-    }
-
-    if (optionalDeps.length > 0) {
-      logger.info(
-        `Installing optional dependencies: ${optionalDeps.join(', ')}`
-      )
-      await execa('npm', ['install', ...optionalDeps], {
-        cwd: projectPath,
-        stdio: 'inherit',
-      })
-    }
 
     return projectPath
   } catch (error) {

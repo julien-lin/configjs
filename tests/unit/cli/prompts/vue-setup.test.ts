@@ -19,16 +19,11 @@ describe('promptVueSetup', () => {
     expect(result).toBeNull()
   })
 
-  it('should return options if user confirms with all options', async () => {
+  it('should return options if user confirms', async () => {
     vi.mocked(inquirer.prompt).mockResolvedValue({
       shouldCreate: true,
       projectName: 'my-vue-project',
       typescript: true,
-      router: true,
-      pinia: true,
-      vitest: true,
-      eslint: true,
-      prettier: true,
     } as never)
 
     const result = await promptVueSetup('en')
@@ -36,11 +31,6 @@ describe('promptVueSetup', () => {
     expect(result).toEqual({
       projectName: 'my-vue-project',
       typescript: true,
-      router: true,
-      pinia: true,
-      vitest: true,
-      eslint: true,
-      prettier: true,
     })
   })
 
@@ -49,11 +39,6 @@ describe('promptVueSetup', () => {
       shouldCreate: true,
       projectName: '  my-vue-project  ',
       typescript: false,
-      router: false,
-      pinia: false,
-      vitest: false,
-      eslint: false,
-      prettier: false,
     } as never)
 
     const result = await promptVueSetup('en')

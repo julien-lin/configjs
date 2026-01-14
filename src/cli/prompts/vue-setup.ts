@@ -5,11 +5,6 @@ import { getTranslations } from '../i18n/index.js'
 export interface VueSetupOptions {
   projectName: string
   typescript: boolean
-  router: boolean
-  pinia: boolean
-  vitest: boolean
-  eslint: boolean
-  prettier: boolean
 }
 
 /**
@@ -27,11 +22,6 @@ export async function promptVueSetup(
     shouldCreate: boolean
     projectName: string
     typescript: boolean
-    router: boolean
-    pinia: boolean
-    vitest: boolean
-    eslint: boolean
-    prettier: boolean
   }>([
     {
       type: 'confirm',
@@ -63,41 +53,6 @@ export async function promptVueSetup(
       default: true,
       when: (answers): boolean => answers.shouldCreate === true,
     },
-    {
-      type: 'confirm',
-      name: 'router',
-      message: t.vue.router,
-      default: true,
-      when: (answers): boolean => answers.shouldCreate === true,
-    },
-    {
-      type: 'confirm',
-      name: 'pinia',
-      message: t.vue.pinia,
-      default: true,
-      when: (answers): boolean => answers.shouldCreate === true,
-    },
-    {
-      type: 'confirm',
-      name: 'vitest',
-      message: t.vue.vitest,
-      default: true,
-      when: (answers): boolean => answers.shouldCreate === true,
-    },
-    {
-      type: 'confirm',
-      name: 'eslint',
-      message: t.vue.eslint,
-      default: true,
-      when: (answers): boolean => answers.shouldCreate === true,
-    },
-    {
-      type: 'confirm',
-      name: 'prettier',
-      message: t.vue.prettier,
-      default: true,
-      when: (answers): boolean => answers.shouldCreate === true,
-    },
   ])
 
   if (!answers.shouldCreate) {
@@ -107,10 +62,5 @@ export async function promptVueSetup(
   return {
     projectName: answers.projectName.trim(),
     typescript: answers.typescript,
-    router: answers.router,
-    pinia: answers.pinia,
-    vitest: answers.vitest,
-    eslint: answers.eslint,
-    prettier: answers.prettier,
   }
 }
