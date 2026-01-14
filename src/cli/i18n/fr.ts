@@ -70,6 +70,7 @@ export const fr: Translations = {
     proposeSetup: 'Souhaitez-vous créer un nouveau projet React avec Vite ?',
     projectName: 'Nom du projet',
     projectNamePlaceholder: 'mon-projet-react',
+    typescript: 'Utiliser TypeScript ?',
     template: 'Template',
     templateOptions: [
       { value: 'react', name: 'React (JavaScript)' },

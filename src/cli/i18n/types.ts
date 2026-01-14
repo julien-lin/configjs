@@ -62,6 +62,7 @@ export interface Translations {
     proposeSetup: string
     projectName: string
     projectNamePlaceholder: string
+    typescript: string
     template: string
     templateOptions: Array<{ value: string; name: string }>
     creating: string
