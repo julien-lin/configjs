@@ -180,7 +180,11 @@ export const reduxToolkitPlugin: Plugin = {
       const appExists = await checkPathExists(appPath, ctx.fsAdapter)
 
       if (appExists) {
-        const appContent = await readFileContent(appPath, 'utf-8', ctx.fsAdapter)
+        const appContent = await readFileContent(
+          appPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const modifiedAppContent = injectProvider(appContent, ctx.typescript)
 
         await writer.writeFile(appPath, modifiedAppContent, { backup: true })

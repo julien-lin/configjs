@@ -265,7 +265,7 @@ export function getCompatiblePluginsForPlugin(
   const compatible = getCompatiblePlugins(ctx)
 
   if (plugin.incompatibleWith) {
-    return compatible.filter((p) => !plugin.incompatibleWith!.includes(p.name))
+    return compatible.filter((p) => !plugin.incompatibleWith?.includes(p.name))
   }
 
   return compatible

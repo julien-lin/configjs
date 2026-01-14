@@ -121,7 +121,10 @@ export const eslintPlugin: Plugin = {
     try {
       // 1. Créer eslint.config.js (flat config pour ESLint v9)
       const eslintConfigPath = join(projectRoot, 'eslint.config.js')
-      const eslintConfigExists = await checkPathExists(eslintConfigPath, ctx.fsAdapter)
+      const eslintConfigExists = await checkPathExists(
+        eslintConfigPath,
+        ctx.fsAdapter
+      )
 
       if (eslintConfigExists) {
         logger.warn('eslint.config.js already exists, skipping creation')
@@ -141,10 +144,17 @@ export const eslintPlugin: Plugin = {
 
       // 2. Ajouter les scripts dans package.json si nécessaire
       const packageJsonPath = join(projectRoot, 'package.json')
-      const packageJsonExists = await checkPathExists(packageJsonPath, ctx.fsAdapter)
+      const packageJsonExists = await checkPathExists(
+        packageJsonPath,
+        ctx.fsAdapter
+      )
 
       if (packageJsonExists) {
-        const packageJsonContent = await readFileContent(packageJsonPath, 'utf-8', ctx.fsAdapter)
+        const packageJsonContent = await readFileContent(
+          packageJsonPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const packageJson = JSON.parse(packageJsonContent) as {
           scripts?: Record<string, string>
         }

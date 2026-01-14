@@ -118,10 +118,17 @@ export const tailwindcssNextjsPlugin: Plugin = {
         projectRoot,
         `tailwind.config.${extension}`
       )
-      const tailwindConfigExists = await checkPathExists(tailwindConfigPath, ctx.fsAdapter)
+      const tailwindConfigExists = await checkPathExists(
+        tailwindConfigPath,
+        ctx.fsAdapter
+      )
 
       if (tailwindConfigExists) {
-        const existingContent = await readFileContent(tailwindConfigPath, 'utf-8', ctx.fsAdapter)
+        const existingContent = await readFileContent(
+          tailwindConfigPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         // Vérifier si déjà configuré
         if (
           existingContent.includes('content:') &&
@@ -157,7 +164,10 @@ export const tailwindcssNextjsPlugin: Plugin = {
         projectRoot,
         `postcss.config.${postcssExtension}`
       )
-      const postcssConfigExists = await checkPathExists(postcssConfigPath, ctx.fsAdapter)
+      const postcssConfigExists = await checkPathExists(
+        postcssConfigPath,
+        ctx.fsAdapter
+      )
 
       if (!postcssConfigExists) {
         const postcssConfig = getPostcssConfigContent(postcssExtension)
@@ -184,7 +194,11 @@ export const tailwindcssNextjsPlugin: Plugin = {
       for (const cssPath of cssFiles) {
         const cssExists = await checkPathExists(cssPath, ctx.fsAdapter)
         if (cssExists) {
-          const cssContent = await readFileContent(cssPath, 'utf-8', ctx.fsAdapter)
+          const cssContent = await readFileContent(
+            cssPath,
+            'utf-8',
+            ctx.fsAdapter
+          )
           const modifiedCss = injectTailwindDirectives(cssContent)
 
           await writer.writeFile(cssPath, modifiedCss, { backup: true })

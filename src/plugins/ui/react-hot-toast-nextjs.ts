@@ -129,10 +129,17 @@ export const reactHotToastNextjsPlugin: Plugin = {
 
       if (isAppRouter) {
         // App Router
-        const appLayoutExists = await checkPathExists(appLayoutPath, ctx.fsAdapter)
+        const appLayoutExists = await checkPathExists(
+          appLayoutPath,
+          ctx.fsAdapter
+        )
         if (appLayoutExists) {
           targetPath = appLayoutPath
-          targetContent = await readFileContent(appLayoutPath, 'utf-8', ctx.fsAdapter)
+          targetContent = await readFileContent(
+            appLayoutPath,
+            'utf-8',
+            ctx.fsAdapter
+          )
         } else {
           // Créer app/layout.tsx par défaut
           targetPath = appLayoutPath
@@ -142,10 +149,17 @@ export const reactHotToastNextjsPlugin: Plugin = {
         }
       } else {
         // Pages Router
-        const pagesAppExists = await checkPathExists(pagesAppPath, ctx.fsAdapter)
+        const pagesAppExists = await checkPathExists(
+          pagesAppPath,
+          ctx.fsAdapter
+        )
         if (pagesAppExists) {
           targetPath = pagesAppPath
-          targetContent = await readFileContent(pagesAppPath, 'utf-8', ctx.fsAdapter)
+          targetContent = await readFileContent(
+            pagesAppPath,
+            'utf-8',
+            ctx.fsAdapter
+          )
         } else {
           // Créer pages/_app.tsx par défaut
           targetPath = pagesAppPath

@@ -265,12 +265,22 @@ export class PluginBuilder {
       }
     }
 
+    const category = this._plugin.category
+    const install = this._plugin.install
+    const configure = this._plugin.configure
+
+    if (!category || !install || !configure) {
+      throw new Error(
+        'Missing required plugin definition. Ensure category, install, and configure are set.'
+      )
+    }
+
     return {
-      name: this._plugin.name!,
-      displayName: this._plugin.displayName!,
+      name: this._plugin.name ?? '',
+      displayName: this._plugin.displayName ?? '',
       description: this._plugin.description || 'No description',
-      category: this._plugin.category!,
-      frameworks: this._plugin.frameworks!,
+      category,
+      frameworks: this._plugin.frameworks ?? [],
       version: this._plugin.version,
       bundlers: this._plugin.bundlers,
       requiresTypeScript: this._plugin.requiresTypeScript,
@@ -279,8 +289,8 @@ export class PluginBuilder {
       requires: this._plugin.requires,
       recommends: this._plugin.recommends,
       detect: this._plugin.detect,
-      install: this._plugin.install!,
-      configure: this._plugin.configure!,
+      install,
+      configure,
       preInstall: this._plugin.preInstall,
       postInstall: this._plugin.postInstall,
       rollback: this._plugin.rollback,

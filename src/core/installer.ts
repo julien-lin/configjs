@@ -65,7 +65,7 @@ export class Installer {
     private readonly writer: ConfigWriter,
     private readonly backupManager: BackupManager,
     // fs parameter reserved for future memfs integration in Phase 3 Week 7
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _fs?: IFs
   ) {
     this.tracker = new PluginTracker(ctx.projectRoot, ctx.fsAdapter)

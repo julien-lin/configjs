@@ -159,7 +159,11 @@ export const reactRouterPlugin: Plugin = {
       const appExists = await checkPathExists(appPath, ctx.fsAdapter)
 
       if (appExists) {
-        const appContent = await readFileContent(appPath, 'utf-8', ctx.fsAdapter)
+        const appContent = await readFileContent(
+          appPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const modifiedAppContent = injectRouterProvider(
           appContent,
           ctx.typescript

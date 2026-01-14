@@ -373,7 +373,7 @@ export async function readFileContent(
   }
 
   try {
-    const content = await adapter.readFile(fullPath, encoding as BufferEncoding || 'utf-8')
+    const content = await adapter.readFile(fullPath, encoding || 'utf-8')
     logger.debug(`Read file: ${fullPath}`)
     return content
   } catch (error) {

@@ -77,7 +77,11 @@ export class PluginTracker {
         return
       }
 
-      const content = await readFileContent(this.configPath, 'utf-8', this.fsAdapter)
+      const content = await readFileContent(
+        this.configPath,
+        'utf-8',
+        this.fsAdapter
+      )
       this.config = JSON.parse(content) as PluginConfig
 
       // Vérifier la version du format

@@ -3,7 +3,11 @@ import {
   CompatibilityValidator,
   allCompatibilityRules,
 } from '../../../src/core/validator.js'
-import type { Plugin, CompatibilityRule, ProjectContext } from '../../../src/types/index.js'
+import type {
+  Plugin,
+  CompatibilityRule,
+  ProjectContext,
+} from '../../../src/types/index.js'
 import { Category } from '../../../src/types/index.js'
 import { pluginRegistry } from '../../../src/plugins/registry.js'
 

@@ -108,7 +108,10 @@ export const prettierPlugin: Plugin = {
     try {
       // 1. Créer .prettierrc.json
       const prettierrcPath = join(projectRoot, '.prettierrc.json')
-      const prettierrcExists = await checkPathExists(prettierrcPath, ctx.fsAdapter)
+      const prettierrcExists = await checkPathExists(
+        prettierrcPath,
+        ctx.fsAdapter
+      )
 
       if (prettierrcExists) {
         logger.warn('.prettierrc.json already exists, skipping creation')
@@ -128,7 +131,10 @@ export const prettierPlugin: Plugin = {
 
       // 2. Créer .prettierignore
       const prettierignorePath = join(projectRoot, '.prettierignore')
-      const prettierignoreExists = await checkPathExists(prettierignorePath, ctx.fsAdapter)
+      const prettierignoreExists = await checkPathExists(
+        prettierignorePath,
+        ctx.fsAdapter
+      )
 
       if (prettierignoreExists) {
         logger.warn('.prettierignore already exists, skipping creation')
@@ -148,10 +154,17 @@ export const prettierPlugin: Plugin = {
 
       // 3. Ajouter les scripts dans package.json si nécessaire
       const packageJsonPath = join(projectRoot, 'package.json')
-      const packageJsonExists = await checkPathExists(packageJsonPath, ctx.fsAdapter)
+      const packageJsonExists = await checkPathExists(
+        packageJsonPath,
+        ctx.fsAdapter
+      )
 
       if (packageJsonExists) {
-        const packageJsonContent = await readFileContent(packageJsonPath, 'utf-8', ctx.fsAdapter)
+        const packageJsonContent = await readFileContent(
+          packageJsonPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const packageJson = JSON.parse(packageJsonContent) as {
           scripts?: Record<string, string>
         }

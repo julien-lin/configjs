@@ -140,7 +140,11 @@ export const reactBootstrapPlugin: Plugin = {
       const indexExists = await checkPathExists(indexPath, ctx.fsAdapter)
 
       if (indexExists) {
-        const indexContent = await readFileContent(indexPath, 'utf-8', ctx.fsAdapter)
+        const indexContent = await readFileContent(
+          indexPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const modifiedIndexContent = injectBootstrapCSS(indexContent)
 
         if (modifiedIndexContent !== indexContent) {

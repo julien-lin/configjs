@@ -95,16 +95,30 @@ export const nextjsFontOptimizationPlugin: Plugin = {
       let targetContent = ''
 
       if (isAppRouter) {
-        const appLayoutExists = await checkPathExists(appLayoutPath, ctx.fsAdapter)
+        const appLayoutExists = await checkPathExists(
+          appLayoutPath,
+          ctx.fsAdapter
+        )
         if (appLayoutExists) {
           targetPath = appLayoutPath
-          targetContent = await readFileContent(appLayoutPath, 'utf-8', ctx.fsAdapter)
+          targetContent = await readFileContent(
+            appLayoutPath,
+            'utf-8',
+            ctx.fsAdapter
+          )
         }
       } else {
-        const pagesAppExists = await checkPathExists(pagesAppPath, ctx.fsAdapter)
+        const pagesAppExists = await checkPathExists(
+          pagesAppPath,
+          ctx.fsAdapter
+        )
         if (pagesAppExists) {
           targetPath = pagesAppPath
-          targetContent = await readFileContent(pagesAppPath, 'utf-8', ctx.fsAdapter)
+          targetContent = await readFileContent(
+            pagesAppPath,
+            'utf-8',
+            ctx.fsAdapter
+          )
         }
       }
 

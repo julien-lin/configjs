@@ -75,10 +75,17 @@ export const nextjsImageOptimizationPlugin: Plugin = {
 
     try {
       const nextConfigPath = join(projectRoot, `next.config.${extension}`)
-      const nextConfigExists = await checkPathExists(nextConfigPath, ctx.fsAdapter)
+      const nextConfigExists = await checkPathExists(
+        nextConfigPath,
+        ctx.fsAdapter
+      )
 
       if (nextConfigExists) {
-        const existingContent = await readFileContent(nextConfigPath, 'utf-8', ctx.fsAdapter)
+        const existingContent = await readFileContent(
+          nextConfigPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const updatedContent = injectImageConfig(existingContent, extension)
 
         if (updatedContent !== existingContent) {

@@ -115,10 +115,17 @@ export const tailwindcssPlugin: Plugin = {
     try {
       // 1. Modifier vite.config.ts pour ajouter le plugin
       const viteConfigPath = join(projectRoot, `vite.config.${extension}`)
-      const viteConfigExists = await checkPathExists(viteConfigPath, ctx.fsAdapter)
+      const viteConfigExists = await checkPathExists(
+        viteConfigPath,
+        ctx.fsAdapter
+      )
 
       if (viteConfigExists) {
-        const viteConfigContent = await readFileContent(viteConfigPath, 'utf-8', ctx.fsAdapter)
+        const viteConfigContent = await readFileContent(
+          viteConfigPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const modifiedViteConfig = injectVitePlugin(
           viteConfigContent,
           ctx.typescript
@@ -164,7 +171,11 @@ export const tailwindcssPlugin: Plugin = {
       for (const cssPath of cssFiles) {
         const cssExists = await checkPathExists(cssPath, ctx.fsAdapter)
         if (cssExists) {
-          const cssContent = await readFileContent(cssPath, 'utf-8', ctx.fsAdapter)
+          const cssContent = await readFileContent(
+            cssPath,
+            'utf-8',
+            ctx.fsAdapter
+          )
           const modifiedCss = injectTailwindImport(cssContent)
 
           await writer.writeFile(cssPath, modifiedCss, { backup: true })

@@ -130,7 +130,10 @@ export const shadcnUiNextjsPlugin: Plugin = {
     try {
       // 1. Créer components.json avec paths adaptés Next.js
       const componentsJsonPath = join(projectRoot, 'components.json')
-      const componentsJsonExists = await checkPathExists(componentsJsonPath, ctx.fsAdapter)
+      const componentsJsonExists = await checkPathExists(
+        componentsJsonPath,
+        ctx.fsAdapter
+      )
 
       if (componentsJsonExists) {
         logger.warn('components.json already exists, skipping creation')
@@ -160,7 +163,11 @@ export const shadcnUiNextjsPlugin: Plugin = {
         logger.warn(
           'utils.ts already exists, checking if cn function is present'
         )
-        const existingContent = await readFileContent(utilsPath, 'utf-8', ctx.fsAdapter)
+        const existingContent = await readFileContent(
+          utilsPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         if (!existingContent.includes('export function cn')) {
           const cnFunction = ctx.typescript
             ? getCnFunctionTS()
@@ -226,7 +233,11 @@ export const shadcnUiNextjsPlugin: Plugin = {
       for (const cssPath of cssFiles) {
         const cssExists = await checkPathExists(cssPath, ctx.fsAdapter)
         if (cssExists) {
-          const cssContent = await readFileContent(cssPath, 'utf-8', ctx.fsAdapter)
+          const cssContent = await readFileContent(
+            cssPath,
+            'utf-8',
+            ctx.fsAdapter
+          )
           if (!cssContent.includes('@layer base')) {
             const shadcnVariables = getShadcnCSSVariables()
             const updatedCss = cssContent + '\n\n' + shadcnVariables

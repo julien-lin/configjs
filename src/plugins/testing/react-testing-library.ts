@@ -118,7 +118,10 @@ export const reactTestingLibraryPlugin: Plugin = {
         projectRoot,
         `setupTests.${ctx.typescript ? 'ts' : 'js'}`
       )
-      const setupTestsExists = await checkPathExists(setupTestsPath, ctx.fsAdapter)
+      const setupTestsExists = await checkPathExists(
+        setupTestsPath,
+        ctx.fsAdapter
+      )
 
       if (!setupTestsExists) {
         const setupTestsContent = ctx.typescript
@@ -144,7 +147,10 @@ export const reactTestingLibraryPlugin: Plugin = {
         testDir,
         `Example.test.${ctx.typescript ? 'tsx' : 'jsx'}`
       )
-      const exampleTestExists = await checkPathExists(exampleTestPath, ctx.fsAdapter)
+      const exampleTestExists = await checkPathExists(
+        exampleTestPath,
+        ctx.fsAdapter
+      )
 
       if (!exampleTestExists) {
         const exampleTestContent = ctx.typescript
@@ -164,7 +170,10 @@ export const reactTestingLibraryPlugin: Plugin = {
 
       // 3. Vérifier et mettre à jour vitest.config.ts si nécessaire
       const vitestConfigPath = join(projectRoot, 'vitest.config.ts')
-      const vitestConfigExists = await checkPathExists(vitestConfigPath, ctx.fsAdapter)
+      const vitestConfigExists = await checkPathExists(
+        vitestConfigPath,
+        ctx.fsAdapter
+      )
 
       if (vitestConfigExists) {
         // Note : On ne modifie pas automatiquement vitest.config.ts

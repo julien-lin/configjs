@@ -66,7 +66,10 @@ export const nextjsMiddlewarePlugin: Plugin = {
 
     try {
       const middlewarePath = join(projectRoot, `middleware.${extension}`)
-      const middlewareExists = await checkPathExists(middlewarePath, ctx.fsAdapter)
+      const middlewareExists = await checkPathExists(
+        middlewarePath,
+        ctx.fsAdapter
+      )
 
       if (middlewareExists) {
         logger.warn('middleware.ts already exists, skipping creation')

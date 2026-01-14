@@ -544,9 +544,54 @@ const additionalCompatibilityRules: CompatibilityRule[] = [
   },
 ]
 
+function normalizeArray(values?: string[]): string[] {
+  if (!values || values.length === 0) {
+    return []
+  }
+  return [...values].sort()
+}
+
+function buildRuleKey(rule: CompatibilityRule): string {
+  const plugins = normalizeArray(rule.plugins).join('|')
+  const requires = normalizeArray(rule.requires).join('|')
+  const recommends = normalizeArray(rule.recommends).join('|')
+
+  return [
+    rule.type,
+    rule.framework ?? '*',
+    rule.plugin ?? '',
+    plugins,
+    requires,
+    recommends,
+    rule.severity,
+    String(rule.allowOverride ?? false),
+    String(rule.autoInstall ?? false),
+    String(rule.prompt ?? false),
+  ].join('::')
+}
+
+function deduplicateCompatibilityRules(
+  rules: CompatibilityRule[]
+): CompatibilityRule[] {
+  const seen = new Set<string>()
+  const deduplicated: CompatibilityRule[] = []
+
+  for (const rule of rules) {
+    const key = buildRuleKey(rule)
+    if (seen.has(key)) {
+      continue
+    }
+    seen.add(key)
+    deduplicated.push(rule)
+  }
+
+  return deduplicated
+}
+
 // Fusionner les règles générées avec les règles supplémentaires
-// TODO: Migrer toutes les règles supplémentaires vers le système de génération automatique
-export const allCompatibilityRules: CompatibilityRule[] = [
-  ...compatibilityRules,
-  ...additionalCompatibilityRules,
-]
+// NOTE: On déduplique les règles déjà générées pour éviter les doublons
+export const allCompatibilityRules: CompatibilityRule[] =
+  deduplicateCompatibilityRules([
+    ...compatibilityRules,
+    ...additionalCompatibilityRules,
+  ])
