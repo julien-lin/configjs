@@ -1,77 +1,58 @@
-/**
- * Système de templates pour fichiers de configuration
- *
- * Permet de générer des fichiers de configuration avec des variables
- * substituées selon le contexte du projet.
- */
-
 import type { ProjectContext } from '../types/index.js'
 
 /**
  * Contexte de template avec variables communes
  */
 export interface TemplateContext extends Partial<ProjectContext> {
-    [key: string]: any
+  [key: string]: unknown
 }
 
 /**
  * Résultat du rendu d'un template
  */
 export interface RenderedTemplate {
-    content: string
-    filename: string
-    description?: string
+  content: string
+  filename: string
+  description?: string
 }
 
 /**
  * Catalogue de templates disponibles
  */
-export const templates = {
-    // State Management Templates
-    'zustand-store': (ctx: TemplateContext) => zustandStoreTemplate(ctx),
+export const templates: Record<
+  string,
+  (ctx: TemplateContext) => RenderedTemplate
+> = {
+  // State Management Templates
+  'zustand-store': zustandStoreTemplate,
+  'redux-store': reduxStoreTemplate,
+  'pinia-store': piniaStoreTemplate,
 
-    'redux-store': (ctx: TemplateContext) => reduxStoreTemplate(ctx),
+  // API/HTTP Templates
+  'axios-config': axiosConfigTemplate,
+  'axios-interceptors': axiosInterceptorsTemplate,
+  'tanstack-query-config': tanstackQueryConfigTemplate,
 
-    'pinia-store': (ctx: TemplateContext) => piniaStoreTemplate(ctx),
+  // Routing Templates
+  'react-router-layout': reactRouterLayoutTemplate,
+  'vue-router-config': vueRouterConfigTemplate,
 
-    // API/HTTP Templates
-    'axios-config': (ctx: TemplateContext) => axiosConfigTemplate(ctx),
+  // CSS/Styling Templates
+  'tailwind-config': tailwindConfigTemplate,
+  'tailwind-css': tailwindCssTemplate,
 
-    'axios-interceptors': (ctx: TemplateContext) =>
-        axiosInterceptorsTemplate(ctx),
+  // Forms Templates
+  'react-hook-form-config': reactHookFormConfigTemplate,
+  'zod-schema': zodSchemaTemplate,
 
-    'tanstack-query-config': (ctx: TemplateContext) =>
-        tanstackQueryConfigTemplate(ctx),
+  // Testing Templates
+  'vitest-setup': vitestSetupTemplate,
+  'react-testing-library-setup': reactTestingLibrarySetupTemplate,
 
-    // Routing Templates
-    'react-router-layout': (ctx: TemplateContext) =>
-        reactRouterLayoutTemplate(ctx),
-
-    'vue-router-config': (ctx: TemplateContext) => vueRouterConfigTemplate(ctx),
-
-    // CSS/Styling Templates
-    'tailwind-config': (ctx: TemplateContext) => tailwindConfigTemplate(ctx),
-
-    'tailwind-css': (ctx: TemplateContext) => tailwindCssTemplate(ctx),
-
-    // Forms Templates
-    'react-hook-form-config': (ctx: TemplateContext) =>
-        reactHookFormConfigTemplate(ctx),
-
-    'zod-schema': (ctx: TemplateContext) => zodSchemaTemplate(ctx),
-
-    // Testing Templates
-    'vitest-setup': (ctx: TemplateContext) => vitestSetupTemplate(ctx),
-
-    'react-testing-library-setup': (ctx: TemplateContext) =>
-        reactTestingLibrarySetupTemplate(ctx),
-
-    // Tooling Templates
-    'eslint-config': (ctx: TemplateContext) => eslintConfigTemplate(ctx),
-
-    'prettier-config': (ctx: TemplateContext) => prettierConfigTemplate(ctx),
-
-    'husky-setup': (ctx: TemplateContext) => huskySetupTemplate(ctx),
+  // Tooling Templates
+  'eslint-config': eslintConfigTemplate,
+  'prettier-config': prettierConfigTemplate,
+  'husky-setup': huskySetupTemplate,
 }
 
 /**
@@ -82,23 +63,23 @@ export const templates = {
  * @returns Résultat du rendu
  */
 export function renderTemplate(
-    name: string,
-    ctx: TemplateContext
+  name: string,
+  ctx: TemplateContext
 ): RenderedTemplate {
-    const templateFn = templates[name as keyof typeof templates]
+  const templateFn = templates[name]
 
-    if (!templateFn) {
-        throw new Error(`Template not found: ${name}`)
-    }
+  if (!templateFn) {
+    throw new Error(`Template not found: ${name}`)
+  }
 
-    return templateFn(ctx)
+  return templateFn(ctx)
 }
 
 /**
  * Liste tous les templates disponibles
  */
 export function listTemplates(): string[] {
-    return Object.keys(templates)
+  return Object.keys(templates)
 }
 
 // ============================================================================
@@ -106,10 +87,10 @@ export function listTemplates(): string[] {
 // ============================================================================
 
 function zustandStoreTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'src/store/app.ts',
-        description: 'Zustand store application',
-        content: `import { create } from 'zustand'
+  return {
+    filename: 'src/store/app.ts',
+    description: 'Zustand store application',
+    content: `import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
 interface AppState {
@@ -135,14 +116,14 @@ export const useAppStore = create<AppState>()(
   )
 )
 `,
-    }
+  }
 }
 
 function reduxStoreTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'src/store/index.ts',
-        description: 'Redux store configuration',
-        content: `import { configureStore } from '@reduxjs/toolkit'
+  return {
+    filename: 'src/store/index.ts',
+    description: 'Redux store configuration',
+    content: `import { configureStore } from '@reduxjs/toolkit'
 import appReducer from './slices/appSlice'
 
 export const store = configureStore({
@@ -154,14 +135,14 @@ export const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
 `,
-    }
+  }
 }
 
 function piniaStoreTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'src/stores/app.ts',
-        description: 'Pinia store for Vue',
-        content: `import { defineStore } from 'pinia'
+  return {
+    filename: 'src/stores/app.ts',
+    description: 'Pinia store for Vue',
+    content: `import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export const useAppStore = defineStore('app', () => {
@@ -178,7 +159,7 @@ export const useAppStore = defineStore('app', () => {
   return { count, increment, decrement, reset, doubleCount }
 })
 `,
-    }
+  }
 }
 
 // ============================================================================
@@ -186,10 +167,10 @@ export const useAppStore = defineStore('app', () => {
 // ============================================================================
 
 function axiosConfigTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'src/api/client.ts',
-        description: 'Axios client configuration',
-        content: `import axios from 'axios'
+  return {
+    filename: 'src/api/client.ts',
+    description: 'Axios client configuration',
+    content: `import axios from 'axios'
 
 const apiClient = axios.create({
   baseURL: process.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
@@ -226,14 +207,14 @@ apiClient.interceptors.response.use(
 
 export default apiClient
 `,
-    }
+  }
 }
 
 function axiosInterceptorsTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'src/api/interceptors.ts',
-        description: 'Axios interceptors setup',
-        content: `import type { AxiosInstance } from 'axios'
+  return {
+    filename: 'src/api/interceptors.ts',
+    description: 'Axios interceptors setup',
+    content: `import type { AxiosInstance } from 'axios'
 
 export function setupInterceptors(apiClient: AxiosInstance) {
   // Request interceptor
@@ -261,14 +242,14 @@ export function setupInterceptors(apiClient: AxiosInstance) {
   )
 }
 `,
-    }
+  }
 }
 
 function tanstackQueryConfigTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'src/lib/query-client.ts',
-        description: 'TanStack Query configuration',
-        content: `import {
+  return {
+    filename: 'src/lib/query-client.ts',
+    description: 'TanStack Query configuration',
+    content: `import {
   QueryClient,
   defaultShouldDehydrateQuery,
   isServer,
@@ -304,7 +285,7 @@ export function getQueryClient() {
   return clientQueryClientInstance
 }
 `,
-    }
+  }
 }
 
 // ============================================================================
@@ -312,10 +293,10 @@ export function getQueryClient() {
 // ============================================================================
 
 function reactRouterLayoutTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'src/components/RootLayout.tsx',
-        description: 'React Router root layout',
-        content: `import { Outlet } from 'react-router-dom'
+  return {
+    filename: 'src/components/RootLayout.tsx',
+    description: 'React Router root layout',
+    content: `import { Outlet } from 'react-router-dom'
 import { Navbar } from './Navbar'
 import { Footer } from './Footer'
 
@@ -331,14 +312,14 @@ export function RootLayout() {
   )
 }
 `,
-    }
+  }
 }
 
 function vueRouterConfigTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'src/router/index.ts',
-        description: 'Vue Router configuration',
-        content: `import { createRouter, createWebHistory } from 'vue-router'
+  return {
+    filename: 'src/router/index.ts',
+    description: 'Vue Router configuration',
+    content: `import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
@@ -360,7 +341,7 @@ export const router = createRouter({
   routes,
 })
 `,
-    }
+  }
 }
 
 // ============================================================================
@@ -368,10 +349,10 @@ export const router = createRouter({
 // ============================================================================
 
 function tailwindConfigTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'tailwind.config.ts',
-        description: 'Tailwind CSS configuration',
-        content: `import type { Config } from 'tailwindcss'
+  return {
+    filename: 'tailwind.config.ts',
+    description: 'Tailwind CSS configuration',
+    content: `import type { Config } from 'tailwindcss'
 
 export default {
   content: [
@@ -388,14 +369,14 @@ export default {
   plugins: [],
 } satisfies Config
 `,
-    }
+  }
 }
 
 function tailwindCssTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'src/styles/index.css',
-        description: 'Tailwind CSS directives',
-        content: `@tailwind base;
+  return {
+    filename: 'src/styles/index.css',
+    description: 'Tailwind CSS directives',
+    content: `@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -414,7 +395,7 @@ function tailwindCssTemplate(_ctx: TemplateContext): RenderedTemplate {
   }
 }
 `,
-    }
+  }
 }
 
 // ============================================================================
@@ -422,10 +403,10 @@ function tailwindCssTemplate(_ctx: TemplateContext): RenderedTemplate {
 // ============================================================================
 
 function reactHookFormConfigTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'src/forms/useForm.ts',
-        description: 'React Hook Form setup',
-        content: `import { useForm } from 'react-hook-form'
+  return {
+    filename: 'src/forms/useForm.ts',
+    description: 'React Hook Form setup',
+    content: `import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { ZodSchema } from 'zod'
 
@@ -436,14 +417,14 @@ export function useTypedForm<T>(schema: ZodSchema) {
   })
 }
 `,
-    }
+  }
 }
 
 function zodSchemaTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'src/schemas/user.schema.ts',
-        description: 'Zod validation schema',
-        content: `import { z } from 'zod'
+  return {
+    filename: 'src/schemas/user.schema.ts',
+    description: 'Zod validation schema',
+    content: `import { z } from 'zod'
 
 export const userSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -454,7 +435,7 @@ export const userSchema = z.object({
 
 export type User = z.infer<typeof userSchema>
 `,
-    }
+  }
 }
 
 // ============================================================================
@@ -462,10 +443,10 @@ export type User = z.infer<typeof userSchema>
 // ============================================================================
 
 function vitestSetupTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'vitest.config.ts',
-        description: 'Vitest configuration',
-        content: `import { defineConfig } from 'vitest/config'
+  return {
+    filename: 'vitest.config.ts',
+    description: 'Vitest configuration',
+    content: `import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
@@ -483,16 +464,16 @@ export default defineConfig({
   },
 })
 `,
-    }
+  }
 }
 
 function reactTestingLibrarySetupTemplate(
-    _ctx: TemplateContext
+  _ctx: TemplateContext
 ): RenderedTemplate {
-    return {
-        filename: 'src/test/setup.ts',
-        description: 'React Testing Library setup',
-        content: `import '@testing-library/jest-dom'
+  return {
+    filename: 'src/test/setup.ts',
+    description: 'React Testing Library setup',
+    content: `import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 
@@ -516,7 +497,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 `,
-    }
+  }
 }
 
 // ============================================================================
@@ -524,10 +505,10 @@ Object.defineProperty(window, 'matchMedia', {
 // ============================================================================
 
 function eslintConfigTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: 'eslint.config.js',
-        description: 'ESLint configuration',
-        content: `import js from '@eslint/js'
+  return {
+    filename: 'eslint.config.js',
+    description: 'ESLint configuration',
+    content: `import js from '@eslint/js'
 import globals from 'globals'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
@@ -552,36 +533,36 @@ export default [
   },
 ]
 `,
-    }
+  }
 }
 
 function prettierConfigTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: '.prettierrc.json',
-        description: 'Prettier configuration',
-        content: JSON.stringify(
-            {
-                semi: false,
-                singleQuote: true,
-                trailingComma: 'es5',
-                printWidth: 80,
-                tabWidth: 2,
-                useTabs: false,
-            },
-            null,
-            2
-        ),
-    }
+  return {
+    filename: '.prettierrc.json',
+    description: 'Prettier configuration',
+    content: JSON.stringify(
+      {
+        semi: false,
+        singleQuote: true,
+        trailingComma: 'es5',
+        printWidth: 80,
+        tabWidth: 2,
+        useTabs: false,
+      },
+      null,
+      2
+    ),
+  }
 }
 
 function huskySetupTemplate(_ctx: TemplateContext): RenderedTemplate {
-    return {
-        filename: '.husky/pre-commit',
-        description: 'Husky pre-commit hook',
-        content: `#!/bin/sh
-. "\$(dirname "\$0")/_/husky.sh"
+  return {
+    filename: '.husky/pre-commit',
+    description: 'Husky pre-commit hook',
+    content: `#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
 
 npm run lint-staged
 `,
-    }
+  }
 }

@@ -81,7 +81,10 @@ export function createMockProject(
     [`package.json`]: JSON.stringify(packageJson, null, 2),
     [`${getLockfile(packageManager)}`]: '',
     ...(typescript ? { [`tsconfig.json`]: getTsConfig() } : {}),
-    [`src/App.${typescript ? 'tsx' : 'jsx'}`]: getAppFile(framework, typescript),
+    [`src/App.${typescript ? 'tsx' : 'jsx'}`]: getAppFile(
+      framework,
+      typescript
+    ),
     [`src/main.${typescript ? 'ts' : 'js'}`]: getMainFile(
       framework,
       typescript
@@ -257,10 +260,10 @@ function getFrameworkPackageJson(
           vite: '^5.0.0',
           ...(typescript
             ? {
-              typescript: '^5.3.0',
-              '@types/react': '^19.0.0',
-              '@types/react-dom': '^19.0.0',
-            }
+                typescript: '^5.3.0',
+                '@types/react': '^19.0.0',
+                '@types/react-dom': '^19.0.0',
+              }
             : {}),
         },
       }
@@ -280,11 +283,11 @@ function getFrameworkPackageJson(
         },
         devDependencies: typescript
           ? {
-            typescript: '^5.3.0',
-            '@types/react': '^19.0.0',
-            '@types/react-dom': '^19.0.0',
-            '@types/node': '^20.0.0',
-          }
+              typescript: '^5.3.0',
+              '@types/react': '^19.0.0',
+              '@types/react-dom': '^19.0.0',
+              '@types/node': '^20.0.0',
+            }
           : {},
       }
 

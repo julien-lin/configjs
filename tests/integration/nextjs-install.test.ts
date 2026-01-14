@@ -11,9 +11,7 @@ import {
   createTestProject,
   cleanupTestProject,
   readPackageJson,
-  writePackageJson,
   fileExists,
-  writeFile,
   getFsAdapter,
 } from './memfs-test-utils.js'
 import {
@@ -21,8 +19,6 @@ import {
   allCompatibilityRules,
 } from '../../src/core/validator.js'
 import { detectContext } from '../../src/core/detector.js'
-import { ConfigWriter } from '../../src/core/config-writer.js'
-import { BackupManager } from '../../src/core/backup-manager.js'
 import { pluginRegistry } from '../../src/plugins/registry.js'
 import { ensureDirectory } from '../../src/utils/fs-helpers.js'
 

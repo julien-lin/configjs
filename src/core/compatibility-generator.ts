@@ -76,7 +76,10 @@ function generateExclusiveRules(plugins: Plugin[]): CompatibilityRule[] {
     if (!pluginsByCategory.has(category)) {
       pluginsByCategory.set(category, [])
     }
-    pluginsByCategory.get(category)!.push(plugin)
+    const arr = pluginsByCategory.get(category)
+    if (arr) {
+      arr.push(plugin)
+    }
   }
 
   // Générer une règle EXCLUSIVE pour chaque catégorie avec plusieurs plugins

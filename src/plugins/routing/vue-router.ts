@@ -166,7 +166,11 @@ export const vueRouterPlugin: Plugin = {
       // 6. Modifier src/main.ts (ou main.js) pour intégrer le router
       const mainPath = join(srcDir, `main.${extension}`)
       if (await checkPathExists(mainPath, ctx.fsAdapter)) {
-        const mainContent = await readFileContent(mainPath, 'utf-8', ctx.fsAdapter)
+        const mainContent = await readFileContent(
+          mainPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const updatedMainContent = updateMainFile(mainContent, ctx.typescript)
 
         if (updatedMainContent !== mainContent) {
@@ -187,7 +191,11 @@ export const vueRouterPlugin: Plugin = {
       // 7. Modifier src/App.vue pour ajouter router-view
       const appPath = join(srcDir, 'App.vue')
       if (await checkPathExists(appPath, ctx.fsAdapter)) {
-        const appContent = await readFileContent(appPath, 'utf-8', ctx.fsAdapter)
+        const appContent = await readFileContent(
+          appPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const updatedAppContent = updateAppFile(appContent)
 
         if (updatedAppContent !== appContent) {

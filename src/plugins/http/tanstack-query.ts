@@ -177,7 +177,11 @@ export const tanstackQueryPlugin: Plugin = {
       const appExists = await checkPathExists(appPath, ctx.fsAdapter)
 
       if (appExists) {
-        const appContent = await readFileContent(appPath, 'utf-8', ctx.fsAdapter)
+        const appContent = await readFileContent(
+          appPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const modifiedAppContent = injectQueryClientProvider(
           appContent,
           ctx.typescript

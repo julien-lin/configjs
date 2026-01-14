@@ -138,7 +138,10 @@ export const shadcnUiPlugin: Plugin = {
     try {
       // 1. Créer components.json
       const componentsJsonPath = join(projectRoot, 'components.json')
-      const componentsJsonExists = await checkPathExists(componentsJsonPath, ctx.fsAdapter)
+      const componentsJsonExists = await checkPathExists(
+        componentsJsonPath,
+        ctx.fsAdapter
+      )
 
       if (componentsJsonExists) {
         logger.warn('components.json already exists, skipping creation')
@@ -167,7 +170,11 @@ export const shadcnUiPlugin: Plugin = {
         logger.warn(
           'utils.ts already exists, checking if cn function is present'
         )
-        const existingContent = await readFileContent(utilsPath, 'utf-8', ctx.fsAdapter)
+        const existingContent = await readFileContent(
+          utilsPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         if (!existingContent.includes('export function cn')) {
           // Ajouter la fonction cn si elle n'existe pas
           const cnFunction = ctx.typescript
@@ -227,7 +234,11 @@ export const shadcnUiPlugin: Plugin = {
       const cssExists = await checkPathExists(cssPath, ctx.fsAdapter)
 
       if (cssExists) {
-        const cssContent = await readFileContent(cssPath, 'utf-8', ctx.fsAdapter)
+        const cssContent = await readFileContent(
+          cssPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         if (!cssContent.includes('@layer base')) {
           const shadcnVariables = getShadcnCSSVariables()
           const updatedCss = cssContent + '\n\n' + shadcnVariables

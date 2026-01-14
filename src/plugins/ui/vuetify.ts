@@ -184,7 +184,11 @@ export const vuetifyPlugin: Plugin = {
       const mainExists = await checkPathExists(mainPath, ctx.fsAdapter)
 
       if (mainExists) {
-        const mainContent = await readFileContent(mainPath, 'utf-8', ctx.fsAdapter)
+        const mainContent = await readFileContent(
+          mainPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const updatedMainContent = updateMainFile(mainContent, extension)
 
         await writer.writeFile(mainPath, updatedMainContent, { backup: true })
@@ -199,10 +203,17 @@ export const vuetifyPlugin: Plugin = {
 
       // 5. Mettre à jour vite.config.ts (ou .js)
       const viteConfigPath = join(ctx.projectRoot, `vite.config.${extension}`)
-      const viteConfigExists = await checkPathExists(viteConfigPath, ctx.fsAdapter)
+      const viteConfigExists = await checkPathExists(
+        viteConfigPath,
+        ctx.fsAdapter
+      )
 
       if (viteConfigExists) {
-        const viteContent = await readFileContent(viteConfigPath, 'utf-8', ctx.fsAdapter)
+        const viteContent = await readFileContent(
+          viteConfigPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const updatedViteContent = updateViteConfig(viteContent)
 
         await writer.writeFile(viteConfigPath, updatedViteContent, {

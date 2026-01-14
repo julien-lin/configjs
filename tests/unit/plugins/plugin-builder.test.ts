@@ -18,7 +18,10 @@ describe('PluginBuilder', () => {
         .named('test-plugin', 'Test Plugin')
         .forFramework('react')
         .inCategory(Category.STATE)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -31,7 +34,10 @@ describe('PluginBuilder', () => {
         .named('test-plugin', 'Test Plugin', 'Test description')
         .forFramework('react')
         .inCategory(Category.STATE)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -44,7 +50,10 @@ describe('PluginBuilder', () => {
         .forFramework('react')
         .inCategory(Category.STATE)
         .withVersion('^1.0.0')
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -58,7 +67,10 @@ describe('PluginBuilder', () => {
         .named('test-plugin', 'Test Plugin')
         .forFramework('react')
         .inCategory(Category.STATE)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -70,7 +82,10 @@ describe('PluginBuilder', () => {
         .named('test-plugin', 'Test Plugin')
         .forFrameworks(['react', 'vue'])
         .inCategory(Category.STATE)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -90,7 +105,10 @@ describe('PluginBuilder', () => {
         .named('test-plugin', 'Test Plugin')
         .forFramework('react')
         .inCategory(Category.ROUTING)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -102,7 +120,10 @@ describe('PluginBuilder', () => {
         .named('test-plugin', 'Test Plugin')
         .forFramework('react')
         .category(Category.HTTP)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -117,7 +138,10 @@ describe('PluginBuilder', () => {
         .forFramework('react')
         .inCategory(Category.STATE)
         .incompatibleWith(['other-plugin', 'another-plugin'])
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -134,7 +158,10 @@ describe('PluginBuilder', () => {
         .inCategory(Category.STATE)
         .addIncompatibleWith('first-plugin')
         .addIncompatibleWith('second-plugin')
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -147,7 +174,10 @@ describe('PluginBuilder', () => {
         .forFramework('react')
         .inCategory(Category.STATE)
         .requires(['peer-dep'])
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -161,7 +191,10 @@ describe('PluginBuilder', () => {
         .inCategory(Category.STATE)
         .addRequires('dep1')
         .addRequires('dep2')
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -174,7 +207,10 @@ describe('PluginBuilder', () => {
         .forFramework('react')
         .inCategory(Category.STATE)
         .recommends(['types-package'])
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -188,7 +224,10 @@ describe('PluginBuilder', () => {
         .inCategory(Category.STATE)
         .addRecommends('rec1')
         .addRecommends('rec2')
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -243,7 +282,10 @@ describe('PluginBuilder', () => {
         .named('test-plugin', 'Test Plugin')
         .forFramework('react')
         .inCategory(Category.STATE)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(configureFn)
         .build()
 
@@ -261,7 +303,10 @@ describe('PluginBuilder', () => {
         .named('test-plugin', 'Test Plugin')
         .forFramework('react')
         .inCategory(Category.STATE)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigHandler(configureFn)
         .build()
 
@@ -277,7 +322,10 @@ describe('PluginBuilder', () => {
         .forFramework('react')
         .inCategory(Category.STATE)
         .withDetect(detectFn)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -302,7 +350,10 @@ describe('PluginBuilder', () => {
         .inCategory(Category.STATE)
         .withPreInstall(preInstallFn)
         .withPostInstall(postInstallFn)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -320,7 +371,10 @@ describe('PluginBuilder', () => {
         .forFramework('react')
         .inCategory(Category.STATE)
         .withRollback(rollbackFn)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 
@@ -339,7 +393,10 @@ describe('PluginBuilder', () => {
         .requires(['react', 'vue'])
         .recommends(['@types/my-state-lib'])
         .withInstall(async () => ({
-          packages: { dependencies: ['my-state-lib'], devDependencies: ['@types/my-state-lib'] },
+          packages: {
+            dependencies: ['my-state-lib'],
+            devDependencies: ['@types/my-state-lib'],
+          },
           success: true,
         }))
         .withConfigure(async () => ({
@@ -370,7 +427,10 @@ describe('PluginBuilder', () => {
         builder
           .forFramework('react')
           .inCategory(Category.STATE)
-          .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+          .withInstall(async () => ({
+            packages: { dependencies: [], devDependencies: [] },
+            success: true,
+          }))
           .withConfigure(async () => ({ success: true, files: [] }))
           .build()
       }).toThrow('Missing required property: name')
@@ -393,7 +453,10 @@ describe('PluginBuilder', () => {
           .named('test', 'Test')
           .forFramework('react')
           .inCategory(Category.STATE)
-          .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+          .withInstall(async () => ({
+            packages: { dependencies: [], devDependencies: [] },
+            success: true,
+          }))
           .build()
       }).toThrow('Missing required property: configure')
     })
@@ -405,7 +468,10 @@ describe('PluginBuilder', () => {
         .named('helper-test', 'Helper Test')
         .forFramework('react')
         .inCategory(Category.STATE)
-        .withInstall(async () => ({ packages: { dependencies: [], devDependencies: [] }, success: true }))
+        .withInstall(async () => ({
+          packages: { dependencies: [], devDependencies: [] },
+          success: true,
+        }))
         .withConfigure(async () => ({ success: true, files: [] }))
         .build()
 

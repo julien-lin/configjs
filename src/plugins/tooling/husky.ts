@@ -131,7 +131,10 @@ export const huskyPlugin: Plugin = {
 
       // 3. Créer .husky/pre-commit
       const preCommitPath = join(huskyDir, 'pre-commit')
-      const preCommitExists = await checkPathExists(preCommitPath, ctx.fsAdapter)
+      const preCommitExists = await checkPathExists(
+        preCommitPath,
+        ctx.fsAdapter
+      )
 
       if (!preCommitExists) {
         const preCommitContent = getPreCommitContent()
@@ -167,10 +170,17 @@ export const huskyPlugin: Plugin = {
 
       // 5. Ajouter le script prepare dans package.json
       const packageJsonPath = join(projectRoot, 'package.json')
-      const packageJsonExists = await checkPathExists(packageJsonPath, ctx.fsAdapter)
+      const packageJsonExists = await checkPathExists(
+        packageJsonPath,
+        ctx.fsAdapter
+      )
 
       if (packageJsonExists) {
-        const packageJsonContent = await readFileContent(packageJsonPath, 'utf-8', ctx.fsAdapter)
+        const packageJsonContent = await readFileContent(
+          packageJsonPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const packageJson = JSON.parse(packageJsonContent) as {
           scripts?: Record<string, string>
         }

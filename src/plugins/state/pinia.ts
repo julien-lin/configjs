@@ -157,7 +157,11 @@ export const piniaPlugin: Plugin = {
       // 4. Modifier src/main.ts (ou main.js) pour intégrer Pinia
       const mainPath = join(srcDir, `main.${extension}`)
       if (await checkPathExists(mainPath, ctx.fsAdapter)) {
-        const mainContent = await readFileContent(mainPath, 'utf-8', ctx.fsAdapter)
+        const mainContent = await readFileContent(
+          mainPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const updatedMainContent = updateMainFile(mainContent, ctx.typescript)
 
         if (updatedMainContent !== mainContent) {

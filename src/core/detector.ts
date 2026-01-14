@@ -126,7 +126,10 @@ async function detectBundler(
     const nextConfigExists =
       (await checkPathExists(join(projectRoot, 'next.config.js'), fsAdapter)) ||
       (await checkPathExists(join(projectRoot, 'next.config.ts'), fsAdapter)) ||
-      (await checkPathExists(join(projectRoot, 'next.config.mjs'), fsAdapter)) ||
+      (await checkPathExists(
+        join(projectRoot, 'next.config.mjs'),
+        fsAdapter
+      )) ||
       (await checkPathExists(join(projectRoot, 'next.config.cjs'), fsAdapter))
 
     if (nextConfigExists) {
@@ -142,7 +145,10 @@ async function detectBundler(
     const viteConfigExists =
       (await checkPathExists(join(projectRoot, 'vite.config.js'), fsAdapter)) ||
       (await checkPathExists(join(projectRoot, 'vite.config.ts'), fsAdapter)) ||
-      (await checkPathExists(join(projectRoot, 'vite.config.mjs'), fsAdapter)) ||
+      (await checkPathExists(
+        join(projectRoot, 'vite.config.mjs'),
+        fsAdapter
+      )) ||
       (await checkPathExists(join(projectRoot, 'vite.config.cjs'), fsAdapter))
 
     if (viteConfigExists) {
@@ -179,7 +185,10 @@ async function detectBundler(
   // Détection Webpack
   if (deps['webpack']) {
     const webpackConfigExists =
-      (await checkPathExists(join(projectRoot, 'webpack.config.js'), fsAdapter)) ||
+      (await checkPathExists(
+        join(projectRoot, 'webpack.config.js'),
+        fsAdapter
+      )) ||
       (await checkPathExists(join(projectRoot, 'webpack.config.ts'), fsAdapter))
 
     if (webpackConfigExists) {

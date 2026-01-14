@@ -93,7 +93,11 @@ export class ConfigWriter {
     const fileExists = await checkPathExists(fullPath, this.fsAdapter)
     if (fileExists && backup) {
       try {
-        const existingContent = await readFileContent(fullPath, 'utf-8', this.fsAdapter)
+        const existingContent = await readFileContent(
+          fullPath,
+          'utf-8',
+          this.fsAdapter
+        )
         this.backupManager.backup(fullPath, existingContent)
       } catch (error) {
         const errorMessage =
@@ -199,7 +203,11 @@ export class ConfigWriter {
       // Backup déjà fait, ne pas le refaire
     } else {
       try {
-        const existingContent = await readFileContent(packageJsonPath, 'utf-8', this.fsAdapter)
+        const existingContent = await readFileContent(
+          packageJsonPath,
+          'utf-8',
+          this.fsAdapter
+        )
         this.backupManager.backup(packageJsonPath, existingContent)
       } catch (error) {
         const errorMessage =
@@ -255,7 +263,11 @@ export class ConfigWriter {
     if (fileExists) {
       if (backup) {
         try {
-          existingContent = await readFileContent(fullPath, 'utf-8', this.fsAdapter)
+          existingContent = await readFileContent(
+            fullPath,
+            'utf-8',
+            this.fsAdapter
+          )
           this.backupManager.backup(fullPath, existingContent)
         } catch (error) {
           const errorMessage =
@@ -265,7 +277,11 @@ export class ConfigWriter {
           )
         }
       } else {
-        existingContent = await readFileContent(fullPath, 'utf-8', this.fsAdapter)
+        existingContent = await readFileContent(
+          fullPath,
+          'utf-8',
+          this.fsAdapter
+        )
       }
     }
 

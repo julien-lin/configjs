@@ -116,11 +116,18 @@ export const eslintVuePlugin: Plugin = {
     try {
       // 1. Créer ou modifier eslint.config.js
       const eslintConfigPath = join(projectRoot, 'eslint.config.js')
-      const eslintConfigExists = await checkPathExists(eslintConfigPath, ctx.fsAdapter)
+      const eslintConfigExists = await checkPathExists(
+        eslintConfigPath,
+        ctx.fsAdapter
+      )
 
       if (eslintConfigExists) {
         // Modifier le fichier existant pour ajouter la config Vue
-        const existingContent = await readFileContent(eslintConfigPath, 'utf-8', ctx.fsAdapter)
+        const existingContent = await readFileContent(
+          eslintConfigPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
         const updatedContent = updateESLintConfig(existingContent, ctx)
 
         if (updatedContent !== existingContent) {
