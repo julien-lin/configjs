@@ -154,7 +154,7 @@ export const vueTestUtilsPlugin: Plugin = {
 
       // 4. Ajouter scripts de test au package.json
       const packageJsonPath = join(ctx.projectRoot, 'package.json')
-      await writer.modifyPackageJson(packageJsonPath, (pkg) => {
+      await writer.modifyPackageJson(ctx.projectRoot, (pkg) => {
         pkg.scripts = pkg.scripts || {}
         pkg.scripts['test'] = 'vitest'
         pkg.scripts['test:ui'] = 'vitest --ui'
