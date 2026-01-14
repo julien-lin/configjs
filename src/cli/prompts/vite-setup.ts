@@ -21,7 +21,7 @@ export async function promptViteSetup(
   const answers = await inquirer.prompt<{
     shouldCreate: boolean
     projectName: string
-    template: 'react' | 'react-ts'
+    typescript: boolean
   }>([
     {
       type: 'confirm',
@@ -47,10 +47,10 @@ export async function promptViteSetup(
       },
     },
     {
-      type: 'list',
-      name: 'template',
-      message: t.vite.template,
-      choices: t.vite.templateOptions,
+      type: 'confirm',
+      name: 'typescript',
+      message: t.vite.typescript,
+      default: true,
       when: (answers): boolean => answers.shouldCreate === true,
     },
   ])
@@ -61,6 +61,6 @@ export async function promptViteSetup(
 
   return {
     projectName: answers.projectName.trim(),
-    template: answers.template,
+    template: answers.typescript ? 'react-ts' : 'react',
   }
 }

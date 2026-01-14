@@ -163,7 +163,7 @@ function generateConflictRules(plugins: Plugin[]): CompatibilityRule[] {
       )
 
       if (!incompatiblePlugin) {
-        logger.warn(
+        logger.debug(
           `Plugin ${plugin.name} declares incompatibleWith ${incompatiblePluginName}, but plugin not found in registry`
         )
         continue

@@ -204,6 +204,22 @@ try {
 
 ## 🏗️ Architecture
 
+### CLI - Scaffolding Vite (RÈGLE CRITIQUE)
+
+**Pour tous les frameworks basés sur Vite (React, Vue, Svelte, etc.) :**
+- ✅ **Toujours** demander explicitement si l’utilisateur veut TypeScript
+- ✅ Utiliser une **commande directe non-interactive** (pas de wizard Vite)
+- ✅ Format imposé :
+  - `npm create vite@latest <nom> -- --template <framework>` (JS)
+  - `npm create vite@latest <nom> -- --template <framework>-ts` (TS)
+- ❌ Ne PAS passer par le configurateur Vite (sélection framework/variant)
+
+### CLI - Compatibilité (UX)
+
+**Les warnings de compatibilité ne doivent apparaître qu’après la sélection des plugins.**
+- ✅ Afficher incompatibilités uniquement lors de la validation de la sélection
+- ✅ Les incompatibilités inconnues du registry restent en `debug` (pas d’alertes visibles)
+
 ### Plugins
 
 **Chaque plugin DOIT :**
