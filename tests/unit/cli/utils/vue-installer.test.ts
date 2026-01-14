@@ -11,11 +11,6 @@ describe('createVueProject', () => {
   const mockOptions: VueSetupOptions = {
     projectName: 'test-vue-project',
     typescript: true,
-    router: true,
-    pinia: true,
-    vitest: true,
-    eslint: true,
-    prettier: true,
   }
 
   beforeEach(() => {
@@ -40,6 +35,9 @@ describe('createVueProject', () => {
       expect.objectContaining({
         cwd: '/tmp',
         stdio: 'inherit',
+        env: expect.objectContaining({
+          npm_config_yes: 'true',
+        }),
       })
     )
   })
@@ -55,32 +53,9 @@ describe('createVueProject', () => {
       expect.objectContaining({
         cwd: '/tmp',
         stdio: 'inherit',
-      })
-    )
-  })
-
-  it('should install optional dependencies after project creation', async () => {
-    await createVueProject(mockOptions, '/tmp', 'en')
-
-    // Vérifier que les dépendances optionnelles sont installées
-    expect(execa).toHaveBeenCalledWith(
-      'npm',
-      expect.arrayContaining([
-        'install',
-        'vue-router@4',
-        'pinia',
-        'vitest',
-        '@vue/test-utils',
-        '@vitest/ui',
-        'eslint',
-        'eslint-plugin-vue',
-        '@vue/eslint-config-prettier',
-        'prettier',
-        'eslint-config-prettier',
-      ]),
-      expect.objectContaining({
-        cwd: expect.stringContaining('test-vue-project'),
-        stdio: 'inherit',
+        env: expect.objectContaining({
+          npm_config_yes: 'true',
+        }),
       })
     )
   })

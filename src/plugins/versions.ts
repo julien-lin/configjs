@@ -34,7 +34,7 @@ export const PLUGIN_VERSIONS = {
   // HTTP/API
   axios: '^1.6.5',
   '@tanstack/react-query': '^5.56.2',
-  '@tanstack/vue-query': '^5.56.2',
+  '@tanstack/vue-query': '^5.92.6',
 
   // CSS/Styling
   tailwindcss: '^3.4.1',
@@ -65,6 +65,7 @@ export const PLUGIN_VERSIONS = {
   vitest: '^1.0.4',
   '@vitest/ui': '^1.0.4',
   '@testing-library/react': '^14.1.2',
+  '@testing-library/vue': '^8.1.0',
   '@testing-library/jest-dom': '^6.1.5',
   '@testing-library/user-event': '^14.5.1',
   playwright: '^1.41.0',
@@ -77,7 +78,13 @@ export const PLUGIN_VERSIONS = {
   'typescript-eslint': '^6.15.0',
   prettier: '^3.1.1',
   husky: '^8.0.3',
-  'lint-staged': '^15.2.0',
+  'lint-staged': '^16.2.7',
+  'vue-tsc': '^3.2.2',
+  'vue-i18n': '^11.2.8',
+  '@commitlint/cli': '^20.3.1',
+  '@commitlint/config-conventional': '^20.3.1',
+  'unplugin-auto-import': '^20.3.0',
+  'unplugin-vue-components': '^30.0.0',
 
   // Utilities
   'date-fns': '^2.30.0',

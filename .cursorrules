@@ -209,6 +209,8 @@ try {
 **Pour tous les frameworks basés sur Vite (React, Vue, Svelte, etc.) :**
 - ✅ **Toujours** demander explicitement si l’utilisateur veut TypeScript
 - ✅ Utiliser une **commande directe non-interactive** (pas de wizard Vite)
+- ✅ Ne PAS installer d’options “framework presets” pendant le scaffold (router/pinia/vitest/eslint)
+  - Ces choix doivent passer par la **sélection de plugins** du CLI
 - ✅ Format imposé :
   - `npm create vite@latest <nom> -- --template <framework>` (JS)
   - `npm create vite@latest <nom> -- --template <framework>-ts` (TS)
@@ -1044,6 +1046,11 @@ Avant d'implémenter, TOUJOURS consulter :
 
 - **React Router** : https://reactrouter.com/en/main
 - **TanStack Router** : https://tanstack.com/router/latest
+- **Vue Router** : https://router.vuejs.org/
+- **Pinia** : https://pinia.vuejs.org/
+- **Vue I18n** : https://vue-i18n.intlify.dev/
+- **VueUse** : https://vueuse.org/
+- **Vue Test Utils** : https://test-utils.vuejs.org/
 - **Zustand** : https://zustand-docs.pmnd.rs/
 - **Redux Toolkit** : https://redux-toolkit.js.org/
 - **Axios** : https://axios-http.com/docs/intro
