@@ -7,6 +7,7 @@ import type {
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { getModuleLogger } from '../../utils/logger-provider.js'
+import { generateIconComponent } from '../utils/angular-21-config.js'
 
 const logger = getModuleLogger()
 
@@ -62,10 +63,32 @@ export const lucideAngularPlugin: Plugin = {
     }
   },
 
-  configure(): Promise<ConfigResult> {
-    return Promise.resolve({
-      files: [],
-      success: true,
-    })
+  async configure(ctx: ProjectContext): Promise<ConfigResult> {
+    try {
+      // Generate Icon component example
+      await generateIconComponent(ctx.projectRoot)
+
+      logger.success('Lucide Angular configuration completed')
+      logger.info(
+        'Created: components/icon.component.ts with Lucide icon example'
+      )
+
+      return {
+        files: [
+          {
+            type: 'create',
+            path: 'src/app/components/icon.component.ts',
+          },
+        ],
+        success: true,
+      }
+    } catch (error) {
+      logger.error('Failed to configure Lucide Angular', error)
+      return {
+        files: [],
+        success: false,
+        message: `Error configuring Lucide Angular: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      }
+    }
   },
 }
