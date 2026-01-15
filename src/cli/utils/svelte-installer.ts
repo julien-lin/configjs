@@ -19,67 +19,67 @@ import { checkPathExists } from '../../utils/fs-helpers.js'
  * @throws Erreur si le projet existe déjà ou si la création échoue
  */
 export async function createSvelteProject(
-    options: SvelteSetupOptions,
-    currentDir: string,
-    language: SupportedLanguage
+  options: SvelteSetupOptions,
+  currentDir: string,
+  language: SupportedLanguage
 ): Promise<string> {
-    const t = getTranslations(language)
-    const projectPath = join(currentDir, options.projectName)
+  const t = getTranslations(language)
+  const projectPath = join(currentDir, options.projectName)
 
-    // Vérifier que le répertoire n'existe pas déjà
-    if (await checkPathExists(projectPath)) {
-        throw new Error(
-            t.vite.folderExists?.(options.projectName) ||
-            `Folder ${options.projectName} already exists`
-        )
-    }
+  // Vérifier que le répertoire n'existe pas déjà
+  if (await checkPathExists(projectPath)) {
+    throw new Error(
+      t.vite.folderExists?.(options.projectName) ||
+        `Folder ${options.projectName} already exists`
+    )
+  }
 
+  console.log()
+  console.log(
+    pc.cyan(`✨ ${t.svelte.creatingProject || 'Creating Svelte project...'}`)
+  )
+  console.log()
+
+  try {
+    // Créer le projet Svelte
+    const templateSuffix = options.useTypeScript ? '' : '-js'
+    const createCommand = `npm create svelte@latest ${options.projectName} -- --template skeleton${templateSuffix} --no-install`
+
+    execSync(createCommand, {
+      cwd: currentDir,
+      stdio: 'inherit',
+      shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh',
+    })
+
+    // Installer les dépendances
     console.log()
     console.log(
-        pc.cyan(`✨ ${t.svelte.creatingProject || 'Creating Svelte project...'}`)
+      pc.cyan(
+        `📦 ${t.svelte.installingDependencies || 'Installing dependencies...'}`
+      )
     )
     console.log()
 
-    try {
-        // Créer le projet Svelte
-        const templateSuffix = options.useTypeScript ? '' : '-js'
-        const createCommand = `npm create svelte@latest ${options.projectName} -- --template skeleton${templateSuffix} --no-install`
+    execSync('npm install', {
+      cwd: projectPath,
+      stdio: 'inherit',
+    })
 
-        execSync(createCommand, {
-            cwd: currentDir,
-            stdio: 'inherit',
-            shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh',
-        })
+    console.log()
+    console.log(
+      pc.green(
+        `✅ ${t.svelte.projectCreated || 'Svelte project created successfully!'}`
+      )
+    )
+    console.log()
 
-        // Installer les dépendances
-        console.log()
-        console.log(
-            pc.cyan(
-                `📦 ${t.svelte.installingDependencies || 'Installing dependencies...'}`
-            )
-        )
-        console.log()
-
-        execSync('npm install', {
-            cwd: projectPath,
-            stdio: 'inherit',
-        })
-
-        console.log()
-        console.log(
-            pc.green(
-                `✅ ${t.svelte.projectCreated || 'Svelte project created successfully!'}`
-            )
-        )
-        console.log()
-
-        return projectPath
-    } catch (error) {
-        console.error(
-            pc.red(
-                `❌ Failed to create Svelte project: ${error instanceof Error ? error.message : String(error)}`
-            )
-        )
-        throw error
-    }
+    return projectPath
+  } catch (error) {
+    console.error(
+      pc.red(
+        `❌ Failed to create Svelte project: ${error instanceof Error ? error.message : String(error)}`
+      )
+    )
+    throw error
+  }
 }

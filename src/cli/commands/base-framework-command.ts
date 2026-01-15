@@ -19,6 +19,7 @@ import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
 import { SpinnerManager } from '../ui/spinner.js'
 import { displayInstallationReport } from '../ui/report.js'
+import { displayLogo } from '../ui/logo.js'
 import { getFrameworkMetadata } from '../../core/framework-registry.js'
 import pc from 'picocolors'
 
@@ -343,6 +344,11 @@ export abstract class BaseFrameworkCommand {
         logger.setLevel(LogLevel.DEBUG)
       } else {
         logger.setLevel(LogLevel.INFO)
+      }
+
+      // Display logo
+      if (!options.silent) {
+        displayLogo()
       }
 
       // 1. Sélection de la langue (première question)
