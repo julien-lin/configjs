@@ -22,6 +22,33 @@ export interface AngularProvider {
 }
 
 /**
+ * Options de configuration pour Vitest
+ */
+export interface VitestOptions {
+  coverage?: boolean
+  browsers?: 'jsdom' | 'happy-dom'
+  reporters?: ('text' | 'json' | 'html')[]
+  setupFiles?: string[]
+}
+
+/**
+ * Options de configuration pour Signal Store
+ */
+export interface SignalStoreOptions {
+  withZod?: boolean
+  includeExamples?: boolean
+  methods?: ('add' | 'update' | 'delete' | 'clear')[]
+}
+
+/**
+ * Options de configuration pour composants générés
+ */
+export interface ComponentOptions {
+  standalone?: boolean
+  styles?: 'tailwind' | 'inline' | 'none'
+}
+
+/**
  * Providers pour app.config.ts Angular 21
  *
  * ⚠️ ATTENTION : Choisir UNE stratégie et s'y tenir !
@@ -134,8 +161,20 @@ export async function addProviderToAppConfig(
 
 /**
  * Génère vitest.config.ts pour Angular 21
+ * @param projectRoot - Chemin racine du projet
+ * @param options - Options de configuration optionnelles
  */
-export async function generateVitestConfig(projectRoot: string): Promise<void> {
+export async function generateVitestConfig(
+  projectRoot: string,
+  options: VitestOptions = {}
+): Promise<void> {
+  const {
+    coverage = true,
+    browsers = 'jsdom',
+    reporters = ['text', 'json', 'html'],
+    setupFiles = ['src/test.ts'],
+  } = options
+
   const vitestConfigPath = resolve(projectRoot, 'vitest.config.ts')
 
   const vitestContent = `import { defineConfig } from 'vitest/config';
@@ -145,13 +184,17 @@ export default defineConfig({
   plugins: [angular()],
   test: {
     globals: true,
-    environment: 'jsdom',
-    setupFiles: ['src/test.ts'],
-    coverage: {
+    environment: '${browsers}',
+    setupFiles: [${setupFiles.map((f) => `'${f}'`).join(', ')}],
+    ${
+      coverage
+        ? `coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: [${reporters.map((r) => `'${r}'`).join(', ')}],
       exclude: ['node_modules/', 'tests/'],
-    },
+    },`
+        : '// coverage disabled'
+    }
   },
 });
 `
@@ -196,21 +239,72 @@ getTestBed().initTestEnvironment(
 
 /**
  * Crée un fichier Signal Store template avec Zod
+ * @param projectRoot - Chemin racine du projet
+ * @param storeName - Nom du store
+ * @param options - Options de configuration optionnelles
  */
 export async function generateSignalStoreTemplate(
   projectRoot: string,
-  storeName: string = 'app'
+  storeName: string = 'app',
+  options: SignalStoreOptions = {}
 ): Promise<void> {
+  const {
+    withZod = true,
+    includeExamples = true,
+    methods = ['add', 'clear'],
+  } = options
+
   const storeDir = resolve(projectRoot, 'src', 'app', 'store')
   const storePath = resolve(storeDir, `${storeName}.store.ts`)
 
   const storeName_PascalCase =
     storeName.charAt(0).toUpperCase() + storeName.slice(1)
 
-  const storeContent = `import { signalStore, withState, withMethods } from '@ngrx/signals';
-import { z } from 'zod';
+  // Construire les méthodes dynamiquement
+  const methodsCode = methods
+    .map((method) => {
+      switch (method) {
+        case 'add':
+          return `    addItem: (item: ${storeName_PascalCase}State['items'][0]) => {
+      ${
+        withZod
+          ? `const result = ${storeName}Schema.safeParse({
+        ...store(),
+        items: [...store().items, item],
+      });
+      if (result.success) {
+        store.patchState({ items: result.data.items });
+      } else {
+        console.error('Validation failed:', result.error);
+      }`
+          : `store.patchState({ items: [...store().items, item] });`
+      }
+    },`
+        case 'update':
+          return `    updateItem: (id: number, updates: Partial<${storeName_PascalCase}State['items'][0]>) => {
+      const updated = store().items.map(item => item.id === id ? { ...item, ...updates } : item);
+      store.patchState({ items: updated });
+    },`
+        case 'delete':
+          return `    removeItem: (id: number) => {
+      store.patchState({ items: store().items.filter(item => item.id !== id) });
+    },`
+        case 'clear':
+          return `    clear: () => {
+      store.patchState({ items: [] });
+    },`
+        default:
+          return ''
+      }
+    })
+    .join('\n')
 
-// Zod validation schema
+  const storeContent = `import { signalStore, withState, withMethods } from '@ngrx/signals';
+${withZod ? "import { z } from 'zod';" : ''}
+
+${
+  withZod
+    ? `// Zod validation schema
 export const ${storeName}Schema = z.object({
   title: z.string(),
   items: z.array(z.object({
@@ -220,7 +314,13 @@ export const ${storeName}Schema = z.object({
 });
 
 // Type inference from schema
-export type ${storeName_PascalCase}State = z.infer<typeof ${storeName}Schema>;
+export type ${storeName_PascalCase}State = z.infer<typeof ${storeName}Schema>;`
+    : `// State type definition
+export interface ${storeName_PascalCase}State {
+  title: string;
+  items: Array<{ id: number; name: string }>;
+}`
+}
 
 // Initial state
 const initialState: ${storeName_PascalCase}State = {
@@ -233,23 +333,23 @@ export const ${storeName}Store = signalStore(
   { providedIn: 'root' },
   withState(initialState),
   withMethods((store) => ({
-    addItem: (item: ${storeName_PascalCase}State['items'][0]) => {
-      const result = ${storeName}Schema.safeParse({
-        ...store(),
-        items: [...store().items, item],
-      });
-
-      if (result.success) {
-        store.patchState({ items: result.data.items });
-      } else {
-        console.error('Validation failed:', result.error);
-      }
-    },
-    clear: () => {
-      store.patchState({ items: [] });
-    },
+${methodsCode}
   })),
 );
+${
+  includeExamples
+    ? `
+// Usage example in a component:
+// import { ${storeName}Store } from './store/${storeName}.store';
+// export class MyComponent {
+//   store = inject(${storeName}Store);
+//   
+//   addNewItem(name: string) {
+//     this.store.addItem({ id: Date.now(), name });
+//   }
+// }`
+    : ''
+}
 `
 
   try {
@@ -263,12 +363,32 @@ export const ${storeName}Store = signalStore(
 
 /**
  * Crée un composant Icon réutilisable pour Lucide
+ * @param projectRoot - Chemin racine du projet
+ * @param options - Options de configuration optionnelles
  */
 export async function generateIconComponent(
-  projectRoot: string
+  projectRoot: string,
+  options: ComponentOptions = {}
 ): Promise<void> {
+  const { standalone = true, styles = 'inline' } = options
+
   const componentDir = resolve(projectRoot, 'src', 'app', 'components', 'icon')
   const componentPath = resolve(componentDir, 'icon.component.ts')
+
+  const stylesContent =
+    styles === 'none'
+      ? ''
+      : `  styles: [
+    \`:host {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    ::ng-deep lucide-icon {
+      vertical-align: middle;
+    }\`,
+  ],`
 
   const componentContent = `import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -276,7 +396,7 @@ import * as LucideIcons from 'lucide-angular';
 
 @Component({
   selector: 'app-icon',
-  standalone: true,
+  standalone: ${standalone},
   imports: [CommonModule],
   template: \`
     <ng-container [ngSwitch]="iconName()">
@@ -290,17 +410,7 @@ import * as LucideIcons from 'lucide-angular';
       <lucide-icon-home *ngSwitchDefault [size]="size()" [stroke-width]="strokeWidth()"></lucide-icon-home>
     </ng-container>
   \`,
-  styles: [
-    \`:host {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    ::ng-deep lucide-icon {
-      vertical-align: middle;
-    }\`,
-  ],
+${stylesContent}
 })
 export class IconComponent {
   iconName = input<string>('home');
@@ -320,10 +430,15 @@ export class IconComponent {
 
 /**
  * Crée un composant Menu accessible avec CDK
+ * @param projectRoot - Chemin racine du projet
+ * @param options - Options de configuration optionnelles
  */
 export async function generateAccessibleMenuComponent(
-  projectRoot: string
+  projectRoot: string,
+  options: ComponentOptions = {}
 ): Promise<void> {
+  const { standalone = true } = options
+
   const componentDir = resolve(projectRoot, 'src', 'app', 'components', 'menu')
   const componentPath = resolve(componentDir, 'menu.component.ts')
 
@@ -333,7 +448,7 @@ import { CdkMenu, CdkMenuTrigger, CdkMenuItem } from '@angular/cdk/menu';
 
 @Component({
   selector: 'app-accessible-menu',
-  standalone: true,
+  standalone: ${standalone},
   imports: [CommonModule, CdkMenu, CdkMenuTrigger, CdkMenuItem],
   template: \`
     <div class="menu-container">
