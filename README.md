@@ -67,6 +67,12 @@ cd your-vue-project
 npx @configjs/cli vue
 ```
 
+### For Svelte Projects
+```bash
+cd your-svelte-project
+npx @configjs/cli svelte
+```
+
 That's it! ConfigJS will:
 1. 🔍 **Detect** your environment (React/Next.js version, TypeScript, bundler)
 2. 🎯 **Guide** you through library selection by category
@@ -178,7 +184,7 @@ ConfigJS prevents conflicts before they happen:
 - ✅ **Auto-Dependencies**: TailwindCSS requires PostCSS → installed automatically
 - ✅ **Plugin Tracking**: Remembers installed plugins (`.configjsrc`)
 
-### 📦 Supported Libraries (44+ Plugins)
+### 📦 Supported Libraries (48+ Plugins)
 
 #### 🎨 CSS / Styling
 - TailwindCSS v4 (with @tailwindcss/vite)
@@ -192,6 +198,7 @@ ConfigJS prevents conflicts before they happen:
 - React Router v7
 - TanStack Router
 - Vue Router (Vue.js)
+- SvelteKit (Svelte)
 
 #### 🗂️ State Management
 - Redux Toolkit
@@ -209,6 +216,7 @@ ConfigJS prevents conflicts before they happen:
 - React Hook Form
 - Zod (validation)
 - Yup (validation)
+- SvelteKit Superforms (Svelte)
 
 #### 🎨 UI Components
 - Shadcn/ui
@@ -219,11 +227,13 @@ ConfigJS prevents conflicts before they happen:
 - React Hot Toast
 - React Hot Toast Next.js
 - Vuetify (Vue.js)
+- Skeleton UI (Svelte)
 
 #### 🧪 Testing
 - React Testing Library
 - Vue Test Utils
 - Vue Testing Library
+- Svelte Testing Library
 - Vitest
 - Jest
 
@@ -457,9 +467,10 @@ npm run build
 - [x] Enhanced console UX with colors
 - [x] Sequential installation (prevents corruption)
 - [x] Full React support (React 18/19)
-- [x] 44+ plugins across 10 categories
+- [x] 48+ plugins across 10 categories
 - [x] Full Next.js support (13/14/15)
 - [x] Full Vue.js 3 support
+- [x] Full Svelte support with 4 specialized plugins
 - [x] Logging centralization (IoC Architecture, full decoupling)
 
 ### v1.2 (Q2 2025)
@@ -474,9 +485,9 @@ npm run build
 - [ ] Web UI for configuration
 
 ### v2.x (Future)
-- [ ] Support Svelte
 - [ ] React Native support
 - [ ] Custom plugin templates
+- [ ] Mobile support (React Native, Flutter)
 
 ---
 
