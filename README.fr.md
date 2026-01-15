@@ -164,7 +164,7 @@ ConfigJS prévient les conflits avant qu'ils ne se produisent :
 - ✅ **Dépendances Automatiques** : TailwindCSS nécessite PostCSS → installé automatiquement
 - ✅ **Suivi des Plugins** : Mémorise les plugins installés (`.configjsrc`)
 
-### 📦 Bibliothèques Supportées (44+ Plugins)
+### 📦 Bibliothèques Supportées (48+ Plugins)
 
 #### 🎨 CSS / Styling
 - TailwindCSS v4 (avec @tailwindcss/vite)
@@ -178,6 +178,7 @@ ConfigJS prévient les conflits avant qu'ils ne se produisent :
 - React Router v7
 - TanStack Router
 - Vue Router (Vue.js)
+- SvelteKit (Svelte)
 
 #### 🗂️ Gestion d'État
 - Redux Toolkit
@@ -195,6 +196,7 @@ ConfigJS prévient les conflits avant qu'ils ne se produisent :
 - React Hook Form
 - Zod (validation)
 - Yup (validation)
+- SvelteKit Superforms (Svelte)
 
 #### 🎨 Composants UI
 - Shadcn/ui
@@ -205,11 +207,13 @@ ConfigJS prévient les conflits avant qu'ils ne se produisent :
 - React Hot Toast
 - React Hot Toast Next.js
 - Vuetify (Vue.js)
+- Skeleton UI (Svelte)
 
 #### 🧪 Tests
 - React Testing Library
 - Vue Test Utils
 - Vue Testing Library
+- Svelte Testing Library
 - Vitest
 - Jest
 
@@ -423,9 +427,10 @@ npm run build
 - [x] UX console améliorée avec couleurs
 - [x] Installation séquentielle (prévient la corruption)
 - [x] Support React complet (React 18/19)
-- [x] 44+ plugins à travers 10 catégories
+- [x] 48+ plugins à travers 10 catégories
 - [x] Support Next.js complet (13/14/15)
 - [x] Support Vue.js 3 complet
+- [x] Support Svelte complet avec 4 plugins spécialisés
 - [x] Centralisation du logging (Architecture IoC, découplage total)
 
 ### v1.2 (T2 2025)
@@ -440,9 +445,9 @@ npm run build
 - [ ] Interface web pour la configuration
 
 ### v2.x (Futur)
-- [ ] Support Svelte
 - [ ] Support React Native
 - [ ] Templates de plugins personnalisés
+- [ ] Support mobile (React Native, Flutter)
 
 ---
 
