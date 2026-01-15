@@ -133,4 +133,26 @@ export const en: Translations = {
     folderExists: (name: string) =>
       `Folder "${name}" already exists. Please choose another name.`,
   },
+  svelte: {
+    noSvelteDetected:
+      '⚠️  No Svelte project detected in the current directory.',
+    proposeSetup: 'Would you like to create a new Svelte project with Vite?',
+    projectName: 'Project name',
+    projectNamePlaceholder: 'my-svelte-project',
+    useTypeScript: 'Use TypeScript?',
+    creatingProject: 'Creating Svelte project with Vite...',
+    installingDependencies: 'Installing dependencies...',
+    projectCreated: 'Svelte project created successfully!',
+    creating: 'Creating Svelte project...',
+    success: '✅ Project created successfully!',
+    error: '❌ Error creating project',
+    changingDirectory: 'Changing to project directory...',
+    validation: {
+      empty: 'Project name cannot be empty',
+      invalid:
+        'Project name can only contain letters, numbers, dashes and underscores',
+    },
+    folderExists: (name: string) =>
+      `Folder "${name}" already exists. Please choose another name.`,
+  },
 }

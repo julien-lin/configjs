@@ -151,16 +151,18 @@ export const frameworkRegistry: Record<Framework, FrameworkMetadata> = {
     detectPackages: ['svelte', '@sveltejs/kit'],
     defaultBundler: 'vite',
     createCommand: 'npm create svelte@latest',
-    getSetupPrompt: async (_language) => {
-      // Feature not yet implemented - Svelte prompts will be added in future release
-      // Tracked in GitHub Issues: https://github.com/issue/svelte-prompts
-      return await Promise.resolve(null)
+    getSetupPrompt: async (language) => {
+      const { promptSvelteSetup } =
+        await import('../cli/prompts/svelte-setup.js')
+      return await promptSvelteSetup(language)
     },
-    createProject: async (_options, _currentDir, _language) => {
-      // Feature not yet implemented - Svelte project creation will be added in future release
-      // Tracked in GitHub Issues: https://github.com/issue/svelte-setup
-      return await Promise.reject(
-        new Error('Svelte project creation not yet implemented')
+    createProject: async (options, currentDir, language) => {
+      const { createSvelteProject } =
+        await import('../cli/utils/svelte-installer.js')
+      return await createSvelteProject(
+        options as Parameters<typeof createSvelteProject>[0],
+        currentDir,
+        language
       )
     },
     i18nKeys: {

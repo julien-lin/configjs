@@ -5,7 +5,7 @@ import { getModuleLogger } from '../utils/logger-provider.js'
 const logger = getModuleLogger()
 
 /**
- * Registry centralisé de tous les plugins disponibles (36 plugins)
+ * Registry centralisé de tous les plugins disponibles (44+ plugins)
  *
  * Ce registry contient tous les plugins organisés par catégorie.
  * Les plugins utilisent le pattern builder pour la consistance.
@@ -34,6 +34,7 @@ import { tailwindcssPlugin } from './css/tailwindcss-builder.js'
 import { tailwindcssNextjsPlugin } from './css/tailwindcss-nextjs-builder.js'
 import { reactHookFormPlugin } from './forms/react-hook-form-builder.js'
 import { zodPlugin } from './forms/zod-builder.js'
+import { svelteFormsPlugin } from './forms/svelte-superforms-builder.js'
 import { axiosPlugin } from './http/axios-builder.js'
 import { tanstackQueryPlugin } from './http/tanstack-query-builder.js'
 import { tanstackVueQueryPlugin } from './http/tanstack-query-vue-builder.js'
@@ -45,6 +46,7 @@ import { nextjsMiddlewarePlugin } from './nextjs/middleware-builder.js'
 import { reactRouterPlugin } from './routing/react-router-builder.js'
 import { tanstackRouterPlugin } from './routing/tanstack-router-builder.js'
 import { vueRouterPlugin } from './routing/vue-router-builder.js'
+import { svelteKitPlugin } from './routing/sveltekit-builder.js'
 import { jotaiPlugin } from './state/jotai-builder.js'
 import { piniaPlugin } from './state/pinia-builder.js'
 import { reduxToolkitPlugin } from './state/redux-toolkit-builder.js'
@@ -52,6 +54,7 @@ import { zustandPlugin } from './state/zustand-builder.js'
 import { reactTestingLibraryPlugin } from './testing/react-testing-library-builder.js'
 import { vueTestingLibraryPlugin } from './testing/vue-testing-library-builder.js'
 import { vueTestUtilsPlugin } from './testing/vue-test-utils-builder.js'
+import { svelteTestingLibraryPlugin } from './testing/svelte-testing-library-builder.js'
 import { eslintPlugin } from './tooling/eslint-builder.js'
 import { eslintVuePlugin } from './tooling/eslint-vue-builder.js'
 import { huskyPlugin } from './tooling/husky-builder.js'
@@ -68,6 +71,7 @@ import { reactIconsPlugin } from './ui/react-icons-builder.js'
 import { shadcnUiPlugin } from './ui/shadcn-ui-builder.js'
 import { shadcnUiNextjsPlugin } from './ui/shadcn-ui-nextjs-builder.js'
 import { vuetifyPlugin } from './ui/vuetify-builder.js'
+import { skeletonUiPlugin } from './ui/skeleton-ui-builder.js'
 import { dateFnsPlugin } from './utils/date-fns-builder.js'
 import { vueusePlugin } from './utils/vueuse-builder.js'
 
@@ -88,6 +92,7 @@ export const pluginRegistry: Plugin[] = [
   // FORMS
   reactHookFormPlugin,
   zodPlugin,
+  svelteFormsPlugin,
 
   // HTTP
   axiosPlugin,
@@ -107,6 +112,7 @@ export const pluginRegistry: Plugin[] = [
   reactRouterPlugin,
   tanstackRouterPlugin,
   vueRouterPlugin,
+  svelteKitPlugin,
 
   // STATE
   jotaiPlugin,
@@ -118,6 +124,7 @@ export const pluginRegistry: Plugin[] = [
   reactTestingLibraryPlugin,
   vueTestingLibraryPlugin,
   vueTestUtilsPlugin,
+  svelteTestingLibraryPlugin,
 
   // TOOLING
   eslintPlugin,
@@ -138,6 +145,7 @@ export const pluginRegistry: Plugin[] = [
   shadcnUiPlugin,
   shadcnUiNextjsPlugin,
   vuetifyPlugin,
+  skeletonUiPlugin,
 
   // UTILS
   dateFnsPlugin,

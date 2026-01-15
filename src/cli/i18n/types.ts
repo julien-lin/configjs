@@ -117,4 +117,23 @@ export interface Translations {
     }
     folderExists: (name: string) => string
   }
+  svelte: {
+    noSvelteDetected: string
+    proposeSetup: string
+    projectName: string
+    projectNamePlaceholder: string
+    useTypeScript: string
+    creatingProject: string
+    installingDependencies: string
+    projectCreated: string
+    creating: string
+    success: string
+    error: string
+    changingDirectory: string
+    validation: {
+      empty: string
+      invalid: string
+    }
+    folderExists: (name: string) => string
+  }
 }
