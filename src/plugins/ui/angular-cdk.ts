@@ -7,6 +7,10 @@ import type {
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { getModuleLogger } from '../../utils/logger-provider.js'
+import {
+  generateAccessibleMenuComponent,
+  addProviderToAppConfig,
+} from '../utils/angular-21-config.js'
 
 const logger = getModuleLogger()
 
@@ -62,10 +66,39 @@ export const angularCdkPlugin: Plugin = {
     }
   },
 
-  configure(): Promise<ConfigResult> {
-    return Promise.resolve({
-      files: [],
-      success: true,
-    })
+  async configure(ctx: ProjectContext): Promise<ConfigResult> {
+    try {
+      // Generate accessible menu component with CdkMenu
+      await generateAccessibleMenuComponent(ctx.projectRoot)
+
+      // Add animations provider to app.config.ts
+      await addProviderToAppConfig('animations', ctx.projectRoot)
+
+      logger.success('Angular CDK configuration completed')
+      logger.info(
+        'Created: components/menu.component.ts with CdkMenu + animations'
+      )
+
+      return {
+        files: [
+          {
+            type: 'create',
+            path: 'src/app/components/menu.component.ts',
+          },
+          {
+            type: 'modify',
+            path: 'src/app/app.config.ts',
+          },
+        ],
+        success: true,
+      }
+    } catch (error) {
+      logger.error('Failed to configure Angular CDK', error)
+      return {
+        files: [],
+        success: false,
+        message: `Error configuring Angular CDK: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      }
+    }
   },
 }

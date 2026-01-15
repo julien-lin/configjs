@@ -7,6 +7,10 @@ import type {
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { getModuleLogger } from '../../utils/logger-provider.js'
+import {
+  generateSignalStoreTemplate,
+  addProviderToAppConfig,
+} from '../utils/angular-21-config.js'
 
 const logger = getModuleLogger()
 
@@ -62,10 +66,37 @@ export const ngrxSignalsPlugin: Plugin = {
     }
   },
 
-  configure(): Promise<ConfigResult> {
-    return Promise.resolve({
-      files: [],
-      success: true,
-    })
+  async configure(ctx: ProjectContext): Promise<ConfigResult> {
+    try {
+      // Generate Signal Store template with Zod schema
+      await generateSignalStoreTemplate(ctx.projectRoot, 'app')
+
+      // Add ngrxSignals provider to app.config.ts
+      await addProviderToAppConfig('ngrxSignals', ctx.projectRoot)
+
+      logger.success('NgRx Signals configuration completed')
+      logger.info('Created: stores/app.store.ts with Signal Store + Zod schema')
+
+      return {
+        files: [
+          {
+            type: 'create',
+            path: 'src/app/stores/app.store.ts',
+          },
+          {
+            type: 'modify',
+            path: 'src/app/app.config.ts',
+          },
+        ],
+        success: true,
+      }
+    } catch (error) {
+      logger.error('Failed to configure NgRx Signals', error)
+      return {
+        files: [],
+        success: false,
+        message: `Error configuring NgRx Signals: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      }
+    }
   },
 }
