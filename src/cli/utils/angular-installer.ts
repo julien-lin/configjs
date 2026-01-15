@@ -21,8 +21,9 @@ export async function createAngularProject(
   try {
     spinner.start(t.angular.creatingProject)
 
-    // Commande ng new avec les options
+    // Commande npx @angular/cli@latest new avec les options
     const args = [
+      '@angular/cli@latest',
       'new',
       options.projectName,
       '--skip-git=true',
@@ -35,9 +36,9 @@ export async function createAngularProject(
       args.push('--create-application=true')
     }
 
-    // Exécuter ng new
+    // Exécuter npx @angular/cli@latest new
     await new Promise<void>((resolve, reject) => {
-      const child = spawn('ng', args, {
+      const child = spawn('npx', args, {
         cwd: currentDir,
         stdio: 'pipe',
       })
