@@ -13,46 +13,46 @@ import pc from 'picocolors'
  * spécifique à Angular (détection, création de projet, etc.)
  */
 export class AngularCommand extends BaseFrameworkCommand {
-    protected getFramework(): 'angular' {
-        return 'angular'
+  protected getFramework(): 'angular' {
+    return 'angular'
+  }
+
+  protected async getOrCreateContext(
+    projectRoot: string,
+    language: SupportedLanguage
+  ): Promise<ProjectContext> {
+    const t = getTranslations(language)
+    const metadata = getFrameworkMetadata('angular')
+
+    if (!metadata) {
+      throw new Error('Angular framework metadata not found')
     }
 
-    protected async getOrCreateContext(
-        projectRoot: string,
-        language: SupportedLanguage
-    ): Promise<ProjectContext> {
-        const t = getTranslations(language)
-        const metadata = getFrameworkMetadata('angular')
+    try {
+      return await detectContext(projectRoot)
+    } catch (error) {
+      // Si Angular n'est pas détecté, proposer de créer un projet Angular
+      if (error instanceof DetectionError) {
+        console.log()
+        console.log(pc.yellow(t.angular.noAngularDetected))
+        console.log()
 
-        if (!metadata) {
-            throw new Error('Angular framework metadata not found')
-        }
+        const setupOptions = await metadata.getSetupPrompt(language)
+        const projectPath = await metadata.createProject(
+          setupOptions,
+          projectRoot,
+          language
+        )
 
-        try {
-            return await detectContext(projectRoot)
-        } catch (error) {
-            // Si Angular n'est pas détecté, proposer de créer un projet Angular
-            if (error instanceof DetectionError) {
-                console.log()
-                console.log(pc.yellow(t.angular.noAngularDetected))
-                console.log()
+        console.log()
+        console.log(pc.green(t.angular.projectCreated))
+        console.log()
 
-                const setupOptions = await metadata.getSetupPrompt(language)
-                const projectPath = await metadata.createProject(
-                    setupOptions,
-                    projectRoot,
-                    language
-                )
+        // Détecter le contexte du nouveau projet
+        return await detectContext(projectPath)
+      }
 
-                console.log()
-                console.log(pc.green(t.angular.projectCreated))
-                console.log()
-
-                // Détecter le contexte du nouveau projet
-                return await detectContext(projectPath)
-            }
-
-            throw error
-        }
+      throw error
     }
+  }
 }
