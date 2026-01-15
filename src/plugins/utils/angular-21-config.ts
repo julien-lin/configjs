@@ -15,37 +15,37 @@ import { logger } from '../../utils/logger'
  */
 
 export interface AngularProvider {
-  import: string
-  functionCall: string
-  description: string
-  warning?: string
+    import: string
+    functionCall: string
+    description: string
+    warning?: string
 }
 
 /**
  * Options de configuration pour Vitest
  */
 export interface VitestOptions {
-  coverage?: boolean
-  browsers?: 'jsdom' | 'happy-dom'
-  reporters?: ('text' | 'json' | 'html')[]
-  setupFiles?: string[]
+    coverage?: boolean
+    browsers?: 'jsdom' | 'happy-dom'
+    reporters?: ('text' | 'json' | 'html')[]
+    setupFiles?: string[]
 }
 
 /**
  * Options de configuration pour Signal Store
  */
 export interface SignalStoreOptions {
-  withZod?: boolean
-  includeExamples?: boolean
-  methods?: ('add' | 'update' | 'delete' | 'clear')[]
+    withZod?: boolean
+    includeExamples?: boolean
+    methods?: ('add' | 'update' | 'delete' | 'clear')[]
 }
 
 /**
  * Options de configuration pour composants générés
  */
 export interface ComponentOptions {
-  standalone?: boolean
-  styles?: 'tailwind' | 'inline' | 'none'
+    standalone?: boolean
+    styles?: 'tailwind' | 'inline' | 'none'
 }
 
 /**
@@ -54,37 +54,37 @@ export interface ComponentOptions {
  * ⚠️ ATTENTION : Choisir UNE stratégie et s'y tenir !
  */
 export const ANGULAR_21_PROVIDERS: Record<string, AngularProvider> = {
-  zoneless: {
-    import: 'provideExperimentalZonelessChangeDetection',
-    functionCall: 'provideExperimentalZonelessChangeDetection()',
-    description: 'Mode Zoneless (+30% perf, -20KB bundle)',
-    warning:
-      '⚠️ Incompatible avec vieilles libs (Angular <15). Supprimer zone.js de polyfills.ts',
-  },
-  animations: {
-    import: 'provideAnimationsAsync',
-    functionCall: 'provideAnimationsAsync()',
-    description: 'Animations asynchrones',
-    warning: '✅ Compatible avec Zoneless',
-  },
-  router: {
-    import: 'provideRouter',
-    functionCall: 'provideRouter(routes)',
-    description: 'Routeur Angular',
-    warning: '✅ Compatible avec Zoneless',
-  },
-  http: {
-    import: 'provideHttpClient',
-    functionCall: 'provideHttpClient()',
-    description: 'Client HTTP',
-    warning: '✅ Utiliser toSignal() pour convertir Observable→Signal',
-  },
-  ngrxSignals: {
-    import: 'provideState',
-    functionCall: "provideState({ providedIn: 'root' })",
-    description: 'NgRx Signals Store (Moderne, Zoneless-ready)',
-    warning: '⚠️ Ne PAS mélanger avec @ngrx/store classique',
-  },
+    zoneless: {
+        import: 'provideExperimentalZonelessChangeDetection',
+        functionCall: 'provideExperimentalZonelessChangeDetection()',
+        description: 'Mode Zoneless (+30% perf, -20KB bundle)',
+        warning:
+            '⚠️ Incompatible avec vieilles libs (Angular <15). Supprimer zone.js de polyfills.ts',
+    },
+    animations: {
+        import: 'provideAnimationsAsync',
+        functionCall: 'provideAnimationsAsync()',
+        description: 'Animations asynchrones',
+        warning: '✅ Compatible avec Zoneless',
+    },
+    router: {
+        import: 'provideRouter',
+        functionCall: 'provideRouter(routes)',
+        description: 'Routeur Angular',
+        warning: '✅ Compatible avec Zoneless',
+    },
+    http: {
+        import: 'provideHttpClient',
+        functionCall: 'provideHttpClient()',
+        description: 'Client HTTP',
+        warning: '✅ Utiliser toSignal() pour convertir Observable→Signal',
+    },
+    ngrxSignals: {
+        import: 'provideState',
+        functionCall: "provideState({ providedIn: 'root' })",
+        description: 'NgRx Signals Store (Moderne, Zoneless-ready)',
+        warning: '⚠️ Ne PAS mélanger avec @ngrx/store classique',
+    },
 }
 
 /**
@@ -95,68 +95,68 @@ export const ANGULAR_21_PROVIDERS: Record<string, AngularProvider> = {
  * - Supprimer zone.js de polyfills.ts si vous activez Zoneless
  */
 export async function addProviderToAppConfig(
-  projectRoot: string,
-  providerId: keyof typeof ANGULAR_21_PROVIDERS
+    projectRoot: string,
+    providerId: keyof typeof ANGULAR_21_PROVIDERS
 ): Promise<void> {
-  const appConfigPath = resolve(projectRoot, 'src', 'app.config.ts')
-  const provider = ANGULAR_21_PROVIDERS[providerId]
+    const appConfigPath = resolve(projectRoot, 'src', 'app.config.ts')
+    const provider = ANGULAR_21_PROVIDERS[providerId]
 
-  if (!provider) {
-    logger.error(`Unknown provider: ${providerId}`)
-    return
-  }
-
-  // Afficher l'avertissement si présent
-  if (provider.warning) {
-    logger.warn(provider.warning)
-  }
-
-  try {
-    let content = await fs.readFile(appConfigPath, 'utf-8')
-
-    // Vérifier si le provider est déjà présent
-    if (content.includes(provider.functionCall)) {
-      logger.info(`Provider '${providerId}' already exists in app.config.ts`)
-      return
+    if (!provider) {
+        logger.error(`Unknown provider: ${providerId}`)
+        return
     }
 
-    // Ajouter l'import si absent
-    const importLine = `import { ${provider.import} } from '@angular/core';`
-    if (!content.includes(provider.import)) {
-      const lastImportMatch = content.match(
-        /import .* from '@angular\/[^']*';/g
-      )
-      if (lastImportMatch && lastImportMatch.length > 0) {
-        const lastImportLine = lastImportMatch[lastImportMatch.length - 1]
-        if (lastImportLine) {
-          content = content.replace(
-            lastImportLine,
-            `${lastImportLine}\nimport { ${provider.import} } from '@angular/core';`
-          )
+    // Afficher l'avertissement si présent
+    if (provider.warning) {
+        logger.warn(provider.warning)
+    }
+
+    try {
+        let content = await fs.readFile(appConfigPath, 'utf-8')
+
+        // Vérifier si le provider est déjà présent
+        if (content.includes(provider.functionCall)) {
+            logger.info(`Provider '${providerId}' already exists in app.config.ts`)
+            return
         }
-      } else {
-        content = `${importLine}\n\n${content}`
-      }
-    }
 
-    // Ajouter le provider dans le tableau
-    const providersMatch = content.match(/providers:\s*\[([\s\S]*?)\]/)
-    if (providersMatch && providersMatch[1]) {
-      const providers = providersMatch[1]
-      const newProviders = providers.includes(provider.functionCall)
-        ? providers
-        : `${providers.trimEnd()},\n    ${provider.functionCall}`
-      content = content.replace(
-        /providers:\s*\[([\s\S]*?)\]/,
-        `providers: [${newProviders}]`
-      )
-    }
+        // Ajouter l'import si absent
+        const importLine = `import { ${provider.import} } from '@angular/core';`
+        if (!content.includes(provider.import)) {
+            const lastImportMatch = content.match(
+                /import .* from '@angular\/[^']*';/g
+            )
+            if (lastImportMatch && lastImportMatch.length > 0) {
+                const lastImportLine = lastImportMatch[lastImportMatch.length - 1]
+                if (lastImportLine) {
+                    content = content.replace(
+                        lastImportLine,
+                        `${lastImportLine}\nimport { ${provider.import} } from '@angular/core';`
+                    )
+                }
+            } else {
+                content = `${importLine}\n\n${content}`
+            }
+        }
 
-    await fs.writeFile(appConfigPath, content, 'utf-8')
-    logger.success(`Added provider '${providerId}' to app.config.ts`)
-  } catch (error) {
-    logger.error(`Failed to add provider to app.config.ts: ${String(error)}`)
-  }
+        // Ajouter le provider dans le tableau
+        const providersMatch = content.match(/providers:\s*\[([\s\S]*?)\]/)
+        if (providersMatch && providersMatch[1]) {
+            const providers = providersMatch[1]
+            const newProviders = providers.includes(provider.functionCall)
+                ? providers
+                : `${providers.trimEnd()},\n    ${provider.functionCall}`
+            content = content.replace(
+                /providers:\s*\[([\s\S]*?)\]/,
+                `providers: [${newProviders}]`
+            )
+        }
+
+        await fs.writeFile(appConfigPath, content, 'utf-8')
+        logger.success(`Added provider '${providerId}' to app.config.ts`)
+    } catch (error) {
+        logger.error(`Failed to add provider to app.config.ts: ${String(error)}`)
+    }
 }
 
 /**
@@ -165,19 +165,19 @@ export async function addProviderToAppConfig(
  * @param options - Options de configuration optionnelles
  */
 export async function generateVitestConfig(
-  projectRoot: string,
-  options: VitestOptions = {}
+    projectRoot: string,
+    options: VitestOptions = {}
 ): Promise<void> {
-  const {
-    coverage = true,
-    browsers = 'jsdom',
-    reporters = ['text', 'json', 'html'],
-    setupFiles = ['src/test.ts'],
-  } = options
+    const {
+        coverage = true,
+        browsers = 'jsdom',
+        reporters = ['text', 'json', 'html'],
+        setupFiles = ['src/test.ts'],
+    } = options
 
-  const vitestConfigPath = resolve(projectRoot, 'vitest.config.ts')
+    const vitestConfigPath = resolve(projectRoot, 'vitest.config.ts')
 
-  const vitestContent = `import { defineConfig } from 'vitest/config';
+    const vitestContent = `import { defineConfig } from 'vitest/config';
 import angular from '@angular/build/tools/esbuild/angular-app-esbuild-plugin';
 
 export default defineConfig({
@@ -186,34 +186,33 @@ export default defineConfig({
     globals: true,
     environment: '${browsers}',
     setupFiles: [${setupFiles.map((f) => `'${f}'`).join(', ')}],
-    ${
-      coverage
-        ? `coverage: {
+    ${coverage
+            ? `coverage: {
       provider: 'v8',
       reporter: [${reporters.map((r) => `'${r}'`).join(', ')}],
       exclude: ['node_modules/', 'tests/'],
     },`
-        : '// coverage disabled'
-    }
+            : '// coverage disabled'
+        }
   },
 });
 `
 
-  try {
-    await fs.writeFile(vitestConfigPath, vitestContent, 'utf-8')
-    logger.success('Created vitest.config.ts')
-  } catch (error) {
-    logger.error(`Failed to create vitest.config.ts: ${String(error)}`)
-  }
+    try {
+        await fs.writeFile(vitestConfigPath, vitestContent, 'utf-8')
+        logger.success('Created vitest.config.ts')
+    } catch (error) {
+        logger.error(`Failed to create vitest.config.ts: ${String(error)}`)
+    }
 }
 
 /**
  * Génère src/test.ts pour setup Angular + Vitest
  */
 export async function generateTestFile(projectRoot: string): Promise<void> {
-  const testPath = resolve(projectRoot, 'src', 'test.ts')
+    const testPath = resolve(projectRoot, 'src', 'test.ts')
 
-  const testContent = `import 'zone.js';
+    const testContent = `import 'zone.js';
 import 'zone.js/testing';
 
 import { getTestBed } from '@angular/core/testing';
@@ -229,12 +228,12 @@ getTestBed().initTestEnvironment(
 );
 `
 
-  try {
-    await fs.writeFile(testPath, testContent, 'utf-8')
-    logger.success('Created src/test.ts')
-  } catch (error) {
-    logger.error(`Failed to create src/test.ts: ${String(error)}`)
-  }
+    try {
+        await fs.writeFile(testPath, testContent, 'utf-8')
+        logger.success('Created src/test.ts')
+    } catch (error) {
+        logger.error(`Failed to create src/test.ts: ${String(error)}`)
+    }
 }
 
 /**
@@ -244,31 +243,30 @@ getTestBed().initTestEnvironment(
  * @param options - Options de configuration optionnelles
  */
 export async function generateSignalStoreTemplate(
-  projectRoot: string,
-  storeName: string = 'app',
-  options: SignalStoreOptions = {}
+    projectRoot: string,
+    storeName: string = 'app',
+    options: SignalStoreOptions = {}
 ): Promise<void> {
-  const {
-    withZod = true,
-    includeExamples = true,
-    methods = ['add', 'clear'],
-  } = options
+    const {
+        withZod = true,
+        includeExamples = true,
+        methods = ['add', 'clear'],
+    } = options
 
-  const storeDir = resolve(projectRoot, 'src', 'app', 'store')
-  const storePath = resolve(storeDir, `${storeName}.store.ts`)
+    const storeDir = resolve(projectRoot, 'src', 'app', 'store')
+    const storePath = resolve(storeDir, `${storeName}.store.ts`)
 
-  const storeName_PascalCase =
-    storeName.charAt(0).toUpperCase() + storeName.slice(1)
+    const storeName_PascalCase =
+        storeName.charAt(0).toUpperCase() + storeName.slice(1)
 
-  // Construire les méthodes dynamiquement
-  const methodsCode = methods
-    .map((method) => {
-      switch (method) {
-        case 'add':
-          return `    addItem: (item: ${storeName_PascalCase}State['items'][0]) => {
-      ${
-        withZod
-          ? `const result = ${storeName}Schema.safeParse({
+    // Construire les méthodes dynamiquement
+    const methodsCode = methods
+        .map((method) => {
+            switch (method) {
+                case 'add':
+                    return `    addItem: (item: ${storeName_PascalCase}State['items'][0]) => {
+      ${withZod
+                            ? `const result = ${storeName}Schema.safeParse({
         ...store(),
         items: [...store().items, item],
       });
@@ -277,34 +275,33 @@ export async function generateSignalStoreTemplate(
       } else {
         console.error('Validation failed:', result.error);
       }`
-          : `store.patchState({ items: [...store().items, item] });`
-      }
+                            : `store.patchState({ items: [...store().items, item] });`
+                        }
     },`
-        case 'update':
-          return `    updateItem: (id: number, updates: Partial<${storeName_PascalCase}State['items'][0]>) => {
+                case 'update':
+                    return `    updateItem: (id: number, updates: Partial<${storeName_PascalCase}State['items'][0]>) => {
       const updated = store().items.map(item => item.id === id ? { ...item, ...updates } : item);
       store.patchState({ items: updated });
     },`
-        case 'delete':
-          return `    removeItem: (id: number) => {
+                case 'delete':
+                    return `    removeItem: (id: number) => {
       store.patchState({ items: store().items.filter(item => item.id !== id) });
     },`
-        case 'clear':
-          return `    clear: () => {
+                case 'clear':
+                    return `    clear: () => {
       store.patchState({ items: [] });
     },`
-        default:
-          return ''
-      }
-    })
-    .join('\n')
+                default:
+                    return ''
+            }
+        })
+        .join('\n')
 
-  const storeContent = `import { signalStore, withState, withMethods } from '@ngrx/signals';
+    const storeContent = `import { signalStore, withState, withMethods } from '@ngrx/signals';
 ${withZod ? "import { z } from 'zod';" : ''}
 
-${
-  withZod
-    ? `// Zod validation schema
+${withZod
+            ? `// Zod validation schema
 export const ${storeName}Schema = z.object({
   title: z.string(),
   items: z.array(z.object({
@@ -315,12 +312,12 @@ export const ${storeName}Schema = z.object({
 
 // Type inference from schema
 export type ${storeName_PascalCase}State = z.infer<typeof ${storeName}Schema>;`
-    : `// State type definition
+            : `// State type definition
 export interface ${storeName_PascalCase}State {
   title: string;
   items: Array<{ id: number; name: string }>;
 }`
-}
+        }
 
 // Initial state
 const initialState: ${storeName_PascalCase}State = {
@@ -336,9 +333,8 @@ export const ${storeName}Store = signalStore(
 ${methodsCode}
   })),
 );
-${
-  includeExamples
-    ? `
+${includeExamples
+            ? `
 // Usage example in a component:
 // import { ${storeName}Store } from './store/${storeName}.store';
 // export class MyComponent {
@@ -348,17 +344,17 @@ ${
 //     this.store.addItem({ id: Date.now(), name });
 //   }
 // }`
-    : ''
-}
+            : ''
+        }
 `
 
-  try {
-    await fs.mkdir(storeDir, { recursive: true })
-    await fs.writeFile(storePath, storeContent, 'utf-8')
-    logger.success(`Created store/${storeName}.store.ts`)
-  } catch (error) {
-    logger.error(`Failed to create store template: ${String(error)}`)
-  }
+    try {
+        await fs.mkdir(storeDir, { recursive: true })
+        await fs.writeFile(storePath, storeContent, 'utf-8')
+        logger.success(`Created store/${storeName}.store.ts`)
+    } catch (error) {
+        logger.error(`Failed to create store template: ${String(error)}`)
+    }
 }
 
 /**
@@ -367,18 +363,18 @@ ${
  * @param options - Options de configuration optionnelles
  */
 export async function generateIconComponent(
-  projectRoot: string,
-  options: ComponentOptions = {}
+    projectRoot: string,
+    options: ComponentOptions = {}
 ): Promise<void> {
-  const { standalone = true, styles = 'inline' } = options
+    const { standalone = true, styles = 'inline' } = options
 
-  const componentDir = resolve(projectRoot, 'src', 'app', 'components', 'icon')
-  const componentPath = resolve(componentDir, 'icon.component.ts')
+    const componentDir = resolve(projectRoot, 'src', 'app', 'components', 'icon')
+    const componentPath = resolve(componentDir, 'icon.component.ts')
 
-  const stylesContent =
-    styles === 'none'
-      ? ''
-      : `  styles: [
+    const stylesContent =
+        styles === 'none'
+            ? ''
+            : `  styles: [
     \`:host {
       display: inline-flex;
       align-items: center;
@@ -390,7 +386,7 @@ export async function generateIconComponent(
     }\`,
   ],`
 
-  const componentContent = `import { Component, input } from '@angular/core';
+    const componentContent = `import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as LucideIcons from 'lucide-angular';
 
@@ -419,13 +415,13 @@ export class IconComponent {
 }
 `
 
-  try {
-    await fs.mkdir(componentDir, { recursive: true })
-    await fs.writeFile(componentPath, componentContent, 'utf-8')
-    logger.success('Created components/icon/icon.component.ts')
-  } catch (error) {
-    logger.error(`Failed to create icon component: ${String(error)}`)
-  }
+    try {
+        await fs.mkdir(componentDir, { recursive: true })
+        await fs.writeFile(componentPath, componentContent, 'utf-8')
+        logger.success('Created components/icon/icon.component.ts')
+    } catch (error) {
+        logger.error(`Failed to create icon component: ${String(error)}`)
+    }
 }
 
 /**
@@ -434,15 +430,15 @@ export class IconComponent {
  * @param options - Options de configuration optionnelles
  */
 export async function generateAccessibleMenuComponent(
-  projectRoot: string,
-  options: ComponentOptions = {}
+    projectRoot: string,
+    options: ComponentOptions = {}
 ): Promise<void> {
-  const { standalone = true } = options
+    const { standalone = true } = options
 
-  const componentDir = resolve(projectRoot, 'src', 'app', 'components', 'menu')
-  const componentPath = resolve(componentDir, 'menu.component.ts')
+    const componentDir = resolve(projectRoot, 'src', 'app', 'components', 'menu')
+    const componentPath = resolve(componentDir, 'menu.component.ts')
 
-  const componentContent = `import { Component } from '@angular/core';
+    const componentContent = `import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkMenu, CdkMenuTrigger, CdkMenuItem } from '@angular/cdk/menu';
 
@@ -591,11 +587,11 @@ export class AccessibleMenuComponent {
 }
 `
 
-  try {
-    await fs.mkdir(componentDir, { recursive: true })
-    await fs.writeFile(componentPath, componentContent, 'utf-8')
-    logger.success('Created components/menu/menu.component.ts')
-  } catch (error) {
-    logger.error(`Failed to create menu component: ${String(error)}`)
-  }
+    try {
+        await fs.mkdir(componentDir, { recursive: true })
+        await fs.writeFile(componentPath, componentContent, 'utf-8')
+        logger.success('Created components/menu/menu.component.ts')
+    } catch (error) {
+        logger.error(`Failed to create menu component: ${String(error)}`)
+    }
 }
