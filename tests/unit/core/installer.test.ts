@@ -9,7 +9,6 @@ import type {
 import { Category } from '../../../src/types/index.js'
 import { Installer } from '../../../src/core/installer.js'
 import { CompatibilityValidator } from '../../../src/core/validator.js'
-import { ConfigWriter } from '../../../src/core/config-writer.js'
 import { BackupManager } from '../../../src/core/backup-manager.js'
 import * as packageManager from '../../../src/utils/package-manager.js'
 
@@ -35,7 +34,6 @@ vi.mock('../../../src/utils/fs-helpers.js', () => ({
 describe('Installer', () => {
   let mockContext: ProjectContext
   let validator: CompatibilityValidator
-  let writer: ConfigWriter
   let backupManager: BackupManager
   let installer: Installer
 
@@ -97,8 +95,7 @@ describe('Installer', () => {
 
     validator = new CompatibilityValidator([])
     backupManager = new BackupManager()
-    writer = new ConfigWriter(backupManager)
-    installer = new Installer(mockContext, validator, writer, backupManager)
+    installer = new Installer(mockContext, validator, backupManager)
 
     vi.clearAllMocks()
   })

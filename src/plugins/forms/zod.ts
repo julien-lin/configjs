@@ -7,10 +7,14 @@ import type {
 } from '../../types/index.js'
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
-import { ConfigWriter } from '../../core/config-writer.js'
-import { BackupManager } from '../../core/backup-manager.js'
 import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
-import { logger } from '../../utils/logger.js'
+import { getModuleLogger } from '../../utils/logger-provider.js'
+import {
+  getPluginServices,
+  getRollbackManager,
+} from '../utils/plugin-services.js'
+
+const logger = getModuleLogger()
 
 /**
  * Plugin Zod
@@ -97,8 +101,7 @@ export const zodPlugin: Plugin = {
    * Documentation : https://zod.dev
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager(ctx.fsAdapter)
-    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
+    const { backupManager, writer } = getPluginServices(ctx)
 
     const files: ConfigResult['files'] = []
     const srcDir = join(ctx.projectRoot, ctx.srcDir)
@@ -166,7 +169,7 @@ export const zodPlugin: Plugin = {
    * Rollback de la configuration Zod
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager(_ctx.fsAdapter)
+    const backupManager = getRollbackManager(_ctx)
     try {
       await backupManager.restoreAll()
       logger.info('Zod configuration rolled back')
@@ -203,9 +206,9 @@ function getUserSchemaContentTS(): string {
  * })
  * 
  * if (result.success) {
- *   console.log(result.data) // Type-safe!
+ *   logger.info(result.data) // Type-safe!
  * } else {
- *   console.error(result.error)
+ *   logger.error(result.error)
  * }
  * \`\`\`
  */

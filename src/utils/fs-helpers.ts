@@ -1,8 +1,10 @@
 import { resolve, dirname, extname } from 'path'
 import type { PackageJson } from 'type-fest'
-import { logger } from './logger.js'
+import { getModuleLogger } from './logger-provider.js'
 import type { IFsAdapter } from '../core/fs-adapter.js'
 import { createDefaultFsAdapter } from '../core/fs-adapter.js'
+
+const logger = getModuleLogger()
 
 /**
  * Normalise un chemin pour utiliser des slashes POSIX (/)

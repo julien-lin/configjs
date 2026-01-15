@@ -9,7 +9,7 @@ import {
   ensureDirectory,
 } from '../utils/fs-helpers.js'
 import type { BackupManager } from './backup-manager.js'
-import { logger } from '../utils/logger.js'
+import { getModuleLogger } from '../utils/logger-provider.js'
 import type { IFsAdapter } from './fs-adapter.js'
 
 /**
@@ -57,6 +57,8 @@ export interface WriteOptions {
  * ```
  */
 export class ConfigWriter {
+  private logger = getModuleLogger()
+
   /**
    * @param backupManager - Gestionnaire de backups à utiliser
    * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
@@ -102,7 +104,7 @@ export class ConfigWriter {
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error)
-        logger.warn(
+        this.logger.warn(
           `Failed to backup file before write: ${fullPath}. ${errorMessage}`
         )
       }
@@ -117,7 +119,7 @@ export class ConfigWriter {
     // Écrire le fichier
     try {
       await writeFileContent(fullPath, content, 'utf-8', this.fsAdapter)
-      logger.debug(`Wrote file: ${fullPath}`)
+      this.logger.debug(`Wrote file: ${fullPath}`)
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
@@ -157,7 +159,7 @@ export class ConfigWriter {
       backup: false,
     })
 
-    logger.debug(`Created new file: ${fullPath}`)
+    this.logger.debug(`Created new file: ${fullPath}`)
   }
 
   /**
@@ -212,7 +214,7 @@ export class ConfigWriter {
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error)
-        logger.warn(
+        this.logger.warn(
           `Failed to backup package.json: ${errorMessage}. Continuing anyway.`
         )
       }
@@ -224,7 +226,7 @@ export class ConfigWriter {
     // Écrire
     try {
       await writePackageJson(fullPath, modifiedPkg, this.fsAdapter)
-      logger.debug(`Modified package.json: ${packageJsonPath}`)
+      this.logger.debug(`Modified package.json: ${packageJsonPath}`)
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
@@ -272,7 +274,7 @@ export class ConfigWriter {
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error)
-          logger.warn(
+          this.logger.warn(
             `Failed to backup file before append: ${fullPath}. ${errorMessage}`
           )
         }
@@ -294,7 +296,7 @@ export class ConfigWriter {
       backup: false, // Déjà fait si nécessaire
     })
 
-    logger.debug(`Appended to file: ${fullPath}`)
+    this.logger.debug(`Appended to file: ${fullPath}`)
   }
 
   /**
@@ -330,7 +332,7 @@ export class ConfigWriter {
 
     // Vérifier si l'import existe déjà
     if (content.includes(importStatement)) {
-      logger.debug(`Import already exists in ${fullPath}`)
+      this.logger.debug(`Import already exists in ${fullPath}`)
       return
     }
 
@@ -368,6 +370,6 @@ export class ConfigWriter {
       backup: false, // Déjà fait
     })
 
-    logger.debug(`Injected import into ${fullPath}`)
+    this.logger.debug(`Injected import into ${fullPath}`)
   }
 }

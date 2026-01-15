@@ -14,7 +14,9 @@ import {
   readFileContent,
   normalizePath,
 } from '../../utils/fs-helpers.js'
-import { logger } from '../../utils/logger.js'
+import { getModuleLogger } from '../../utils/logger-provider.js'
+
+const logger = getModuleLogger()
 
 /**
  * Plugin Prettier

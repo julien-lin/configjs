@@ -178,10 +178,11 @@ ConfigJS prevents conflicts before they happen:
 - ✅ **Auto-Dependencies**: TailwindCSS requires PostCSS → installed automatically
 - ✅ **Plugin Tracking**: Remembers installed plugins (`.configjsrc`)
 
-### 📦 Supported Libraries (40+ Plugins)
+### 📦 Supported Libraries (44+ Plugins)
 
 #### 🎨 CSS / Styling
 - TailwindCSS v4 (with @tailwindcss/vite)
+- TailwindCSS Next.js
 - Styled Components
 - React Bootstrap
 - Emotion
@@ -190,50 +191,69 @@ ConfigJS prevents conflicts before they happen:
 #### 🧭 Routing
 - React Router v7
 - TanStack Router
+- Vue Router (Vue.js)
 
 #### 🗂️ State Management
 - Redux Toolkit
 - Zustand
 - Jotai
-- MobX
+- Pinia (Vue.js)
 
 #### 🌐 HTTP Client
 - Axios
 - TanStack Query (React Query)
+- TanStack Query Vue
 - Fetch Wrapper
 
 #### 📝 Forms
 - React Hook Form
-- Formik
 - Zod (validation)
 - Yup (validation)
 
 #### 🎨 UI Components
 - Shadcn/ui
+- Shadcn/ui Next.js
 - Radix UI
 - React Icons
 - Lucide Icons
 - React Hot Toast
+- React Hot Toast Next.js
+- Vuetify (Vue.js)
 
 #### 🧪 Testing
 - React Testing Library
+- Vue Test Utils
+- Vue Testing Library
 - Vitest
 - Jest
 
 #### 🛠️ Tooling
 - ESLint
+- ESLint Vue
 - Prettier
 - Husky (Git hooks)
+- commitlint
 - lint-staged
 - date-fns
+- Vue TSC
 
 #### ✨ Animation
 - Framer Motion
 - React Spring
 
 #### 🔧 Utils
-- Lodash
-- clsx / classnames
+- VueUse (Vue.js)
+- unplugin-auto-import (Vue.js)
+- unplugin-vue-components (Vue.js)
+
+#### 🌍 Internationalization
+- Vue i18n (Vue.js)
+
+#### 📸 Next.js Specific
+- Image Optimization
+- Font Optimization
+- API Routes
+- Middleware
 
 ### 🔄 Automatic Rollback
 
@@ -423,7 +443,7 @@ npm run build
 
 ## 📋 Requirements
 
-- **Node.js** ≥ 18.0.0
+- **Node.js** ≥ 20.0.0
 - **npm** / **yarn** / **pnpm** / **bun**
 - An existing React project (Vite, CRA, or custom setup)
 
@@ -436,7 +456,11 @@ npm run build
 - [x] Plugin detection (package.json + tracker)
 - [x] Enhanced console UX with colors
 - [x] Sequential installation (prevents corruption)
-- [x] 40+ plugins across 10 categories
+- [x] Full React support (React 18/19)
+- [x] 44+ plugins across 10 categories
+- [x] Full Next.js support (13/14/15)
+- [x] Full Vue.js 3 support
+- [x] Logging centralization (IoC Architecture, full decoupling)
 
 ### v1.2 (Q2 2025)
 - [ ] Configuration presets (starter templates)
@@ -445,13 +469,11 @@ npm run build
 - [ ] Conflict resolution wizard
 
 ### v2.0 (Q3 2025)
-- [x] Support Next.js ✅
 - [ ] Support Remix
 - [ ] Support Astro
 - [ ] Web UI for configuration
 
 ### v2.x (Future)
-- [ ] Support Vue 3
 - [ ] Support Svelte
 - [ ] React Native support
 - [ ] Custom plugin templates

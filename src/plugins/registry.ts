@@ -1,6 +1,8 @@
 import type { Plugin, ProjectContext, Framework } from '../types/index.js'
 import { Category } from '../types/index.js'
-import { logger } from '../utils/logger.js'
+import { getModuleLogger } from '../utils/logger-provider.js'
+
+const logger = getModuleLogger()
 
 /**
  * Registry centralisé de tous les plugins disponibles (36 plugins)

@@ -12,7 +12,7 @@ import {
   checkPathExists,
 } from '../utils/fs-helpers.js'
 import { detectPackageManager } from '../utils/package-manager.js'
-import { logger } from '../utils/logger.js'
+import { getModuleLogger } from '../utils/logger-provider.js'
 import type { IFsAdapter } from './fs-adapter.js'
 import { createDefaultFsAdapter } from './fs-adapter.js'
 
@@ -390,25 +390,34 @@ async function detectVueApi(
     let hasCompositionApi = false
     let hasOptionsApi = false
 
+    const scriptBlockRegex = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi
+
     for (const file of files.slice(0, 10)) {
       // Limiter à 10 fichiers pour performance
       try {
         const content = await adapter.readFile(file, 'utf-8')
-        // Détecter Composition API : présence de <script setup> ou setup()
-        if (
-          content.includes('<script setup>') ||
-          content.includes('<script setup lang="ts">') ||
-          content.includes('export default defineComponent') ||
-          content.includes('setup()')
-        ) {
-          hasCompositionApi = true
-        }
-        // Détecter Options API : export default { ... }
-        if (
-          content.includes('export default {') ||
-          content.includes('export default{')
-        ) {
-          hasOptionsApi = true
+        let match: RegExpExecArray | null
+
+        while ((match = scriptBlockRegex.exec(content)) !== null) {
+          const attrs = match[1] || ''
+          const scriptContent = match[2] || ''
+
+          // Composition API : <script setup> ou usage explicite de setup()
+          if (
+            attrs.includes('setup') ||
+            scriptContent.includes('setup(') ||
+            scriptContent.includes('defineComponent(')
+          ) {
+            hasCompositionApi = true
+          }
+
+          // Options API : export default { ... }
+          if (
+            scriptContent.includes('export default {') ||
+            scriptContent.includes('export default{')
+          ) {
+            hasOptionsApi = true
+          }
         }
       } catch {
         // Ignorer les erreurs de lecture
@@ -518,6 +527,8 @@ async function detectLockfile(
  * console.log(ctx.typescript) // true
  * ```
  */
+const logger = getModuleLogger()
+
 export async function detectContext(
   projectRoot: string,
   fsAdapter?: IFsAdapter
@@ -560,7 +571,7 @@ export async function detectContext(
     Promise.resolve(detectFramework(pkg)),
     detectTypeScript(fullPath, fsAdapter),
     detectBundler(fullPath, pkg, fsAdapter),
-    detectPackageManager(fullPath),
+    detectPackageManager(fullPath, fsAdapter),
     detectSrcDir(fullPath, fsAdapter),
     detectPublicDir(fullPath, fsAdapter),
     detectGit(fullPath, fsAdapter),

@@ -7,10 +7,14 @@ import type {
 } from '../../types/index.js'
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
-import { ConfigWriter } from '../../core/config-writer.js'
-import { BackupManager } from '../../core/backup-manager.js'
 import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
-import { logger } from '../../utils/logger.js'
+import { getModuleLogger } from '../../utils/logger-provider.js'
+import {
+  getPluginServices,
+  getRollbackManager,
+} from '../utils/plugin-services.js'
+
+const logger = getModuleLogger()
 
 /**
  * Plugin Axios
@@ -94,8 +98,7 @@ export const axiosPlugin: Plugin = {
    * Documentation : https://axios-http.com
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager(ctx.fsAdapter)
-    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
+    const { writer } = getPluginServices(ctx)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -155,7 +158,7 @@ export const axiosPlugin: Plugin = {
    * Rollback de la configuration Axios
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager(_ctx.fsAdapter)
+    const backupManager = getRollbackManager(_ctx)
     try {
       await backupManager.restoreAll()
       logger.info('Axios configuration rolled back')
@@ -225,27 +228,27 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           // Non autorisé - rediriger vers la page de connexion
-          console.error('Unauthorized - redirecting to login')
+          logger.error('Unauthorized - redirecting to login')
           // window.location.href = '/login'
           break
         case 403:
-          console.error('Forbidden')
+          logger.error('Forbidden')
           break
         case 404:
-          console.error('Not found')
+          logger.error('Not found')
           break
         case 500:
-          console.error('Server error')
+          logger.error('Server error')
           break
         default:
-          console.error('Request failed:', error.response.status)
+          logger.error('Request failed:', error.response.status)
       }
     } else if (error.request) {
       // La requête a été faite mais aucune réponse n'a été reçue
-      console.error('No response received:', error.request)
+      logger.error('No response received:', error.request)
     } else {
       // Une erreur s'est produite lors de la configuration de la requête
-      console.error('Error setting up request:', error.message)
+      logger.error('Error setting up request:', error.message)
     }
     return Promise.reject(error)
   }
@@ -313,27 +316,27 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           // Non autorisé - rediriger vers la page de connexion
-          console.error('Unauthorized - redirecting to login')
+          logger.error('Unauthorized - redirecting to login')
           // window.location.href = '/login'
           break
         case 403:
-          console.error('Forbidden')
+          logger.error('Forbidden')
           break
         case 404:
-          console.error('Not found')
+          logger.error('Not found')
           break
         case 500:
-          console.error('Server error')
+          logger.error('Server error')
           break
         default:
-          console.error('Request failed:', error.response.status)
+          logger.error('Request failed:', error.response.status)
       }
     } else if (error.request) {
       // La requête a été faite mais aucune réponse n'a été reçue
-      console.error('No response received:', error.request)
+      logger.error('No response received:', error.request)
     } else {
       // Une erreur s'est produite lors de la configuration de la requête
-      console.error('Error setting up request:', error.message)
+      logger.error('Error setting up request:', error.message)
     }
     return Promise.reject(error)
   }

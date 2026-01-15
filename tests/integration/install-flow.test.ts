@@ -21,7 +21,6 @@ import {
   compatibilityRules,
 } from '../../src/core/validator.js'
 import { detectContext } from '../../src/core/detector.js'
-import { ConfigWriter } from '../../src/core/config-writer.js'
 import { BackupManager } from '../../src/core/backup-manager.js'
 import { pluginRegistry } from '../../src/plugins/registry.js'
 import type { Plugin } from '../../src/types/index.js'
@@ -81,12 +80,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -108,12 +106,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -133,12 +130,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -163,12 +159,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -192,12 +187,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -219,12 +213,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -247,12 +240,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -288,12 +280,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -315,12 +306,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -345,12 +335,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -376,12 +365,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -416,12 +404,11 @@ describe('Integration: Installation Flow (memfs)', () => {
     const fsAdapter = getFsAdapter()
     const context = await detectContext(projectPath, fsAdapter!)
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -452,13 +439,7 @@ describe('Integration: Installation Flow (memfs)', () => {
     if (zustandPlugin) {
       // Première installation
       const backupManager1 = new BackupManager(fsAdapter!)
-      const configWriter1 = new ConfigWriter(backupManager1, fsAdapter!)
-      const installer1 = new Installer(
-        context,
-        validator,
-        configWriter1,
-        backupManager1
-      )
+      const installer1 = new Installer(context, validator, backupManager1)
 
       const result1 = await installer1.install([zustandPlugin], {
         skipPackageInstall: true,
@@ -467,13 +448,7 @@ describe('Integration: Installation Flow (memfs)', () => {
 
       // Deuxième installation (avec de nouvelles instances pour éviter les conflits de cache)
       const backupManager2 = new BackupManager(fsAdapter!)
-      const configWriter2 = new ConfigWriter(backupManager2, fsAdapter!)
-      const installer2 = new Installer(
-        context,
-        validator,
-        configWriter2,
-        backupManager2
-      )
+      const installer2 = new Installer(context, validator, backupManager2)
 
       const result2 = await installer2.install([zustandPlugin], {
         skipPackageInstall: true,
@@ -506,11 +481,10 @@ describe('Integration: Installation Flow (memfs)', () => {
 
     // Installation
     const backupManager = new BackupManager(fsAdapter!)
-    const configWriter = new ConfigWriter(backupManager, fsAdapter!)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 

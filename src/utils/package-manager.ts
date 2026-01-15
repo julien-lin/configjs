@@ -2,7 +2,10 @@ import { execa } from 'execa'
 import fs from 'fs-extra'
 import { resolve, join } from 'path'
 import type { PackageManager } from '../types/index.js'
-import { logger } from './logger.js'
+import type { IFsAdapter } from '../core/fs-adapter.js'
+import { getModuleLogger } from './logger-provider.js'
+
+const logger = getModuleLogger()
 
 /**
  * Options pour l'installation de packages
@@ -48,7 +51,8 @@ export interface InstallResult {
  * ```
  */
 export async function detectPackageManager(
-  projectRoot: string
+  projectRoot: string,
+  fsAdapter?: IFsAdapter
 ): Promise<PackageManager> {
   const root = resolve(projectRoot)
 
@@ -62,6 +66,14 @@ export async function detectPackageManager(
 
   for (const { file, manager } of lockfiles) {
     const lockfilePath = join(root, file)
+    if (fsAdapter) {
+      if (await fsAdapter.pathExists(lockfilePath)) {
+        logger.debug(`Detected package manager: ${manager} (found ${file})`)
+        return manager
+      }
+      continue
+    }
+
     if (await fs.pathExists(lockfilePath)) {
       logger.debug(`Detected package manager: ${manager} (found ${file})`)
       return manager

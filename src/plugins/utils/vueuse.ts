@@ -7,10 +7,12 @@ import type {
 } from '../../types/index.js'
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
-import { ConfigWriter } from '../../core/config-writer.js'
-import { BackupManager } from '../../core/backup-manager.js'
 import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
-import { logger } from '../../utils/logger.js'
+import { getModuleLogger } from '../../utils/logger-provider.js'
+
+import { getPluginServices, getRollbackManager } from './plugin-services.js'
+
+const logger = getModuleLogger()
 
 /**
  * Plugin VueUse
@@ -97,8 +99,7 @@ export const vueusePlugin: Plugin = {
    * - src/composables/useExample.ts (ou .js) : Exemple d'utilisation
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager(ctx.fsAdapter)
-    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
+    const { writer } = getPluginServices(ctx)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -144,7 +145,7 @@ export const vueusePlugin: Plugin = {
    * Rollback de la configuration VueUse
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager(_ctx.fsAdapter)
+    const backupManager = getRollbackManager(_ctx)
     await backupManager.restoreAll()
     logger.info('VueUse configuration rolled back')
   },
@@ -188,6 +189,8 @@ export function useExample() {
 function getExampleContentJS(): string {
   return `import { computed } from 'vue'
 import { useMouse, useCounter } from '@vueuse/core'
+
+const logger = getModuleLogger()
 
 /**
  * Exemple de composable utilisant VueUse

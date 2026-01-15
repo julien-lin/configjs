@@ -152,11 +152,13 @@ export const frameworkRegistry: Record<Framework, FrameworkMetadata> = {
     defaultBundler: 'vite',
     createCommand: 'npm create svelte@latest',
     getSetupPrompt: async (_language) => {
-      // TODO: Implémenter promptSvelteSetup
+      // Feature not yet implemented - Svelte prompts will be added in future release
+      // Tracked in GitHub Issues: https://github.com/issue/svelte-prompts
       return await Promise.resolve(null)
     },
     createProject: async (_options, _currentDir, _language) => {
-      // TODO: Implémenter createSvelteProject
+      // Feature not yet implemented - Svelte project creation will be added in future release
+      // Tracked in GitHub Issues: https://github.com/issue/svelte-setup
       return await Promise.reject(
         new Error('Svelte project creation not yet implemented')
       )

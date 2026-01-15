@@ -7,10 +7,12 @@ import type {
 } from '../../types/index.js'
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
-import { ConfigWriter } from '../../core/config-writer.js'
-import { BackupManager } from '../../core/backup-manager.js'
 import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
-import { logger } from '../../utils/logger.js'
+import { getModuleLogger } from '../../utils/logger-provider.js'
+
+import { getPluginServices, getRollbackManager } from './plugin-services.js'
+
+const logger = getModuleLogger()
 
 /**
  * Plugin date-fns
@@ -96,8 +98,7 @@ export const dateFnsPlugin: Plugin = {
    * Documentation : https://date-fns.org
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager(ctx.fsAdapter)
-    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
+    const { backupManager, writer } = getPluginServices(ctx)
 
     const files: ConfigResult['files'] = []
     const srcDir = join(ctx.projectRoot, ctx.srcDir)
@@ -146,7 +147,7 @@ export const dateFnsPlugin: Plugin = {
    * Rollback de la configuration date-fns
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager(_ctx.fsAdapter)
+    const backupManager = getRollbackManager(_ctx)
     try {
       await backupManager.restoreAll()
       logger.info('date-fns configuration rolled back')
@@ -269,6 +270,8 @@ function getDateUtilsContentJS(): string {
   differenceInMinutes,
 } from 'date-fns'
 import { fr } from 'date-fns/locale'
+
+const logger = getModuleLogger()
 
 /**
  * Utilitaires de manipulation de dates avec date-fns
