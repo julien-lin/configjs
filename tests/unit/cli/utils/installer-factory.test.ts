@@ -37,9 +37,8 @@ describe('FrameworkInstallerFactory', () => {
 
     it('should throw error for unsupported framework', () => {
       expect(() => {
-        // @ts-expect-error - testing invalid framework
-        FrameworkInstallerFactory.create('angular')
-      }).toThrow('Framework angular is not supported')
+        FrameworkInstallerFactory.create('preact' as any)
+      }).toThrow('Framework preact is not supported')
     })
   })
 
@@ -50,6 +49,7 @@ describe('FrameworkInstallerFactory', () => {
         'nextjs',
         'vue',
         'svelte',
+        'angular',
       ]
 
       for (const framework of supportedFrameworks) {
@@ -61,7 +61,7 @@ describe('FrameworkInstallerFactory', () => {
 
     it('should return false for unsupported frameworks', () => {
       expect(
-        FrameworkInstallerFactory.isInstallerAvailable('angular' as Framework)
+        FrameworkInstallerFactory.isInstallerAvailable('preact' as Framework)
       ).toBe(false)
       expect(
         FrameworkInstallerFactory.isInstallerAvailable('solid' as Framework)
@@ -73,7 +73,13 @@ describe('FrameworkInstallerFactory', () => {
   })
 
   describe('Installer interface compliance', () => {
-    const frameworks: Framework[] = ['react', 'nextjs', 'vue', 'svelte']
+    const frameworks: Framework[] = [
+      'react',
+      'nextjs',
+      'vue',
+      'svelte',
+      'angular',
+    ]
 
     it.each(frameworks)(
       '%s installer should have createProject method',

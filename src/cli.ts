@@ -141,6 +141,38 @@ program
   )
 
 program
+  .command('angular')
+  .description('Configure an Angular project')
+  .option('-y, --yes', 'Accept all defaults')
+  .option('-d, --dry-run', 'Simulate without writing to disk')
+  .option('-s, --silent', 'Non-interactive mode')
+  .option('--debug', 'Enable debug logs')
+  .option('-c, --config <file>', 'Use configuration file')
+  .option('-f, --force', 'Force installation (overwrite configs)')
+  .option('--no-install', 'Generate configs only, skip package installation')
+  .action(
+    async (options: {
+      yes?: boolean
+      dryRun?: boolean
+      silent?: boolean
+      debug?: boolean
+      config?: string
+      force?: boolean
+      install?: boolean
+    }) => {
+      try {
+        const { AngularCommand } =
+          await import('./cli/commands/angular-command.js')
+        const command = new AngularCommand()
+        await command.execute(options)
+      } catch (error) {
+        console.error('Error:', error)
+        process.exit(1)
+      }
+    }
+  )
+
+program
   .command('list')
   .description('List available libraries')
   .option('-c, --category <category>', 'Filter by category')
