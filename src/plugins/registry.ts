@@ -78,9 +78,15 @@ import { vueusePlugin } from './utils/vueuse-builder.js'
 // Angular plugins
 import { angularRouterPlugin } from './routing/angular-router.js'
 import { ngrxPlugin } from './state/ngrx.js'
+import { ngrxSignalsPlugin } from './state/ngrx-signals.js'
 import { angularMaterialPlugin } from './ui/angular-material.js'
+import { angularAriaPlugin } from './ui/angular-aria.js'
+import { angularCdkPlugin } from './ui/angular-cdk.js'
+import { lucideAngularPlugin } from './ui/lucide-angular.js'
 import { jasmineKarmaPlugin } from './testing/jasmine-karma.js'
+import { vitestAngularPlugin } from './testing/vitest-angular.js'
 import { rxjsPlugin } from './utils/rxjs.js'
+import { zodAngularPlugin } from './forms/zod-angular.js'
 
 /**
  * Registry de tous les plugins disponibles
@@ -99,6 +105,7 @@ export const pluginRegistry: Plugin[] = [
   // FORMS
   reactHookFormPlugin,
   zodPlugin,
+  zodAngularPlugin,
   svelteFormsPlugin,
 
   // HTTP
@@ -128,6 +135,7 @@ export const pluginRegistry: Plugin[] = [
   reduxToolkitPlugin,
   zustandPlugin,
   ngrxPlugin,
+  ngrxSignalsPlugin,
 
   // TESTING
   reactTestingLibraryPlugin,
@@ -135,6 +143,7 @@ export const pluginRegistry: Plugin[] = [
   vueTestUtilsPlugin,
   svelteTestingLibraryPlugin,
   jasmineKarmaPlugin,
+  vitestAngularPlugin,
 
   // TOOLING
   eslintPlugin,
@@ -157,6 +166,9 @@ export const pluginRegistry: Plugin[] = [
   vuetifyPlugin,
   skeletonUiPlugin,
   angularMaterialPlugin,
+  angularAriaPlugin,
+  angularCdkPlugin,
+  lucideAngularPlugin,
 
   // UTILS
   dateFnsPlugin,

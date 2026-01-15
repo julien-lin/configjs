@@ -53,6 +53,14 @@ export default tseslint.config(
     },
   },
 
+  {
+    files: ['src/cli/ui/logo.ts'],
+    rules: {
+      // Désactiver ESLint pour le fichier du logo avec caractères Unicode complexes
+      'prettier/prettier': 'off',
+    },
+  },
+
   // Règles plus souples pour les tests
   {
     files: ['tests/**/*.ts', 'tests/**/*.tsx'],
@@ -78,6 +86,7 @@ export default tseslint.config(
       '*.config.ts',
       'vitest.config.ts',
       'tests/fixtures/**',
+      'src/cli/ui/logo.ts',
     ],
   }
 )

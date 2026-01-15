@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "installedPlugins": [
+    {
+      "name": "rxjs",
+      "displayName": "RxJS",
+      "category": "utils",
+      "version": "^7.8.0",
+      "packages": {
+        "dependencies": [],
+        "devDependencies": []
+      },
+      "installedAt": "2026-01-15T19:00:19.129Z"
+    }
+  ],
+  "lastUpdated": "2026-01-15T19:00:19.129Z"
+}
