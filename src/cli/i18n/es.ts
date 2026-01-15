@@ -136,4 +136,26 @@ export const es: Translations = {
     folderExists: (name: string) =>
       `La carpeta "${name}" ya existe. Por favor, elija otro nombre.`,
   },
+  svelte: {
+    noSvelteDetected:
+      '⚠️  No se detectó ningún proyecto Svelte en el directorio actual.',
+    proposeSetup: '¿Desea crear un nuevo proyecto Svelte con Vite?',
+    projectName: 'Nombre del proyecto',
+    projectNamePlaceholder: 'mi-proyecto-svelte',
+    useTypeScript: '¿Usar TypeScript?',
+    creatingProject: 'Creando proyecto Svelte con Vite...',
+    installingDependencies: 'Instalando dependencias...',
+    projectCreated: '¡Proyecto Svelte creado con éxito!',
+    creating: 'Creando proyecto Svelte...',
+    success: '✅ ¡Proyecto creado con éxito!',
+    error: '❌ Error al crear el proyecto',
+    changingDirectory: 'Cambiando al directorio del proyecto...',
+    validation: {
+      empty: 'El nombre del proyecto no puede estar vacío',
+      invalid:
+        'El nombre del proyecto solo puede contener letras, números, guiones y guiones bajos',
+    },
+    folderExists: (name: string) =>
+      `La carpeta "${name}" ya existe. Por favor, elija otro nombre.`,
+  },
 }
