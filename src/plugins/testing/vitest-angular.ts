@@ -7,6 +7,10 @@ import type {
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
 import { getModuleLogger } from '../../utils/logger-provider.js'
+import {
+  generateVitestConfig,
+  generateTestFile,
+} from '../utils/angular-21-config.js'
 
 const logger = getModuleLogger()
 
@@ -69,10 +73,37 @@ export const vitestAngularPlugin: Plugin = {
     }
   },
 
-  configure(): Promise<ConfigResult> {
-    return Promise.resolve({
-      files: [],
-      success: true,
-    })
+  async configure(ctx: ProjectContext): Promise<ConfigResult> {
+    try {
+      // Generate vitest.config.ts
+      await generateVitestConfig(ctx.projectRoot)
+
+      // Generate src/test.ts
+      await generateTestFile(ctx.projectRoot)
+
+      logger.success('Vitest configuration completed')
+      logger.info('Created: vitest.config.ts and src/test.ts for Angular 21')
+
+      return {
+        files: [
+          {
+            type: 'create',
+            path: 'vitest.config.ts',
+          },
+          {
+            type: 'create',
+            path: 'src/test.ts',
+          },
+        ],
+        success: true,
+      }
+    } catch (error) {
+      logger.error('Failed to configure Vitest', error)
+      return {
+        files: [],
+        success: false,
+        message: `Error configuring Vitest: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      }
+    }
   },
 }
