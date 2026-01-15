@@ -11,6 +11,10 @@ import {
   generateVitestConfig,
   generateTestFile,
 } from '../utils/angular-21-config.js'
+import {
+  validateAngularSetup,
+  formatValidationResult,
+} from '../../core/angular-21-validator.js'
 
 const logger = getModuleLogger()
 
@@ -75,6 +79,18 @@ export const vitestAngularPlugin: Plugin = {
 
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
     try {
+      // Validate Angular 21 setup before configuring
+      const validation = await validateAngularSetup(ctx.projectRoot)
+      logger.info(formatValidationResult(validation))
+
+      if (!validation.isValid) {
+        return {
+          files: [],
+          success: false,
+          message: `Cannot configure Vitest: ${validation.errors.join('. ')}`,
+        }
+      }
+
       // Generate vitest.config.ts
       await generateVitestConfig(ctx.projectRoot)
 
