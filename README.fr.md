@@ -164,10 +164,11 @@ ConfigJS prévient les conflits avant qu'ils ne se produisent :
 - ✅ **Dépendances Automatiques** : TailwindCSS nécessite PostCSS → installé automatiquement
 - ✅ **Suivi des Plugins** : Mémorise les plugins installés (`.configjsrc`)
 
-### 📦 Bibliothèques Supportées (40+ Plugins)
+### 📦 Bibliothèques Supportées (44+ Plugins)
 
 #### 🎨 CSS / Styling
 - TailwindCSS v4 (avec @tailwindcss/vite)
+- TailwindCSS Next.js
 - Styled Components
 - React Bootstrap
 - Emotion
@@ -176,50 +177,69 @@ ConfigJS prévient les conflits avant qu'ils ne se produisent :
 #### 🧭 Routing
 - React Router v7
 - TanStack Router
+- Vue Router (Vue.js)
 
 #### 🗂️ Gestion d'État
 - Redux Toolkit
 - Zustand
 - Jotai
-- MobX
+- Pinia (Vue.js)
 
 #### 🌐 Client HTTP
 - Axios
 - TanStack Query (React Query)
+- TanStack Query Vue
 - Fetch Wrapper
 
 #### 📝 Formulaires
 - React Hook Form
-- Formik
 - Zod (validation)
 - Yup (validation)
 
 #### 🎨 Composants UI
 - Shadcn/ui
+- Shadcn/ui Next.js
 - Radix UI
 - React Icons
 - Lucide Icons
 - React Hot Toast
+- React Hot Toast Next.js
+- Vuetify (Vue.js)
 
 #### 🧪 Tests
 - React Testing Library
+- Vue Test Utils
+- Vue Testing Library
 - Vitest
 - Jest
 
 #### 🛠️ Outillage
 - ESLint
+- ESLint Vue
 - Prettier
 - Husky (Git hooks)
+- commitlint
 - lint-staged
 - date-fns
+- Vue TSC
 
 #### ✨ Animation
 - Framer Motion
 - React Spring
 
 #### 🔧 Utilitaires
-- Lodash
-- clsx / classnames
+- VueUse (Vue.js)
+- unplugin-auto-import (Vue.js)
+- unplugin-vue-components (Vue.js)
+
+#### 🌍 Internationalisation
+- Vue i18n (Vue.js)
+
+#### 📸 Spécifique à Next.js
+- Image Optimization
+- Font Optimization
+- API Routes
+- Middleware
 
 ### 🔄 Rollback Automatique
 
@@ -389,7 +409,7 @@ npm run build
 
 ## 📋 Prérequis
 
-- **Node.js** ≥ 18.0.0
+- **Node.js** ≥ 20.0.0
 - **npm** / **yarn** / **pnpm** / **bun**
 - Un projet React existant (Vite, CRA, ou configuration personnalisée)
 
@@ -402,7 +422,11 @@ npm run build
 - [x] Détection des plugins (package.json + tracker)
 - [x] UX console améliorée avec couleurs
 - [x] Installation séquentielle (prévient la corruption)
-- [x] 40+ plugins à travers 10 catégories
+- [x] Support React complet (React 18/19)
+- [x] 44+ plugins à travers 10 catégories
+- [x] Support Next.js complet (13/14/15)
+- [x] Support Vue.js 3 complet
+- [x] Centralisation du logging (Architecture IoC, découplage total)
 
 ### v1.2 (T2 2025)
 - [ ] Presets de configuration (templates de démarrage)
@@ -411,13 +435,11 @@ npm run build
 - [ ] Assistant de résolution de conflits
 
 ### v2.0 (T3 2025)
-- [ ] Support Next.js
 - [ ] Support Remix
 - [ ] Support Astro
 - [ ] Interface web pour la configuration
 
 ### v2.x (Futur)
-- [ ] Support Vue 3
 - [ ] Support Svelte
 - [ ] Support React Native
 - [ ] Templates de plugins personnalisés

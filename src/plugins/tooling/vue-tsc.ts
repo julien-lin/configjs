@@ -6,11 +6,16 @@ import type {
 } from '../../types/index.js'
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
-import { ConfigWriter } from '../../core/config-writer.js'
-import { BackupManager } from '../../core/backup-manager.js'
 import { normalizePath } from '../../utils/fs-helpers.js'
-import { logger } from '../../utils/logger.js'
+import { getModuleLogger } from '../../utils/logger-provider.js'
+
 import { join } from 'path'
+import {
+  getPluginServices,
+  getRollbackManager,
+} from '../utils/plugin-services.js'
+
+const logger = getModuleLogger()
 
 /**
  * Plugin vue-tsc
@@ -94,8 +99,7 @@ export const vueTscPlugin: Plugin = {
    * Ajoute le script typecheck si absent
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager(ctx.fsAdapter)
-    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
+    const { writer } = getPluginServices(ctx)
 
     const files: ConfigResult['files'] = []
     const packageJsonPath = join(ctx.projectRoot, 'package.json')
@@ -136,7 +140,7 @@ export const vueTscPlugin: Plugin = {
    * Rollback de la configuration vue-tsc
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager(_ctx.fsAdapter)
+    const backupManager = getRollbackManager(_ctx)
     await backupManager.restoreAll()
     logger.info('vue-tsc configuration rolled back')
   },

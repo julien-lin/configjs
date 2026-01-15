@@ -156,7 +156,7 @@ This is the first stable release of confjs, ready for production use.
 ### Technical Details
 - TypeScript strict mode enabled
 - ESM module system
-- Node.js >= 18.0.0 requirement
+- Node.js >= 20.0.0 requirement
 - Zero-config operation for standard React projects
 - Package manager detection (npm, yarn, pnpm, bun)
 

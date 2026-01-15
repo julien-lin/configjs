@@ -7,10 +7,15 @@ import type {
 } from '../../types/index.js'
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
-import { ConfigWriter } from '../../core/config-writer.js'
-import { BackupManager } from '../../core/backup-manager.js'
 import { checkPathExists, normalizePath } from '../../utils/fs-helpers.js'
-import { logger } from '../../utils/logger.js'
+import { getModuleLogger } from '../../utils/logger-provider.js'
+
+import {
+  getPluginServices,
+  getRollbackManager,
+} from '../utils/plugin-services.js'
+
+const logger = getModuleLogger()
 
 /**
  * Plugin lint-staged
@@ -94,8 +99,7 @@ export const lintStagedPlugin: Plugin = {
    * - package.json (script lint-staged)
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager(ctx.fsAdapter)
-    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
+    const { backupManager, writer } = getPluginServices(ctx)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -152,7 +156,7 @@ export const lintStagedPlugin: Plugin = {
    * Rollback de la configuration lint-staged
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager(_ctx.fsAdapter)
+    const backupManager = getRollbackManager(_ctx)
     try {
       await backupManager.restoreAll()
       logger.info('lint-staged configuration rolled back')

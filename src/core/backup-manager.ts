@@ -4,7 +4,7 @@ import {
   writeFileContent,
   checkPathExists,
 } from '../utils/fs-helpers.js'
-import { logger } from '../utils/logger.js'
+import { getModuleLogger } from '../utils/logger-provider.js'
 import type { IFsAdapter } from './fs-adapter.js'
 
 /**
@@ -29,6 +29,8 @@ import type { IFsAdapter } from './fs-adapter.js'
  * ```
  */
 export class BackupManager {
+  private logger = getModuleLogger()
+
   /**
    * Map des backups : filePath -> content
    */
@@ -55,11 +57,11 @@ export class BackupManager {
     const fullPath = resolve(filePath)
 
     if (this.backups.has(fullPath)) {
-      logger.debug(`Backup already exists for ${fullPath}, overwriting`)
+      this.logger.debug(`Backup already exists for ${fullPath}, overwriting`)
     }
 
     this.backups.set(fullPath, content)
-    logger.debug(`Backed up file: ${fullPath}`)
+    this.logger.debug(`Backed up file: ${fullPath}`)
   }
 
   /**
@@ -111,7 +113,7 @@ export class BackupManager {
 
     try {
       await writeFileContent(fullPath, backupContent, 'utf-8', this.fsAdapter)
-      logger.debug(`Restored file from backup: ${fullPath}`)
+      this.logger.debug(`Restored file from backup: ${fullPath}`)
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
@@ -134,11 +136,11 @@ export class BackupManager {
     const filePaths = Array.from(this.backups.keys())
 
     if (filePaths.length === 0) {
-      logger.debug('No backups to restore')
+      this.logger.debug('No backups to restore')
       return
     }
 
-    logger.debug(`Restoring ${filePaths.length} file(s) from backup`)
+    this.logger.debug(`Restoring ${filePaths.length} file(s) from backup`)
 
     const errors: Array<{ filePath: string; error: Error }> = []
 
@@ -152,7 +154,7 @@ export class BackupManager {
           filePath,
           error: new Error(errorMessage),
         })
-        logger.error(`Failed to restore ${filePath}: ${errorMessage}`)
+        this.logger.error(`Failed to restore ${filePath}: ${errorMessage}`)
       }
     }
 
@@ -165,7 +167,7 @@ export class BackupManager {
       )
     }
 
-    logger.debug(`Successfully restored ${filePaths.length} file(s)`)
+    this.logger.debug(`Successfully restored ${filePaths.length} file(s)`)
   }
 
   /**
@@ -220,7 +222,7 @@ export class BackupManager {
     const fullPath = resolve(filePath)
     const removed = this.backups.delete(fullPath)
     if (removed) {
-      logger.debug(`Removed backup for: ${fullPath}`)
+      this.logger.debug(`Removed backup for: ${fullPath}`)
     }
     return removed
   }
@@ -238,7 +240,7 @@ export class BackupManager {
   clear(): void {
     const count = this.backups.size
     this.backups.clear()
-    logger.debug(`Cleared ${count} backup(s)`)
+    this.logger.debug(`Cleared ${count} backup(s)`)
   }
 
   /**

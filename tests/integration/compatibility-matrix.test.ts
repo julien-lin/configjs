@@ -13,7 +13,6 @@ import {
   compatibilityRules,
 } from '../../src/core/validator.js'
 import { detectContext } from '../../src/core/detector.js'
-import { ConfigWriter } from '../../src/core/config-writer.js'
 import { BackupManager } from '../../src/core/backup-manager.js'
 import { pluginRegistry } from '../../src/plugins/registry.js'
 
@@ -53,7 +52,6 @@ describe('Integration: Plugin Compatibility Matrix', () => {
       try {
         const context = await detectContext(testPath)
         const backupManager = new BackupManager()
-        const configWriter = new ConfigWriter(backupManager)
         const validator = new CompatibilityValidator(compatibilityRules)
 
         const plugins = combo.filter(
@@ -66,7 +64,7 @@ describe('Integration: Plugin Compatibility Matrix', () => {
           const installer = new Installer(
             context,
             validator,
-            configWriter,
+
             backupManager
           )
           const result = await installer.install(plugins, {
@@ -84,12 +82,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should support TanStack Router with different state managers', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -111,12 +108,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should handle routing + state + http combinations', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -139,12 +135,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should support axios and tanstack-query together', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -166,12 +161,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should support tailwindcss with UI component libraries', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -192,12 +186,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should support emotion with styled-components alternatives', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -219,12 +212,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should support react-hook-form with zod validation', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -246,12 +238,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should support complete testing stack', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -272,12 +263,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should support complete dev tools configuration', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -299,12 +289,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should install animation libraries', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -325,12 +314,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should install icons and utilities', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -352,12 +340,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should handle realistic full-stack project setup', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -389,12 +376,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should support bootstrap as CSS alternative', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -415,12 +401,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should support toast notification libraries', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -456,12 +441,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should handle empty plugin list', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 
@@ -476,12 +460,11 @@ describe('Integration: Plugin Compatibility Matrix', () => {
   it('should handle duplicate plugins gracefully', async () => {
     const context = await detectContext(projectPath)
     const backupManager = new BackupManager()
-    const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(compatibilityRules)
     const installer = new Installer(
       context,
       validator,
-      configWriter,
+
       backupManager
     )
 

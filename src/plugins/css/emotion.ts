@@ -7,10 +7,15 @@ import type {
 } from '../../types/index.js'
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
-import { ConfigWriter } from '../../core/config-writer.js'
-import { BackupManager } from '../../core/backup-manager.js'
 import { ensureDirectory, normalizePath } from '../../utils/fs-helpers.js'
-import { logger } from '../../utils/logger.js'
+import { getModuleLogger } from '../../utils/logger-provider.js'
+
+import {
+  getPluginServices,
+  getRollbackManager,
+} from '../utils/plugin-services.js'
+
+const logger = getModuleLogger()
 
 /**
  * Plugin Emotion
@@ -109,8 +114,7 @@ export const emotionPlugin: Plugin = {
    * Documentation : https://emotion.sh/docs/introduction
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager(ctx.fsAdapter)
-    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
+    const { writer } = getPluginServices(ctx)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -189,7 +193,7 @@ export const emotionPlugin: Plugin = {
    * Rollback de la configuration Emotion
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager(_ctx.fsAdapter)
+    const backupManager = getRollbackManager(_ctx)
     try {
       await backupManager.restoreAll()
       logger.info('Emotion configuration rolled back')

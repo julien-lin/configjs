@@ -7,15 +7,19 @@ import type {
 } from '../../types/index.js'
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
-import { ConfigWriter } from '../../core/config-writer.js'
-import { BackupManager } from '../../core/backup-manager.js'
 import {
   checkPathExists,
   ensureDirectory,
   readFileContent,
   normalizePath,
 } from '../../utils/fs-helpers.js'
-import { logger } from '../../utils/logger.js'
+import { getModuleLogger } from '../../utils/logger-provider.js'
+
+const logger = getModuleLogger()
+import {
+  getPluginServices,
+  getRollbackManager,
+} from '../utils/plugin-services.js'
 
 /**
  * Plugin Redux Toolkit
@@ -111,8 +115,7 @@ export const reduxToolkitPlugin: Plugin = {
    * Documentation : https://redux-toolkit.js.org/introduction/getting-started
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager(ctx.fsAdapter)
-    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
+    const { writer } = getPluginServices(ctx)
 
     const files: ConfigResult['files'] = []
     const srcDir = resolve(ctx.projectRoot, ctx.srcDir)
@@ -236,7 +239,7 @@ export const reduxToolkitPlugin: Plugin = {
    * Rollback de la configuration Redux Toolkit
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager(_ctx.fsAdapter)
+    const backupManager = getRollbackManager(_ctx)
     try {
       await backupManager.restoreAll()
       logger.info('Redux Toolkit configuration rolled back')

@@ -4,7 +4,7 @@ import {
   readFileContent,
   checkPathExists,
 } from '../utils/fs-helpers.js'
-import { logger } from '../utils/logger.js'
+import { getModuleLogger } from '../utils/logger-provider.js'
 import type { IFsAdapter } from './fs-adapter.js'
 
 /**
@@ -51,6 +51,8 @@ const CONFIG_VERSION = '1.0.0'
  * - Gérer l'historique des installations
  */
 export class PluginTracker {
+  private logger = getModuleLogger()
+
   private configPath: string
   private config: PluginConfig | null = null
   private readonly fsAdapter?: IFsAdapter
@@ -86,12 +88,12 @@ export class PluginTracker {
 
       // Vérifier la version du format
       if (!this.config.version) {
-        logger.warn('Old config format detected, migrating...')
+        this.logger.warn('Old config format detected, migrating...')
         this.config.version = CONFIG_VERSION
         await this.save()
       }
     } catch (error) {
-      logger.error('Failed to load plugin configuration', error)
+      this.logger.error('Failed to load plugin configuration', error)
       // En cas d'erreur, initialiser une nouvelle config
       this.config = {
         version: CONFIG_VERSION,
@@ -115,7 +117,7 @@ export class PluginTracker {
       const content = JSON.stringify(this.config, null, 2)
       await writeFileContent(this.configPath, content, 'utf-8', this.fsAdapter)
     } catch (error) {
-      logger.error('Failed to save plugin configuration', error)
+      this.logger.error('Failed to save plugin configuration', error)
       throw error
     }
   }
@@ -170,7 +172,7 @@ export class PluginTracker {
 
     // Vérifier si déjà installé
     if (this.isInstalled(plugin.name)) {
-      logger.warn(`Plugin ${plugin.name} is already marked as installed`)
+      this.logger.warn(`Plugin ${plugin.name} is already marked as installed`)
       return
     }
 
@@ -182,7 +184,7 @@ export class PluginTracker {
     this.config.installedPlugins.push(installedPlugin)
     await this.save()
 
-    logger.debug(`Marked plugin ${plugin.name} as installed`)
+    this.logger.debug(`Marked plugin ${plugin.name} as installed`)
   }
 
   /**
@@ -198,14 +200,14 @@ export class PluginTracker {
     )
 
     if (index === -1) {
-      logger.warn(`Plugin ${pluginName} not found in installed plugins`)
+      this.logger.warn(`Plugin ${pluginName} not found in installed plugins`)
       return
     }
 
     this.config.installedPlugins.splice(index, 1)
     await this.save()
 
-    logger.debug(`Removed plugin ${pluginName} from installed plugins`)
+    this.logger.debug(`Removed plugin ${pluginName} from installed plugins`)
   }
 
   /**
@@ -230,7 +232,7 @@ export class PluginTracker {
     Object.assign(plugin, updates)
     await this.save()
 
-    logger.debug(`Updated plugin ${pluginName}`)
+    this.logger.debug(`Updated plugin ${pluginName}`)
   }
 
   /**
@@ -244,7 +246,7 @@ export class PluginTracker {
     }
     await this.save()
 
-    logger.info('Reset plugin configuration')
+    this.logger.info('Reset plugin configuration')
   }
 
   /**

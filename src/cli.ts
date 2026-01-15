@@ -2,6 +2,10 @@
 
 import { Command } from 'commander'
 import { version } from '../package.json'
+import { initializeCLILogging } from './utils/logger-provider.js'
+
+// Enable CLI logging at startup
+initializeCLILogging()
 
 const program = new Command()
 

@@ -9,11 +9,9 @@ import type {
 import type { IFs } from 'memfs'
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { CompatibilityValidator } from './validator.js'
-import type { ConfigWriter } from './config-writer.js'
 import type { BackupManager } from './backup-manager.js'
 import { PluginTracker } from './plugin-tracker.js'
-import { installPackages } from '../utils/package-manager.js'
-import { logger } from '../utils/logger.js'
+import { getModuleLogger } from '../utils/logger-provider.js'
 
 /**
  * Résultat de la résolution des dépendances
@@ -50,22 +48,19 @@ interface ResolvedPlugins {
  */
 export class Installer {
   private tracker: PluginTracker
+  private logger = getModuleLogger()
 
   /**
    * @param ctx - Contexte du projet détecté
    * @param validator - Validateur de compatibilité
-   * @param writer - Writer de configuration
    * @param backupManager - Gestionnaire de backups
    * @param fs - Système de fichiers optionnel (par défaut: filesystem réel via memfs.useAsNodeFs)
    */
   constructor(
     private readonly ctx: ProjectContext,
     private readonly validator: CompatibilityValidator,
-    // @ts-expect-error - writer will be used in future versions for plugin configuration
-    private readonly writer: ConfigWriter,
     private readonly backupManager: BackupManager,
     // fs parameter reserved for future memfs integration in Phase 3 Week 7
-
     _fs?: IFs
   ) {
     this.tracker = new PluginTracker(ctx.projectRoot, ctx.fsAdapter)
@@ -92,7 +87,7 @@ export class Installer {
     options?: { skipPackageInstall?: boolean }
   ): Promise<InstallationReport> {
     const startTime = Date.now()
-    logger.info(`Starting installation of ${plugins.length} plugin(s)`)
+    this.logger.info(`Starting installation of ${plugins.length} plugin(s)`)
 
     try {
       // 0. Charger le tracker
@@ -106,10 +101,10 @@ export class Installer {
         const isInstalled = isTracked || isDetected
 
         if (isInstalled) {
-          logger.info(`${p.displayName} is already installed, skipping...`)
+          this.logger.info(`${p.displayName} is already installed, skipping...`)
           // Si détecté mais pas tracké, l'ajouter au tracker
           if (isDetected && !isTracked) {
-            logger.debug(
+            this.logger.debug(
               `${p.displayName} detected but not tracked, adding to tracker...`
             )
             try {
@@ -124,7 +119,7 @@ export class Installer {
                 },
               })
             } catch (error) {
-              logger.warn(
+              this.logger.warn(
                 `Failed to add ${p.displayName} to tracker: ${error instanceof Error ? error.message : String(error)}`
               )
             }
@@ -140,7 +135,7 @@ export class Installer {
       )
 
       if (notInstalled.length === 0) {
-        logger.info('All plugins are already installed')
+        this.logger.info('All plugins are already installed')
         return {
           success: true,
           duration: Date.now() - startTime,
@@ -162,7 +157,7 @@ export class Installer {
       }
 
       // 1. Validation
-      logger.debug('Validating plugins compatibility...')
+      this.logger.debug('Validating plugins compatibility...')
       const validationResult = this.validator.validate(notInstalled, this.ctx)
 
       if (!validationResult.valid) {
@@ -175,33 +170,34 @@ export class Installer {
       }
 
       if (validationResult.warnings.length > 0) {
-        logger.warn(
+        this.logger.warn(
           `Found ${validationResult.warnings.length} warning(s):`,
           validationResult.warnings.map((w) => w.message)
         )
       }
 
       // 2. Résolution des dépendances
-      logger.debug('Resolving dependencies...')
+      this.logger.debug('Resolving dependencies...')
       const resolved = this.resolveDependencies(notInstalled)
       const allPlugins = resolved.plugins
 
       if (resolved.autoInstalled.length > 0) {
-        logger.info(
+        this.logger.info(
           `Auto-installing ${resolved.autoInstalled.length} required dependency(ies): ${resolved.autoInstalled.join(', ')}`
         )
       }
 
       // 3. Pre-install hooks
-      logger.debug('Running pre-install hooks...')
+      this.logger.debug('Running pre-install hooks...')
       await this.runPreInstallHooks(allPlugins)
 
       // 4. Installation des packages (sauf si skipPackageInstall)
+      let installResults: InstallResult[] = []
       if (options?.skipPackageInstall) {
-        logger.info('Skipping package installation (--no-install mode)')
+        this.logger.info('Skipping package installation (--no-install mode)')
       } else {
-        logger.debug('Installing packages...')
-        const installResults = await this.installPackages(allPlugins)
+        this.logger.debug('Installing packages...')
+        installResults = await this.installPackages(allPlugins)
 
         // Vérifier les échecs d'installation
         const failedInstalls = installResults.filter((r) => !r.success)
@@ -213,13 +209,13 @@ export class Installer {
       }
 
       // 5. Configuration (séquentielle pour respecter l'ordre)
-      logger.debug('Configuring plugins...')
+      this.logger.debug('Configuring plugins...')
       const configResults: ConfigResult[] = []
       const filesCreated: FileOperation[] = []
 
       for (const plugin of allPlugins) {
         try {
-          logger.debug(`Configuring ${plugin.displayName}...`)
+          this.logger.debug(`Configuring ${plugin.displayName}...`)
           const configResult = await plugin.configure(this.ctx)
           configResults.push(configResult)
           filesCreated.push(...(configResult.files || []))
@@ -232,7 +228,7 @@ export class Installer {
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error)
-          logger.error(
+          this.logger.error(
             `Configuration failed for ${plugin.displayName}: ${errorMessage}`
           )
           throw error
@@ -240,20 +236,30 @@ export class Installer {
       }
 
       // 6. Post-install hooks
-      logger.debug('Running post-install hooks...')
+      this.logger.debug('Running post-install hooks...')
       await this.runPostInstallHooks(allPlugins)
 
       // 7. Marquer les plugins comme installés
-      logger.debug('Tracking installed plugins...')
+      this.logger.debug('Tracking installed plugins...')
+      const installResultsByName = new Map<string, InstallResult>()
+      for (let i = 0; i < allPlugins.length; i++) {
+        const plugin = allPlugins[i]
+        const result = installResults[i]
+        if (plugin && result) {
+          installResultsByName.set(plugin.name, result)
+        }
+      }
+
       for (const plugin of allPlugins) {
+        const installResult = installResultsByName.get(plugin.name)
         await this.tracker.addPlugin({
           name: plugin.name,
           displayName: plugin.displayName,
           category: plugin.category,
           version: plugin.version,
           packages: {
-            dependencies: [],
-            devDependencies: [],
+            dependencies: installResult?.packages.dependencies ?? [],
+            devDependencies: installResult?.packages.devDependencies ?? [],
           },
         })
       }
@@ -262,7 +268,7 @@ export class Installer {
       const duration = Date.now() - startTime
       const installed = allPlugins.map((p) => p.name)
 
-      logger.info(
+      this.logger.info(
         `Successfully installed ${installed.length} plugin(s) in ${duration}ms`
       )
 
@@ -276,10 +282,10 @@ export class Installer {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
-      logger.error(`Installation failed: ${errorMessage}`)
+      this.logger.error(`Installation failed: ${errorMessage}`)
 
       // Rollback
-      logger.debug('Rolling back changes...')
+      this.logger.debug('Rolling back changes...')
       try {
         await this.rollback(plugins)
       } catch (rollbackError) {
@@ -287,7 +293,7 @@ export class Installer {
           rollbackError instanceof Error
             ? rollbackError.message
             : String(rollbackError)
-        logger.error(`Rollback failed: ${rollbackMessage}`)
+        this.logger.error(`Rollback failed: ${rollbackMessage}`)
       }
 
       const duration = Date.now() - startTime
@@ -332,11 +338,13 @@ export class Installer {
         for (const required of plugin.requires) {
           if (!pluginMap.has(required)) {
             // TODO: Charger le plugin depuis le registry
-            // Pour l'instant, on log juste un warning
-            logger.warn(
+            // For now, just log a warning
+            this.logger.warn(
               `Plugin ${plugin.name} requires ${required}, but it's not available in the registry`
             )
-            // En production, on chargerait le plugin depuis le registry
+            // Future enhancement (Phase 3 Week 8): Auto-load missing dependencies from registry
+            // This would require integration with the central plugin registry service.
+            // Tracked in GitHub Issues: https://github.com/issue/auto-plugin-loading
             // const requiredPlugin = getPluginById(required)
             // if (requiredPlugin) {
             //   pluginMap.set(required, requiredPlugin)
@@ -371,7 +379,7 @@ export class Installer {
       try {
         // Vérifier si déjà installé
         if (plugin.detect && (await plugin.detect(this.ctx))) {
-          logger.debug(`${plugin.displayName} is already installed`)
+          this.logger.debug(`${plugin.displayName} is already installed`)
           results.push({
             packages: {},
             success: true,
@@ -380,73 +388,20 @@ export class Installer {
           continue
         }
 
-        // Pre-install hook
-        if (plugin.preInstall) {
-          await plugin.preInstall(this.ctx)
-        }
-
         // Installation
         const result = await plugin.install(this.ctx)
-
-        // Post-install hook
-        if (plugin.postInstall) {
-          await plugin.postInstall(this.ctx)
-        }
 
         results.push(result)
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error)
-        logger.error(`Failed to install ${plugin.displayName}: ${errorMessage}`)
+        this.logger.error(
+          `Failed to install ${plugin.displayName}: ${errorMessage}`
+        )
         results.push({
           packages: {},
           success: false,
           message: errorMessage,
-        })
-      }
-    }
-
-    // Installer les packages via package manager
-    const allDependencies: string[] = []
-    const allDevDependencies: string[] = []
-
-    for (const result of results) {
-      if (result.success && result.packages) {
-        if (result.packages.dependencies) {
-          allDependencies.push(...result.packages.dependencies)
-        }
-        if (result.packages.devDependencies) {
-          allDevDependencies.push(...result.packages.devDependencies)
-        }
-      }
-    }
-
-    // Installer les dépendances et dev-dépendances en un seul appel
-    // pour éviter les conflits d'écriture du package.json
-    const allPackagesToInstall = [...allDependencies, ...allDevDependencies]
-
-    if (allPackagesToInstall.length > 0) {
-      // Séparer les installations dev et non-dev
-      const depsToInstall = allDependencies
-      const devDepsToInstall = allDevDependencies
-
-      // Installer d'abord les dépendances (non-dev)
-      if (depsToInstall.length > 0) {
-        await installPackages(depsToInstall, {
-          packageManager: this.ctx.packageManager,
-          projectRoot: this.ctx.projectRoot,
-          dev: false,
-          silent: false,
-        })
-      }
-
-      // Puis les dev-dépendances
-      if (devDepsToInstall.length > 0) {
-        await installPackages(devDepsToInstall, {
-          packageManager: this.ctx.packageManager,
-          projectRoot: this.ctx.projectRoot,
-          dev: true,
-          silent: false,
         })
       }
     }
@@ -469,7 +424,7 @@ export class Installer {
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error)
-          logger.warn(
+          this.logger.warn(
             `Pre-install hook failed for ${plugin.displayName}: ${errorMessage}`
           )
         }
@@ -492,7 +447,7 @@ export class Installer {
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error)
-          logger.warn(
+          this.logger.warn(
             `Post-install hook failed for ${plugin.displayName}: ${errorMessage}`
           )
         }
@@ -508,18 +463,18 @@ export class Installer {
    * @internal
    */
   private async rollback(plugins: Plugin[]): Promise<void> {
-    logger.debug('Starting rollback...')
+    this.logger.debug('Starting rollback...')
 
     // Rollback des plugins (dans l'ordre inverse)
     for (const plugin of plugins.reverse()) {
       if (plugin.rollback) {
         try {
           await plugin.rollback(this.ctx)
-          logger.debug(`Rolled back ${plugin.displayName}`)
+          this.logger.debug(`Rolled back ${plugin.displayName}`)
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error)
-          logger.error(
+          this.logger.error(
             `Rollback failed for ${plugin.displayName}: ${errorMessage}`
           )
         }
@@ -529,11 +484,11 @@ export class Installer {
     // Restaurer tous les backups
     try {
       await this.backupManager.restoreAll()
-      logger.debug('Restored all file backups')
+      this.logger.debug('Restored all file backups')
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
-      logger.error(`Failed to restore backups: ${errorMessage}`)
+      this.logger.error(`Failed to restore backups: ${errorMessage}`)
     }
   }
 }

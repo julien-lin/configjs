@@ -1,12 +1,15 @@
 import type { CLIOptions } from '../../types/index.js'
 import type { ProjectContext, Plugin, Framework } from '../../types/index.js'
 import type { SupportedLanguage } from '../i18n/types.js'
-import { pluginRegistry } from '../../plugins/registry.js'
+import {
+  getRecommendedPlugins,
+  pluginRegistry,
+} from '../../plugins/registry.js'
 import { promptLanguage } from '../prompts/language.js'
 import { promptPluginSelection } from '../prompts/select-plugins.js'
 import { promptConfirmation } from '../prompts/confirm.js'
 import { getTranslations } from '../i18n/index.js'
-import { logger } from '../../utils/logger.js'
+import { LogLevel, logger } from '../../utils/logger.js'
 import { Installer } from '../../core/installer.js'
 import {
   CompatibilityValidator,
@@ -102,8 +105,12 @@ export abstract class BaseFrameworkCommand {
    */
   protected displayFrameworkMismatchWarning(
     ctx: ProjectContext,
-    _t: ReturnType<typeof getTranslations>
+    _t: ReturnType<typeof getTranslations>,
+    silent: boolean
   ): void {
+    if (silent) {
+      return
+    }
     const framework = this.getFramework()
     const metadata = getFrameworkMetadata(framework)
 
@@ -129,8 +136,12 @@ export abstract class BaseFrameworkCommand {
    */
   protected displayDetectedContext(
     ctx: ProjectContext,
-    t: ReturnType<typeof getTranslations>
+    t: ReturnType<typeof getTranslations>,
+    silent: boolean
   ): void {
+    if (silent) {
+      return
+    }
     console.log(
       pc.green(`   ✓ ${t.detection.framework}: `) +
         pc.bold(`${ctx.framework} ${pc.gray(ctx.frameworkVersion)}`)
@@ -169,11 +180,12 @@ export abstract class BaseFrameworkCommand {
     language: SupportedLanguage,
     options: CLIOptions
   ): Promise<Plugin[]> {
-    if (options.yes) {
-      // Mode --yes : utiliser les recommandations par défaut
-      logger.info('Using default recommendations (--yes mode)')
-      // TODO: Implémenter la logique de recommandations par défaut
-      return []
+    if (options.yes || options.silent) {
+      const recommended = getRecommendedPlugins(ctx)
+      if (!options.silent) {
+        logger.info('Using default recommendations (--yes mode)')
+      }
+      return recommended
     }
 
     // Mode interactif : prompts
@@ -212,6 +224,10 @@ export abstract class BaseFrameworkCommand {
   ): boolean {
     if (!options.dryRun) {
       return false
+    }
+
+    if (options.silent) {
+      return true
     }
 
     console.log()
@@ -265,7 +281,12 @@ export abstract class BaseFrameworkCommand {
     const backupManager = new BackupManager()
     const configWriter = new ConfigWriter(backupManager)
     const validator = new CompatibilityValidator(allCompatibilityRules)
-    const installer = new Installer(ctx, validator, configWriter, backupManager)
+    const ctxWithServices: ProjectContext = {
+      ...ctx,
+      backupManager,
+      configWriter,
+    }
+    const installer = new Installer(ctxWithServices, validator, backupManager)
 
     // Mode --no-install : générer uniquement les configs
     if (options.install === false) {
@@ -315,12 +336,23 @@ export abstract class BaseFrameworkCommand {
    */
   async execute(options: CLIOptions): Promise<void> {
     try {
+      // 0. Logger level
+      if (options.silent) {
+        logger.setLevel(LogLevel.SILENT)
+      } else if (options.debug) {
+        logger.setLevel(LogLevel.DEBUG)
+      } else {
+        logger.setLevel(LogLevel.INFO)
+      }
+
       // 1. Sélection de la langue (première question)
-      const language = await promptLanguage()
+      const language = options.silent ? 'en' : await promptLanguage()
       const t = getTranslations(language)
 
-      console.log()
-      console.log(pc.bold(pc.cyan(`🔍 ${t.detection.detecting}`)))
+      if (!options.silent) {
+        console.log()
+        console.log(pc.bold(pc.cyan(`🔍 ${t.detection.detecting}`)))
+      }
 
       // 2. Détection/création du contexte
       const projectRoot = process.cwd()
@@ -328,28 +360,32 @@ export abstract class BaseFrameworkCommand {
 
       // 3. Validation du framework
       if (!this.validateFramework(ctx)) {
-        this.displayFrameworkMismatchWarning(ctx, t)
+        this.displayFrameworkMismatchWarning(ctx, t, Boolean(options.silent))
         return
       }
 
       // 4. Affichage du contexte détecté
-      this.displayDetectedContext(ctx, t)
+      this.displayDetectedContext(ctx, t, Boolean(options.silent))
 
       // 5. Sélection des plugins
       const selectedPlugins = await this.selectPlugins(ctx, language, options)
 
       if (selectedPlugins.length === 0) {
-        console.log()
-        console.log(pc.yellow(`⚠️  ${t.common.selected(0)}`))
-        console.log(pc.gray('Exiting...'))
+        if (!options.silent) {
+          console.log()
+          console.log(pc.yellow(`⚠️  ${t.common.selected(0)}`))
+          console.log(pc.gray('Exiting...'))
+        }
         return
       }
 
-      console.log()
-      console.log(
-        pc.bold(pc.green(`✓ ${t.common.selected(selectedPlugins.length)}`))
-      )
-      console.log()
+      if (!options.silent) {
+        console.log()
+        console.log(
+          pc.bold(pc.green(`✓ ${t.common.selected(selectedPlugins.length)}`))
+        )
+        console.log()
+      }
 
       // 6. Confirmation
       const confirmed = await this.confirmInstallation(
@@ -359,8 +395,10 @@ export abstract class BaseFrameworkCommand {
       )
 
       if (!confirmed) {
-        console.log()
-        console.log(pc.gray(t.common.cancel))
+        if (!options.silent) {
+          console.log()
+          console.log(pc.gray(t.common.cancel))
+        }
         return
       }
 
@@ -375,7 +413,9 @@ export abstract class BaseFrameworkCommand {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
       logger.error(`Fatal error: ${errorMessage}`)
-      console.error('Fatal error:', errorMessage)
+      if (!options.silent) {
+        console.error('Fatal error:', errorMessage)
+      }
       process.exit(1)
     }
   }

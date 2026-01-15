@@ -6,7 +6,7 @@ import type {
   ValidationResult,
   ProjectContext,
 } from '../types/index.js'
-import { logger } from '../utils/logger.js'
+import { getModuleLogger } from '../utils/logger-provider.js'
 import { generateCompatibilityRules } from './compatibility-generator.js'
 import { pluginRegistry } from '../plugins/registry.js'
 
@@ -33,6 +33,8 @@ import { pluginRegistry } from '../plugins/registry.js'
  * ```
  */
 export class CompatibilityValidator {
+  private logger = getModuleLogger()
+
   /**
    * @param rules - Règles de compatibilité à appliquer
    */
@@ -54,7 +56,7 @@ export class CompatibilityValidator {
    * ```
    */
   validate(plugins: Plugin[], ctx?: ProjectContext): ValidationResult {
-    logger.debug(`Validating ${plugins.length} plugin(s)`)
+    this.logger.debug(`Validating ${plugins.length} plugin(s)`)
 
     const pluginNames = new Set(plugins.map((p) => p.name))
 
@@ -154,7 +156,7 @@ export class CompatibilityValidator {
 
     const valid = errors.length === 0
 
-    logger.debug(`Validation result: ${valid ? 'valid' : 'invalid'}`, {
+    this.logger.debug(`Validation result: ${valid ? 'valid' : 'invalid'}`, {
       errors: errors.length,
       warnings: warnings.length,
       suggestions: suggestions.length,

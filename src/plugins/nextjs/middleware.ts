@@ -6,10 +6,15 @@ import type {
   InstallResult,
 } from '../../types/index.js'
 import { Category } from '../../types/index.js'
-import { ConfigWriter } from '../../core/config-writer.js'
-import { BackupManager } from '../../core/backup-manager.js'
 import { checkPathExists, normalizePath } from '../../utils/fs-helpers.js'
-import { logger } from '../../utils/logger.js'
+import { getModuleLogger } from '../../utils/logger-provider.js'
+
+import {
+  getPluginServices,
+  getRollbackManager,
+} from '../utils/plugin-services.js'
+
+const logger = getModuleLogger()
 
 /**
  * Plugin Next.js Middleware
@@ -57,8 +62,7 @@ export const nextjsMiddlewarePlugin: Plugin = {
    * Crée le fichier middleware.ts/js à la racine du projet
    */
   async configure(ctx: ProjectContext): Promise<ConfigResult> {
-    const backupManager = new BackupManager(ctx.fsAdapter)
-    const writer = new ConfigWriter(backupManager, ctx.fsAdapter)
+    const { writer } = getPluginServices(ctx)
 
     const files: ConfigResult['files'] = []
     const projectRoot = ctx.projectRoot
@@ -106,7 +110,7 @@ export const nextjsMiddlewarePlugin: Plugin = {
    * Rollback de la configuration
    */
   async rollback(_ctx: ProjectContext): Promise<void> {
-    const backupManager = new BackupManager(_ctx.fsAdapter)
+    const backupManager = getRollbackManager(_ctx)
     try {
       await backupManager.restoreAll()
       logger.info('Middleware configuration rolled back')

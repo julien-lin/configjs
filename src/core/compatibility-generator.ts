@@ -16,7 +16,9 @@
 
 import type { Plugin, CompatibilityRule } from '../types/index.js'
 import { Category } from '../types/index.js'
-import { logger } from '../utils/logger.js'
+import { getModuleLogger } from '../utils/logger-provider.js'
+
+const logger = getModuleLogger()
 
 /**
  * Génère automatiquement les règles de compatibilité à partir des plugins

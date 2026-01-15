@@ -10,11 +10,13 @@ import { ReactCommand } from '../../../../src/cli/commands/react-command.js'
 import { NextjsCommand } from '../../../../src/cli/commands/nextjs-command.js'
 import { VueCommand } from '../../../../src/cli/commands/vue-command.js'
 import type { ProjectContext, Framework } from '../../../../src/types/index.js'
+import { Category } from '../../../../src/types/index.js'
 import * as languagePrompt from '../../../../src/cli/prompts/language.js'
 import * as detector from '../../../../src/core/detector.js'
 import * as pluginSelection from '../../../../src/cli/prompts/select-plugins.js'
 import * as confirmation from '../../../../src/cli/prompts/confirm.js'
 import * as installer from '../../../../src/core/installer.js'
+import * as registry from '../../../../src/plugins/registry.js'
 
 // Mocks
 vi.mock('../../../../src/cli/prompts/language.js')
@@ -29,6 +31,7 @@ vi.mock('../../../../src/core/backup-manager.js')
 vi.mock('../../../../src/core/validator.js')
 vi.mock('../../../../src/plugins/registry.js', () => ({
   pluginRegistry: [],
+  getRecommendedPlugins: vi.fn(),
 }))
 
 // Mock pour les installers
@@ -201,16 +204,14 @@ describe.each(frameworkTestCases)(
           name: 'test-plugin',
           displayName: 'Test Plugin',
           description: 'Test',
-          category: 'state' as const,
+          category: Category.STATE,
           frameworks: [framework],
           install: vi.fn().mockResolvedValue({ success: true, packages: {} }),
           configure: vi.fn().mockResolvedValue({ success: true, files: [] }),
         },
       ]
 
-      vi.mocked(pluginSelection.promptPluginSelection).mockResolvedValue(
-        mockPlugins as never
-      )
+      vi.mocked(registry.getRecommendedPlugins).mockReturnValue(mockPlugins)
 
       const mockInstall = vi.fn().mockResolvedValue({
         success: true,
@@ -229,6 +230,7 @@ describe.each(frameworkTestCases)(
       try {
         const command = new Command()
         await command.execute({
+          yes: true,
           silent: true,
           install: false,
           debug: true,

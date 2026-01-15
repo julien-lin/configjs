@@ -3,6 +3,8 @@
  */
 
 import type { IFsAdapter } from '../core/fs-adapter.js'
+import type { BackupManager } from '../core/backup-manager.js'
+import type { ConfigWriter } from '../core/config-writer.js'
 
 export type Framework = 'react' | 'vue' | 'svelte' | 'nextjs'
 export type Bundler = 'vite' | 'webpack' | 'cra' | 'rspack' | 'nextjs' | null
@@ -65,6 +67,10 @@ export interface ProjectContext {
 
   // Filesystem adapter (for testing with memfs)
   fsAdapter?: IFsAdapter
+
+  // Shared services (optional, provided by installer)
+  backupManager?: BackupManager
+  configWriter?: ConfigWriter
 }
 
 export interface Plugin {

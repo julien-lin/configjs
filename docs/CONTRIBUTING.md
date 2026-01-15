@@ -6,7 +6,7 @@ Merci de votre intérêt pour contribuer à **confjs** ! 🎉
 
 ### Prérequis
 
-- Node.js ≥ 18.0.0
+- Node.js ≥ 20.0.0
 - npm, yarn, ou pnpm
 - Git
 

@@ -8,11 +8,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { BaseFrameworkCommand } from '../../../../src/cli/commands/base-framework-command.js'
 import type { ProjectContext, Framework } from '../../../../src/types/index.js'
+import { Category } from '../../../../src/types/index.js'
 import * as languagePrompt from '../../../../src/cli/prompts/language.js'
 import * as detector from '../../../../src/core/detector.js'
 import * as pluginSelection from '../../../../src/cli/prompts/select-plugins.js'
 import * as confirmation from '../../../../src/cli/prompts/confirm.js'
 import * as installer from '../../../../src/core/installer.js'
+import * as registry from '../../../../src/plugins/registry.js'
 
 // Mocks
 vi.mock('../../../../src/cli/prompts/language.js')
@@ -27,6 +29,7 @@ vi.mock('../../../../src/core/backup-manager.js')
 vi.mock('../../../../src/core/validator.js')
 vi.mock('../../../../src/plugins/registry.js', () => ({
   pluginRegistry: [],
+  getRecommendedPlugins: vi.fn(),
 }))
 
 // Classe de test concrète
@@ -70,6 +73,7 @@ describe('BaseFrameworkCommand', () => {
     vi.mocked(detector.detectContext).mockResolvedValue(mockContext)
     vi.mocked(pluginSelection.promptPluginSelection).mockResolvedValue([])
     vi.mocked(confirmation.promptConfirmation).mockResolvedValue(true)
+    vi.mocked(registry.getRecommendedPlugins).mockReturnValue([])
   })
 
   afterEach(() => {
@@ -83,8 +87,8 @@ describe('BaseFrameworkCommand', () => {
           name: 'zustand',
           displayName: 'Zustand',
           description: 'State management',
-          category: 'state' as const,
-          frameworks: ['react'],
+          category: Category.STATE,
+          frameworks: ['react'] as Framework[],
           install: vi.fn().mockResolvedValue({ success: true, packages: {} }),
           configure: vi.fn().mockResolvedValue({ success: true, files: [] }),
         },
@@ -134,8 +138,8 @@ describe('BaseFrameworkCommand', () => {
           name: 'zustand',
           displayName: 'Zustand',
           description: 'State management',
-          category: 'state' as const,
-          frameworks: ['react'],
+          category: Category.STATE,
+          frameworks: ['react'] as Framework[],
           install: vi.fn().mockResolvedValue({ success: true, packages: {} }),
           configure: vi.fn().mockResolvedValue({ success: true, files: [] }),
         },
@@ -144,6 +148,7 @@ describe('BaseFrameworkCommand', () => {
       vi.mocked(pluginSelection.promptPluginSelection).mockResolvedValue(
         mockPlugins as never
       )
+      vi.mocked(registry.getRecommendedPlugins).mockReturnValue(mockPlugins)
 
       const mockInstall = vi.fn().mockResolvedValue({
         success: true,
@@ -170,7 +175,11 @@ describe('BaseFrameworkCommand', () => {
         }
       }
 
+      expect(pluginSelection.promptPluginSelection).not.toHaveBeenCalled()
       expect(confirmation.promptConfirmation).not.toHaveBeenCalled()
+      expect(vi.mocked(registry.getRecommendedPlugins)).toHaveBeenCalledWith(
+        mockContext
+      )
     })
 
     it('should skip confirmation with --silent flag', async () => {
@@ -179,8 +188,8 @@ describe('BaseFrameworkCommand', () => {
           name: 'zustand',
           displayName: 'Zustand',
           description: 'State management',
-          category: 'state' as const,
-          frameworks: ['react'],
+          category: Category.STATE,
+          frameworks: ['react'] as Framework[],
           install: vi.fn().mockResolvedValue({ success: true, packages: {} }),
           configure: vi.fn().mockResolvedValue({ success: true, files: [] }),
         },
@@ -189,6 +198,7 @@ describe('BaseFrameworkCommand', () => {
       vi.mocked(pluginSelection.promptPluginSelection).mockResolvedValue(
         mockPlugins as never
       )
+      vi.mocked(registry.getRecommendedPlugins).mockReturnValue(mockPlugins)
 
       const mockInstall = vi.fn().mockResolvedValue({
         success: true,
@@ -215,7 +225,12 @@ describe('BaseFrameworkCommand', () => {
         }
       }
 
+      expect(languagePrompt.promptLanguage).not.toHaveBeenCalled()
+      expect(pluginSelection.promptPluginSelection).not.toHaveBeenCalled()
       expect(confirmation.promptConfirmation).not.toHaveBeenCalled()
+      expect(vi.mocked(registry.getRecommendedPlugins)).toHaveBeenCalledWith(
+        mockContext
+      )
     })
 
     it('should exit gracefully when no plugins selected', async () => {
@@ -233,8 +248,8 @@ describe('BaseFrameworkCommand', () => {
           name: 'zustand',
           displayName: 'Zustand',
           description: 'State management',
-          category: 'state' as const,
-          frameworks: ['react'],
+          category: Category.STATE,
+          frameworks: ['react'] as Framework[],
           install: vi.fn().mockResolvedValue({ success: true, packages: {} }),
           configure: vi.fn().mockResolvedValue({ success: true, files: [] }),
         },
@@ -259,8 +274,8 @@ describe('BaseFrameworkCommand', () => {
           name: 'zustand',
           displayName: 'Zustand',
           description: 'State management',
-          category: 'state' as const,
-          frameworks: ['react'],
+          category: Category.STATE,
+          frameworks: ['react'] as Framework[],
           version: '^5.0.0',
           install: vi.fn().mockResolvedValue({ success: true, packages: {} }),
           configure: vi.fn().mockResolvedValue({ success: true, files: [] }),
@@ -286,8 +301,8 @@ describe('BaseFrameworkCommand', () => {
           name: 'zustand',
           displayName: 'Zustand',
           description: 'State management',
-          category: 'state' as const,
-          frameworks: ['react'],
+          category: Category.STATE,
+          frameworks: ['react'] as Framework[],
           install: vi.fn().mockResolvedValue({ success: true, packages: {} }),
           configure: vi.fn().mockResolvedValue({ success: true, files: [] }),
         },
@@ -354,8 +369,8 @@ describe('BaseFrameworkCommand', () => {
           name: 'zustand',
           displayName: 'Zustand',
           description: 'State management',
-          category: 'state' as const,
-          frameworks: ['react'],
+          category: Category.STATE,
+          frameworks: ['react'] as Framework[],
           install: vi.fn().mockResolvedValue({ success: true, packages: {} }),
           configure: vi.fn().mockResolvedValue({ success: true, files: [] }),
         },
