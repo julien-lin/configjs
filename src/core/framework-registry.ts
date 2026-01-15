@@ -171,6 +171,33 @@ export const frameworkRegistry: Record<Framework, FrameworkMetadata> = {
       folderExists: (name: string) => `svelte.folderExists(${name})`,
     },
   },
+
+  angular: {
+    id: 'angular',
+    displayName: 'Angular',
+    detectPackages: ['@angular/core'],
+    defaultBundler: 'webpack',
+    createCommand: 'npx @angular/cli@latest new',
+    getSetupPrompt: async () => {
+      const { promptAngularSetup } =
+        await import('../cli/prompts/angular-setup.js')
+      return await promptAngularSetup()
+    },
+    createProject: async (options, currentDir, language) => {
+      const { createAngularProject } =
+        await import('../cli/utils/angular-installer.js')
+      return await createAngularProject(
+        options as Parameters<typeof createAngularProject>[0],
+        currentDir,
+        language
+      )
+    },
+    i18nKeys: {
+      noFrameworkDetected: 'angular.noAngularDetected',
+      creating: 'angular.creating',
+      folderExists: (name: string) => `angular.folderExists(${name})`,
+    },
+  },
 }
 
 /**

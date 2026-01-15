@@ -75,6 +75,13 @@ import { skeletonUiPlugin } from './ui/skeleton-ui-builder.js'
 import { dateFnsPlugin } from './utils/date-fns-builder.js'
 import { vueusePlugin } from './utils/vueuse-builder.js'
 
+// Angular plugins
+import { angularRouterPlugin } from './routing/angular-router.js'
+import { ngrxPlugin } from './state/ngrx.js'
+import { angularMaterialPlugin } from './ui/angular-material.js'
+import { jasmineKarmaPlugin } from './testing/jasmine-karma.js'
+import { rxjsPlugin } from './utils/rxjs.js'
+
 /**
  * Registry de tous les plugins disponibles
  */
@@ -113,18 +120,21 @@ export const pluginRegistry: Plugin[] = [
   tanstackRouterPlugin,
   vueRouterPlugin,
   svelteKitPlugin,
+  angularRouterPlugin,
 
   // STATE
   jotaiPlugin,
   piniaPlugin,
   reduxToolkitPlugin,
   zustandPlugin,
+  ngrxPlugin,
 
   // TESTING
   reactTestingLibraryPlugin,
   vueTestingLibraryPlugin,
   vueTestUtilsPlugin,
   svelteTestingLibraryPlugin,
+  jasmineKarmaPlugin,
 
   // TOOLING
   eslintPlugin,
@@ -146,10 +156,12 @@ export const pluginRegistry: Plugin[] = [
   shadcnUiNextjsPlugin,
   vuetifyPlugin,
   skeletonUiPlugin,
+  angularMaterialPlugin,
 
   // UTILS
   dateFnsPlugin,
   vueusePlugin,
+  rxjsPlugin,
 ]
 
 // Reste du code du registry (validate, getPluginById, etc.)

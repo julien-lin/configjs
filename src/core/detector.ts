@@ -60,6 +60,14 @@ function detectFramework(pkg: Record<string, unknown>): {
     }
   }
 
+  // Détection Angular
+  if (deps['@angular/core']) {
+    return {
+      framework: 'angular',
+      version: deps['@angular/core'].replace(/[\^~]/, ''),
+    }
+  }
+
   // Détection React
   if (deps['react']) {
     return {
@@ -96,7 +104,7 @@ function detectFramework(pkg: Record<string, unknown>): {
   }
 
   throw new DetectionError(
-    'No supported framework detected. Supported frameworks: Next.js, React, Vue, Svelte',
+    'No supported framework detected. Supported frameworks: Angular, Next.js, React, Vue, Svelte',
     { dependencies: Object.keys(deps) }
   )
 }
@@ -136,6 +144,21 @@ async function detectBundler(
       return {
         bundler: 'nextjs',
         version: deps['next'].replace(/[\^~]/, ''),
+      }
+    }
+  }
+
+  // Détection Angular (utilise Webpack par défaut avec Angular CLI)
+  if (deps['@angular/core']) {
+    const angularJsonExists = await checkPathExists(
+      join(projectRoot, 'angular.json'),
+      fsAdapter
+    )
+
+    if (angularJsonExists) {
+      return {
+        bundler: 'webpack', // Angular CLI utilise Webpack par défaut
+        version: deps['@angular/core'].replace(/[\^~]/, ''),
       }
     }
   }

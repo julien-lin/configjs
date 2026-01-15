@@ -94,11 +94,12 @@ describe('Framework Registry', () => {
   describe('getAllSupportedFrameworks', () => {
     it('should return all frameworks', () => {
       const frameworks = getAllSupportedFrameworks()
-      expect(frameworks).toHaveLength(4)
+      expect(frameworks).toHaveLength(5)
       expect(frameworks).toContain('react')
       expect(frameworks).toContain('nextjs')
       expect(frameworks).toContain('vue')
       expect(frameworks).toContain('svelte')
+      expect(frameworks).toContain('angular')
     })
 
     it('should return array of Framework type', () => {
@@ -116,10 +117,11 @@ describe('Framework Registry', () => {
       expect(isFrameworkSupported('nextjs')).toBe(true)
       expect(isFrameworkSupported('vue')).toBe(true)
       expect(isFrameworkSupported('svelte')).toBe(true)
+      expect(isFrameworkSupported('angular')).toBe(true)
     })
 
     it('should return false for unsupported frameworks', () => {
-      expect(isFrameworkSupported('angular')).toBe(false)
+      expect(isFrameworkSupported('preact')).toBe(false)
       expect(isFrameworkSupported('solid')).toBe(false)
       expect(isFrameworkSupported('invalid')).toBe(false)
       expect(isFrameworkSupported('')).toBe(false)

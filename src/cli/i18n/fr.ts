@@ -157,4 +157,26 @@ export const fr: Translations = {
     folderExists: (name: string) =>
       `Le dossier "${name}" existe déjà. Veuillez choisir un autre nom.`,
   },
+  angular: {
+    noAngularDetected:
+      '⚠️  Aucun projet Angular détecté dans le répertoire actuel.',
+    proposeSetup: 'Souhaitez-vous créer un nouveau projet Angular ?',
+    projectName: 'Nom du projet',
+    projectNamePlaceholder: 'mon-projet-angular',
+    useTypeScript: 'Utiliser TypeScript ? (recommandé)',
+    creatingProject: 'Création du projet Angular...',
+    installingDependencies: 'Installation des dépendances...',
+    projectCreated: 'Projet Angular créé avec succès !',
+    creating: 'Création du projet Angular...',
+    success: '✅ Projet créé avec succès !',
+    error: '❌ Erreur lors de la création du projet',
+    changingDirectory: 'Changement vers le répertoire du projet...',
+    validation: {
+      empty: 'Le nom du projet ne peut pas être vide',
+      invalid:
+        'Le nom du projet ne peut contenir que des lettres, chiffres, tirets et underscores',
+    },
+    folderExists: (name: string) =>
+      `Le dossier "${name}" existe déjà. Veuillez choisir un autre nom.`,
+  },
 }

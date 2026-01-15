@@ -155,4 +155,26 @@ export const en: Translations = {
     folderExists: (name: string) =>
       `Folder "${name}" already exists. Please choose another name.`,
   },
+  angular: {
+    noAngularDetected:
+      '⚠️  No Angular project detected in the current directory.',
+    proposeSetup: 'Would you like to create a new Angular project?',
+    projectName: 'Project name',
+    projectNamePlaceholder: 'my-angular-project',
+    useTypeScript: 'Use TypeScript? (recommended)',
+    creatingProject: 'Creating Angular project...',
+    installingDependencies: 'Installing dependencies...',
+    projectCreated: 'Angular project created successfully!',
+    creating: 'Creating Angular project...',
+    success: '✅ Project created successfully!',
+    error: '❌ Error creating project',
+    changingDirectory: 'Changing to project directory...',
+    validation: {
+      empty: 'Project name cannot be empty',
+      invalid:
+        'Project name can only contain letters, numbers, dashes and underscores',
+    },
+    folderExists: (name: string) =>
+      `Folder "${name}" already exists. Please choose another name.`,
+  },
 }
