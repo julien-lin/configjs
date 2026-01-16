@@ -1,8 +1,8 @@
 import type {
-    Plugin,
-    ProjectContext,
-    ConfigResult,
-    InstallResult,
+  Plugin,
+  ProjectContext,
+  ConfigResult,
+  InstallResult,
 } from '../../types/index.js'
 import { Category } from '../../types/index.js'
 import { installPackages } from '../../utils/package-manager.js'
@@ -18,64 +18,64 @@ const logger = getModuleLogger()
  * New in Angular 21
  */
 export const angularAriaPlugin: Plugin = {
-    name: '@angular/aria',
-    displayName: 'Angular Aria',
-    description:
-        'Headless accessibility library for managing keyboard navigation and ARIA roles',
-    category: Category.UI,
-    version: '^21.0.0',
+  name: '@angular/aria',
+  displayName: 'Angular Aria',
+  description:
+    'Headless accessibility library for managing keyboard navigation and ARIA roles',
+  category: Category.UI,
+  version: '^21.0.0',
 
-    frameworks: ['angular'],
-    requiresTypeScript: true,
+  frameworks: ['angular'],
+  requiresTypeScript: true,
 
-    detect: (ctx: ProjectContext): boolean => {
-        return ctx.dependencies['@angular/aria'] !== undefined
-    },
+  detect: (ctx: ProjectContext): boolean => {
+    return ctx.dependencies['@angular/aria'] !== undefined
+  },
 
-    async install(ctx: ProjectContext): Promise<InstallResult> {
-        if (this.detect?.(ctx)) {
-            logger.info('@angular/aria is already installed')
-            return {
-                packages: {},
-                success: true,
-                message: '@angular/aria already installed',
-            }
-        }
+  async install(ctx: ProjectContext): Promise<InstallResult> {
+    if (this.detect?.(ctx)) {
+      logger.info('@angular/aria is already installed')
+      return {
+        packages: {},
+        success: true,
+        message: '@angular/aria already installed',
+      }
+    }
 
-        const packages: string[] = ['@angular/aria@^21.0.0']
+    const packages: string[] = ['@angular/aria@^21.0.0']
 
-        try {
-            await installPackages(packages, {
-                dev: false,
-                packageManager: ctx.packageManager,
-                projectRoot: ctx.projectRoot,
-            })
+    try {
+      await installPackages(packages, {
+        dev: false,
+        packageManager: ctx.packageManager,
+        projectRoot: ctx.projectRoot,
+      })
 
-            return {
-                packages: { dependencies: packages },
-                success: true,
-            }
-        } catch (error) {
-            logger.error('Failed to install @angular/aria', error)
-            return {
-                packages: {},
-                success: false,
-                message: `Error installing @angular/aria: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            }
-        }
-    },
+      return {
+        packages: { dependencies: packages },
+        success: true,
+      }
+    } catch (error) {
+      logger.error('Failed to install @angular/aria', error)
+      return {
+        packages: {},
+        success: false,
+        message: `Error installing @angular/aria: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      }
+    }
+  },
 
-    async configure(ctx: ProjectContext): Promise<ConfigResult> {
-        try {
-            const componentsDir = resolve(ctx.projectRoot, 'src/app/components')
-            await fs.mkdir(componentsDir, { recursive: true })
+  async configure(ctx: ProjectContext): Promise<ConfigResult> {
+    try {
+      const componentsDir = resolve(ctx.projectRoot, 'src/app/components')
+      await fs.mkdir(componentsDir, { recursive: true })
 
-            // Create accessible button component with Aria attributes
-            const accessibleButtonPath = resolve(
-                componentsDir,
-                'accessible-button.component.ts'
-            )
-            const accessibleButtonContent = `import { Component, Input } from '@angular/core'
+      // Create accessible button component with Aria attributes
+      const accessibleButtonPath = resolve(
+        componentsDir,
+        'accessible-button.component.ts'
+      )
+      const accessibleButtonContent = `import { Component, Input } from '@angular/core'
 import { NgIf } from '@angular/common'
 
 @Component({
@@ -108,14 +108,14 @@ export class AccessibleButtonComponent {
   @Input() disabled = false
 }
 `
-            await fs.writeFile(accessibleButtonPath, accessibleButtonContent, 'utf-8')
+      await fs.writeFile(accessibleButtonPath, accessibleButtonContent, 'utf-8')
 
-            // Create accessible navigation component
-            const accessibleNavPath = resolve(
-                componentsDir,
-                'accessible-nav.component.ts'
-            )
-            const accessibleNavContent = `import { Component } from '@angular/core'
+      // Create accessible navigation component
+      const accessibleNavPath = resolve(
+        componentsDir,
+        'accessible-nav.component.ts'
+      )
+      const accessibleNavContent = `import { Component } from '@angular/core'
 import { NgFor } from '@angular/common'
 import { RouterLink, RouterLinkActive } from '@angular/router'
 
@@ -166,33 +166,33 @@ export class AccessibleNavComponent {
   }
 }
 `
-            await fs.writeFile(accessibleNavPath, accessibleNavContent, 'utf-8')
+      await fs.writeFile(accessibleNavPath, accessibleNavContent, 'utf-8')
 
-            logger.success('Angular Aria configuration completed')
-            logger.info(
-                'Created: components/accessible-button.component.ts and accessible-nav.component.ts'
-            )
+      logger.success('Angular Aria configuration completed')
+      logger.info(
+        'Created: components/accessible-button.component.ts and accessible-nav.component.ts'
+      )
 
-            return {
-                files: [
-                    {
-                        type: 'create',
-                        path: 'src/app/components/accessible-button.component.ts',
-                    },
-                    {
-                        type: 'create',
-                        path: 'src/app/components/accessible-nav.component.ts',
-                    },
-                ],
-                success: true,
-            }
-        } catch (error) {
-            logger.error('Failed to configure Angular Aria', error)
-            return {
-                files: [],
-                success: false,
-                message: `Error configuring Angular Aria: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            }
-        }
-    },
+      return {
+        files: [
+          {
+            type: 'create',
+            path: 'src/app/components/accessible-button.component.ts',
+          },
+          {
+            type: 'create',
+            path: 'src/app/components/accessible-nav.component.ts',
+          },
+        ],
+        success: true,
+      }
+    } catch (error) {
+      logger.error('Failed to configure Angular Aria', error)
+      return {
+        files: [],
+        success: false,
+        message: `Error configuring Angular Aria: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      }
+    }
+  },
 }
