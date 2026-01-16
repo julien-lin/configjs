@@ -56,7 +56,7 @@ export async function validateAngularSetup(
       result.isValid = false
       result.errors.push(
         '❌ Vitest and Karma cannot coexist. Choose one testing framework.' +
-        '\n   → Run: npm uninstall karma karma-jasmine karma-chrome-launcher'
+          '\n   → Run: npm uninstall karma karma-jasmine karma-chrome-launcher'
       )
     }
 
@@ -75,8 +75,8 @@ export async function validateAngularSetup(
     if (hasZoneless && hasZoneJs) {
       result.warnings.push(
         '⚠️  Zoneless mode enabled but zone.js still in package.json.' +
-        '\n   → This will cause unexpected behavior.' +
-        '\n   → Remove zone.js: npm uninstall zone.js'
+          '\n   → This will cause unexpected behavior.' +
+          '\n   → Remove zone.js: npm uninstall zone.js'
       )
     }
 
@@ -93,8 +93,8 @@ export async function validateAngularSetup(
     if (hasNgrxSignals && hasNgrxStore) {
       result.warnings.push(
         '⚠️  Both @ngrx/signals and @ngrx/store detected.' +
-        '\n   → Avoid mixing Signal Store with Redux Store.' +
-        '\n   → Consider removing @ngrx/store if using Signal Store.'
+          '\n   → Avoid mixing Signal Store with Redux Store.' +
+          '\n   → Consider removing @ngrx/store if using Signal Store.'
       )
       result.suggestions.push(
         '💡 Migrate: Remove @ngrx/store and use Signal Store exclusively'
@@ -109,8 +109,8 @@ export async function validateAngularSetup(
       if (oldLibraries.length > 0) {
         result.warnings.push(
           '⚠️  Detected libraries incompatible with Zoneless:' +
-          `\n   ${oldLibraries.map((lib) => `→ ${lib}`).join('\n   ')}` +
-          '\n   These libraries expect zone.js. Consider upgrading or keeping zone.js.'
+            `\n   ${oldLibraries.map((lib) => `→ ${lib}`).join('\n   ')}` +
+            '\n   These libraries expect zone.js. Consider upgrading or keeping zone.js.'
         )
         result.suggestions.push(
           '💡 Either: 1) Upgrade old libraries, or 2) Revert to zone.js'
@@ -125,7 +125,7 @@ export async function validateAngularSetup(
     if (angularVersion.major < 21) {
       result.errors.push(
         `❌ Angular ${angularVersion.major}.${angularVersion.minor} detected. ` +
-        'Angular 21+ required for this configuration.'
+          'Angular 21+ required for this configuration.'
       )
       result.isValid = false
     } else if (angularVersion.major === 21) {
@@ -152,7 +152,7 @@ export async function validateAngularSetup(
     } else {
       result.warnings.push(
         `⚠️  TypeScript ${tsVersion.major}.${tsVersion.minor} detected. ` +
-        'Recommend upgrading to TS 5+ for better type inference.'
+          'Recommend upgrading to TS 5+ for better type inference.'
       )
     }
 
