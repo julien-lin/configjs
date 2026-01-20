@@ -6,6 +6,14 @@ import { getTranslations } from '../i18n/index.js'
 import { SpinnerManager } from '../ui/spinner.js'
 
 /**
+ * Validates project name to prevent shell injection
+ */
+function validateProjectName(name: string): boolean {
+  if (!/^[a-zA-Z0-9._-]+$/.test(name)) return false
+  return !name.includes('..') && !name.includes('/') && !name.includes('\\')
+}
+
+/**
  * Crée un nouveau projet Angular
  */
 export async function createAngularProject(
@@ -15,6 +23,11 @@ export async function createAngularProject(
 ): Promise<string> {
   const t = getTranslations(language)
   const spinner = new SpinnerManager()
+
+  // SECURITY: Validate project name to prevent shell injection
+  if (!validateProjectName(options.projectName)) {
+    throw new Error(`Invalid project name: ${options.projectName}`)
+  }
 
   const projectPath = resolve(currentDir, options.projectName)
 
@@ -41,6 +54,7 @@ export async function createAngularProject(
       const child = spawn('npx', args, {
         cwd: currentDir,
         stdio: 'pipe',
+        shell: false,
       })
 
       child.on('error', reject)
