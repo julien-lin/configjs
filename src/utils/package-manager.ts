@@ -8,6 +8,13 @@ import {
   validatePackageNames,
   getPackageValidationErrorMessage,
 } from '../core/package-validator.js'
+import {
+  withTimeout,
+  getTimeoutErrorMessage,
+  OPERATION_TIMEOUTS,
+  RESOURCE_LIMITS,
+  type TimeoutError,
+} from '../core/timeout-manager.js'
 
 const logger = getModuleLogger()
 
@@ -151,9 +158,11 @@ export async function installPackages(
       throw new Error('Command is empty')
     }
 
-    const result = await execa(cmd, args, {
+    // Execute with timeout protection and resource limits
+    const resultPromise = execa(cmd, args, {
       cwd,
       stdio: silent ? 'pipe' : 'inherit',
+      maxBuffer: RESOURCE_LIMITS.MAX_BUFFER,
       env: {
         ...process.env,
         // Désactiver les prompts interactifs
@@ -161,6 +170,12 @@ export async function installPackages(
         YARN_ENABLE_IMMUTABLE_INSTALLS: 'false',
       },
     })
+
+    const result = await withTimeout(
+      resultPromise,
+      OPERATION_TIMEOUTS.PACKAGE_INSTALL,
+      `npm install (${packages.length} packages)`
+    )
 
     if (result.exitCode !== 0) {
       throw new Error(`Installation failed with exit code ${result.exitCode}`)
@@ -172,7 +187,14 @@ export async function installPackages(
       packages,
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
+    const isTimeout =
+      error instanceof Error && 'code' in error && error.code === 'TIMEOUT'
+    const errorMessage = isTimeout
+      ? getTimeoutErrorMessage(error as TimeoutError, 'Package installation')
+      : error instanceof Error
+        ? error.message
+        : String(error)
+
     logger.error(`Failed to install packages: ${errorMessage}`)
 
     return {
@@ -236,10 +258,18 @@ export async function uninstallPackages(
       throw new Error('Command is empty')
     }
 
-    const result = await execa(cmd, args, {
+    // Execute with timeout protection and resource limits
+    const resultPromise = execa(cmd, args, {
       cwd,
       stdio: 'inherit',
+      maxBuffer: RESOURCE_LIMITS.MAX_BUFFER,
     })
+
+    const result = await withTimeout(
+      resultPromise,
+      OPERATION_TIMEOUTS.PACKAGE_INSTALL,
+      `npm uninstall (${packages.length} packages)`
+    )
 
     if (result.exitCode !== 0) {
       throw new Error(`Uninstallation failed with exit code ${result.exitCode}`)
@@ -251,7 +281,14 @@ export async function uninstallPackages(
       packages,
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
+    const isTimeout =
+      error instanceof Error && 'code' in error && error.code === 'TIMEOUT'
+    const errorMessage = isTimeout
+      ? getTimeoutErrorMessage(error as TimeoutError, 'Package uninstallation')
+      : error instanceof Error
+        ? error.message
+        : String(error)
+
     logger.error(`Failed to uninstall packages: ${errorMessage}`)
 
     return {
@@ -296,10 +333,18 @@ export async function runScript(
       throw new Error('Command is empty')
     }
 
-    const result = await execa(cmd, args, {
+    // Execute with timeout protection and resource limits
+    const resultPromise = execa(cmd, args, {
       cwd,
       stdio: 'inherit',
+      maxBuffer: RESOURCE_LIMITS.MAX_BUFFER,
     })
+
+    const result = await withTimeout(
+      resultPromise,
+      OPERATION_TIMEOUTS.COMMAND_EXEC,
+      `run script "${script}"`
+    )
 
     if (result.exitCode !== 0) {
       throw new Error(`Script failed with exit code ${result.exitCode}`)
@@ -308,7 +353,14 @@ export async function runScript(
     logger.success(`Script '${script}' completed successfully`)
     return { success: true }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
+    const isTimeout =
+      error instanceof Error && 'code' in error && error.code === 'TIMEOUT'
+    const errorMessage = isTimeout
+      ? getTimeoutErrorMessage(error as TimeoutError, `Script "${script}"`)
+      : error instanceof Error
+        ? error.message
+        : String(error)
+
     logger.error(`Failed to run script '${script}': ${errorMessage}`)
 
     return {
