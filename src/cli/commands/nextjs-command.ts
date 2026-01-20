@@ -52,8 +52,7 @@ export class NextjsCommand extends BaseFrameworkCommand {
           language
         )
 
-        // Changer vers le nouveau répertoire
-        process.chdir(newProjectPath)
+        // Use the new project path (no process.chdir needed)
         projectRoot = newProjectPath
 
         console.log()

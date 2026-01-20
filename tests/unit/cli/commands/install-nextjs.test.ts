@@ -128,8 +128,6 @@ describe('NextjsCommand', () => {
       '/tmp/my-nextjs-app'
     )
 
-    const mockChdir = vi.spyOn(process, 'chdir').mockImplementation(() => {})
-
     const command = new NextjsCommand()
     await command.execute({})
 
@@ -139,7 +137,6 @@ describe('NextjsCommand', () => {
       expect.any(String),
       'fr'
     )
-    expect(mockChdir).toHaveBeenCalledWith('/tmp/my-nextjs-app')
     expect(detector.detectContext).toHaveBeenCalledTimes(2)
   })
 
