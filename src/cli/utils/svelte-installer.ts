@@ -1,10 +1,18 @@
-import { execSync } from 'child_process'
+import { spawn } from 'child_process'
 import { join } from 'path'
 import type { SvelteSetupOptions } from '../prompts/svelte-setup.js'
 import type { SupportedLanguage } from '../i18n/types.js'
 import { getTranslations } from '../i18n/index.js'
 import pc from 'picocolors'
 import { checkPathExists } from '../../utils/fs-helpers.js'
+
+/**
+ * Validates project name to prevent shell injection
+ */
+function validateProjectName(name: string): boolean {
+  if (!/^[a-zA-Z0-9._-]+$/.test(name)) return false
+  return !name.includes('..') && !name.includes('/') && !name.includes('\\')
+}
 
 /**
  * Crée un nouveau projet Svelte avec Vite
@@ -26,6 +34,11 @@ export async function createSvelteProject(
   const t = getTranslations(language)
   const projectPath = join(currentDir, options.projectName)
 
+  // SECURITY: Validate project name to prevent shell injection
+  if (!validateProjectName(options.projectName)) {
+    throw new Error(`Invalid project name: ${options.projectName}`)
+  }
+
   // Vérifier que le répertoire n'existe pas déjà
   if (await checkPathExists(projectPath)) {
     throw new Error(
@@ -41,14 +54,38 @@ export async function createSvelteProject(
   console.log()
 
   try {
-    // Créer le projet Svelte
+    // Créer le projet Svelte - SECURE: use spawn with array args, shell: false
     const templateSuffix = options.useTypeScript ? '' : '-js'
-    const createCommand = `npm create svelte@latest ${options.projectName} -- --template skeleton${templateSuffix} --no-install`
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn(
+        'npm',
+        [
+          'create',
+          'svelte@latest',
+          options.projectName,
+          '--',
+          '--template',
+          `skeleton${templateSuffix}`,
+          '--no-install',
+        ],
+        {
+          cwd: currentDir,
+          stdio: 'inherit',
+          shell: false,
+        }
+      )
 
-    execSync(createCommand, {
-      cwd: currentDir,
-      stdio: 'inherit',
-      shell: process.platform === 'win32' ? 'cmd.exe' : '/bin/sh',
+      child.on('error', (error: unknown) => {
+        reject(error instanceof Error ? error : new Error(String(error)))
+      })
+
+      child.on('exit', (code: number | null) => {
+        if (code === 0) {
+          resolve()
+        } else {
+          reject(new Error(`npm create svelte failed with code ${code}`))
+        }
+      })
     })
 
     // Installer les dépendances
@@ -60,9 +97,24 @@ export async function createSvelteProject(
     )
     console.log()
 
-    execSync('npm install', {
-      cwd: projectPath,
-      stdio: 'inherit',
+    await new Promise<void>((resolve, reject) => {
+      const child = spawn('npm', ['install'], {
+        cwd: projectPath,
+        stdio: 'inherit',
+        shell: false,
+      })
+
+      child.on('error', (error: unknown) => {
+        reject(error instanceof Error ? error : new Error(String(error)))
+      })
+
+      child.on('exit', (code: number | null) => {
+        if (code === 0) {
+          resolve()
+        } else {
+          reject(new Error(`npm install failed with code ${code}`))
+        }
+      })
     })
 
     console.log()
@@ -75,11 +127,8 @@ export async function createSvelteProject(
 
     return projectPath
   } catch (error) {
-    console.error(
-      pc.red(
-        `❌ Failed to create Svelte project: ${error instanceof Error ? error.message : String(error)}`
-      )
-    )
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    console.error(pc.red(`❌ Failed to create Svelte project: ${errorMsg}`))
     throw error
   }
 }
