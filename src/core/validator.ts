@@ -89,10 +89,10 @@ export class CompatibilityValidator {
 
     for (const violation of exclusivityViolations) {
       if (!violation.plugins) continue
+      const plugins = violation.plugins
       const rule = applicableRules.find(
         (r) =>
-          r.type === 'EXCLUSIVE' &&
-          violation.plugins.every((p) => r.plugins?.includes(p))
+          r.type === 'EXCLUSIVE' && plugins.every((p) => r.plugins?.includes(p))
       )
       if (rule?.severity === 'warning') {
         exclusivityWarnings.push(violation)
@@ -105,16 +105,18 @@ export class CompatibilityValidator {
     const conflictErrors: ValidationError[] = []
     const conflictWarnings: ValidationWarning[] = []
 
-    for (const conflict of conflictResults) {
-      const rule = applicableRules.find(
-        (r) =>
-          r.type === 'CONFLICT' &&
-          r.plugins?.every((p) => conflict.plugins?.includes(p))
-      )
-      if (rule?.severity === 'error') {
-        conflictErrors.push(conflict)
+    for (const rule of conflictResults) {
+      // Convert CompatibilityRule to ValidationError/Warning
+      const error: ValidationError = {
+        plugin: rule.plugin,
+        plugins: rule.plugins,
+        message: rule.reason,
+        type: rule.type,
+      }
+      if (rule.severity === 'error') {
+        conflictErrors.push(error)
       } else {
-        conflictWarnings.push(conflict)
+        conflictWarnings.push(error)
       }
     }
 
@@ -128,6 +130,7 @@ export class CompatibilityValidator {
     const frameworkWarnings: ValidationWarning[] = []
 
     for (const conflict of frameworkConflicts) {
+      if (!conflict.plugins) continue
       const rule = applicableRules.find(
         (r) =>
           r.type === 'CONFLICT' &&

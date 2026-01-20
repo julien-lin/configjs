@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import type { ProjectContext } from '../../types/index.js'
+import type { ProjectContext } from '../../src/types/index.js'
 import { Installer } from '../../src/core/installer.js'
 import { SnapshotManager } from '../../src/core/snapshot-manager.js'
 import {
@@ -8,6 +8,8 @@ import {
 } from '../../src/core/transaction-log.js'
 import { BackupManager } from '../../src/core/backup-manager.js'
 import { CompatibilityValidator } from '../../src/core/validator.js'
+import { generateCompatibilityRules } from '../../src/core/compatibility-generator.js'
+import { pluginRegistry } from '../../src/plugins/registry.js'
 
 /**
  * Test suite for atomic installation and rollback scenarios
@@ -32,16 +34,25 @@ describe('Atomic Installation & Snapshot System', () => {
     projectContext = {
       projectRoot: '/tmp/test-project',
       framework: 'react',
+      frameworkVersion: '18.0.0',
+      bundler: 'vite',
+      bundlerVersion: '5.0.0',
+      typescript: true,
       packageManager: 'npm',
+      lockfile: 'package-lock.json',
+      srcDir: '/tmp/test-project/src',
+      publicDir: '/tmp/test-project/public',
+      os: 'linux',
       nodeVersion: '18.0.0',
-      hasWorkspace: false,
-      monorepoRoot: undefined,
-      localPlugins: [],
+      dependencies: {},
+      devDependencies: {},
+      hasGit: false,
       fsAdapter: undefined,
     }
 
     // Initialize components
-    validator = new CompatibilityValidator()
+    const rules = generateCompatibilityRules(pluginRegistry)
+    validator = new CompatibilityValidator(rules)
     backupManager = new BackupManager()
     snapshotManager = new SnapshotManager(projectContext.projectRoot)
     transactionLog = new TransactionLog(projectContext.projectRoot)
@@ -135,10 +146,13 @@ describe('Atomic Installation & Snapshot System', () => {
       )
 
       const entries = transactionLog.getEntries(txId)
+      expect(entries).toBeDefined()
+      if (!entries) throw new Error('entries should be defined')
       expect(entries).toHaveLength(1)
-      expect(entries?.[0].action).toBe(TransactionActionType.VALIDATION_START)
-      expect(entries?.[0].message).toBe('Starting validation')
-      expect(entries?.[0].data?.pluginCount).toBe(1)
+      const entry = entries[0]!
+      expect(entry.action).toBe(TransactionActionType.VALIDATION_START)
+      expect(entry.message).toBe('Starting validation')
+      expect(entry.data?.['pluginCount']).toBe(1)
     })
 
     it('should log errors with stack trace', () => {
@@ -148,11 +162,14 @@ describe('Atomic Installation & Snapshot System', () => {
       transactionLog.logError('Installation failed', error, { phase: 3 })
 
       const entries = transactionLog.getEntries(txId)
+      expect(entries).toBeDefined()
+      if (!entries) throw new Error('entries should be defined')
       expect(entries).toHaveLength(1)
-      expect(entries?.[0].action).toBe(TransactionActionType.ERROR)
-      expect(entries?.[0].error?.message).toBe('Test error')
-      expect(entries?.[0].error?.stack).toBeDefined()
-      expect(entries?.[0].data?.phase).toBe(3)
+      const entry = entries[0]!
+      expect(entry.action).toBe(TransactionActionType.ERROR)
+      expect(entry.error?.message).toBe('Test error')
+      expect(entry.error?.stack).toBeDefined()
+      expect(entry.data?.['phase']).toBe(3)
     })
 
     it('should log warnings', () => {
@@ -163,8 +180,11 @@ describe('Atomic Installation & Snapshot System', () => {
       })
 
       const entries = transactionLog.getEntries(txId)
+      expect(entries).toBeDefined()
+      if (!entries) throw new Error('entries should be defined')
       expect(entries).toHaveLength(1)
-      expect(entries?.[0].action).toBe(TransactionActionType.WARNING)
+      const entry = entries[0]!
+      expect(entry.action).toBe(TransactionActionType.WARNING)
     })
 
     it('should log timed actions', () => {
@@ -178,7 +198,10 @@ describe('Atomic Installation & Snapshot System', () => {
       )
 
       const entries = transactionLog.getEntries(txId)
-      expect(entries?.[0].duration).toBe(1250)
+      expect(entries).toBeDefined()
+      if (!entries) throw new Error('entries should be defined')
+      const entry = entries[0]!
+      expect(entry.duration).toBe(1250)
     })
 
     it('should generate comprehensive report', () => {
