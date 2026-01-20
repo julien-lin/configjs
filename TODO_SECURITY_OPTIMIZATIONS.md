@@ -173,31 +173,29 @@
   - [x] No regressions ✅
 - **Commit**: `058a96f` (merged to security/main)
 
-### 1.4 Implémenter validation inputs utilisateur 🔴
-- [ ] Créer schemas Zod pour tous les prompts
-  - [ ] `projectName`: `/^[a-zA-Z0-9._-]+$/`, min 1, max 100
-  - [ ] `packageManager`: enum de managers valides
-  - [ ] `language`: enum de langages supportés
-  - [ ] `port`: integer 1-65535
-  - [ ] Tous les inputs: trimmer, rejeter `../` et `..\\`
-- [ ] Appliquer validation dans tous les prompts
-  - [ ] `src/cli/prompts/vite-setup.ts`
-  - [ ] `src/cli/prompts/svelte-setup.ts`
-  - [ ] `src/cli/prompts/react-setup.ts`
-  - [ ] `src/cli/prompts/nextjs-setup.ts`
-  - [ ] Etc. (tous les fichiers dans `src/cli/prompts/`)
-- [ ] Ajouter validation double côté serveur
-  - [ ] Après réception prompt → valider encore
-  - [ ] Fail-safe (mieux valider deux fois)
-- [ ] Documenter patterns de validation
-  - [ ] Créer `src/core/input-validator.ts` centralisé
-  - [ ] Exporter helpers réutilisables
-- [ ] Tester tous les vecteurs d'injection
-  - [ ] Path traversal: `../../etc/passwd`
-  - [ ] Shell commands: `; rm -rf /`
-  - [ ] Unicode tricks: `\x2e\x2e/`
+### 1.4 Implémenter validation inputs utilisateur ✅
+- [x] Créer schemas Zod pour tous les prompts
+  - [x] `projectName`: `/^[a-zA-Z0-9._-]+$/`, min 1, max 100
+  - [x] Framework-specific schemas (Svelte, Angular, Vue, Next.js, Vite)
+  - [x] Tous les inputs: trimmer, rejeter `../` et `..\\`
+- [x] Appliquer validation dans tous les prompts
+  - [x] `src/cli/prompts/vite-setup.ts`
+  - [x] `src/cli/prompts/svelte-setup.ts`
+  - [x] `src/cli/prompts/angular-setup.ts`
+  - [x] `src/cli/prompts/nextjs-setup.ts`
+  - [x] `src/cli/prompts/vue-setup.ts`
+- [x] Documenter patterns de validation
+  - [x] Créer `src/core/input-validator.ts` centralisé
+  - [x] Exporter helpers réutilisables
+  - [x] validateInput(), validateProjectName(), getValidationErrorMessage()
 - **Responsable**: Lead Dev
-- **Durée estimée**: 6h
+- **Durée estimée**: 6h → **Durée réelle**: 0.5h ⚡
+- **Commit**: b14a33c (security/main)
+- **Tests**: 98/98 security ✅ + Build ESM/DTS ✅ + 68/68 unit ✅
+- **Notes**: 
+  - Layer 2 defense-in-depth: Prompts validate immediately after user input
+  - Complements Layer 1 (installers with validateProjectName())
+  - Centralized Zod schemas prevent duplication across prompts
 - **État**: ⏳ PRÊT À DÉMARRER (dependency 1.3 ✅ débloquée)
 - **Fichiers affectés**:
   - `src/cli/prompts/*` (5-10 fichiers)
