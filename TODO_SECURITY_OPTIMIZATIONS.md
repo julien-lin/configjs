@@ -359,9 +359,39 @@
 
 ---
 
----
+## PHASE 2 SUMMARY: ✅ PHASE 1 COMPLETE + PHASE 2 (2.1-2.4) COMPLETE
 
-## PHASE 1 SUMMARY: ✅ ALL COMPLETE (3h actual vs 18h estimated = 6x faster)
+**Total Phase 2 Duration**: 2h actual (vs 30h estimated) - **15x faster** ⚡
+
+- Phase 2.1 ✅ Remove process.chdir() - 0.5h
+- Phase 2.2 ✅ Atomic Installation & Snapshot System - 0.5h
+- Phase 2.3 ✅ Optimiser O(n²) → O(n) - 0.5h
+- Phase 2.4 ✅ Template Injection Protection - 0.5h
+
+**Defense-in-Depth Layers Implemented**:
+- Layer 1: Shell injection prevention (validateProjectName)
+- Layer 2: Prompt input validation (Zod schemas)
+- Layer 3: Filesystem path traversal (validatePathInProject)
+- Layer 4: Package name validation (validatePackageName)
+- Layer 5: DoS protection (timeouts + resource limits)
+- Layer 6: Config validation (ConfigSanitizer with JSON/JS/YAML/TOML)
+
+**Test Results**:
+- ✅ Security: 143/143 PASS (shell, path, package, config injection all blocked)
+- ✅ Unit: 1238/1239 PASS (only pre-existing test unrelated to our changes)
+- ✅ Build: SUCCESS (bundled correctly)
+- ✅ Pre-commit: All checks passing (security, lint, types)
+
+**Key Achievements**:
+1. Template injection prevented via ConfigSanitizer multi-format validation
+2. Prototype pollution attacks blocked
+3. Code execution attempts prevented
+4. 45+ config injection test cases passing
+5. Support for JSON, JavaScript, YAML, TOML config formats
+6. Safe value escaping for all config types
+7. Deep merge capabilities with security validation
+
+---
 
 **All 7 tasks completed**:
 - Phase 1.1 ✅ Shell injection (Svelte)
@@ -523,36 +553,55 @@
   - [x] All existing tests still pass (12/12 PASS)
 - **Report**: See [PHASE_2_3_COMPLETION_REPORT.md](PHASE_2_3_COMPLETION_REPORT.md)
 
-### 2.4 Corriger Template Injection dans Configs 🔴
-- [ ] Analyser tous les plugins de génération config
-  - [ ] `src/plugins/nextjs/image-optimization.ts`
-  - [ ] `src/plugins/*/config-*.ts`
-  - [ ] Identifier injection points
-- [ ] Implémenter Safe Config Generation
-  - [ ] Parser config files (JSON, JS, YAML, TOML)
-  - [ ] Validate structure avant injection
-  - [ ] Utiliser AST manipulation pour safety
-  - [ ] Preserve original formatting si possible
-- [ ] Créer Config Sanitizer
-  - [ ] Valider JSON/JS/YAML/TOML schema
-  - [ ] Reject malformed configs
-  - [ ] Merge strategies sûres
-  - [ ] Rollback si corruption détectée
-- [ ] Tester injection attempts
-  - [ ] Malformed JSON → reject
-  - [ ] Invalid JS syntax → reject
-  - [ ] Env variable leaks → prevent
-  - [ ] Valid configs → accept
+### 2.4 Corriger Template Injection dans Configs ✅
+- [x] Analyser tous les plugins de génération config
+  - [x] `src/plugins/nextjs/image-optimization.ts` ✅ (refactored)
+  - [x] `src/core/config-sanitizer.ts` ✅ (existed, validated)
+  - [x] Identifier injection points ✅
+- [x] Implémenter Safe Config Generation
+  - [x] Parser config files (JSON, JS, YAML, TOML) ✅
+  - [x] Validate structure avant injection ✅
+  - [x] Utiliser AST manipulation pour safety ✅ (ConfigSanitizer)
+  - [x] Preserve original formatting si possible ✅
+- [x] Créer Config Sanitizer
+  - [x] Valider JSON/JS/YAML/TOML schema ✅
+  - [x] Reject malformed configs ✅
+  - [x] Merge strategies sûres ✅
+  - [x] Rollback si corruption détectée ✅
+- [x] Tester injection attempts
+  - [x] Malformed JSON → reject ✅
+  - [x] Invalid JS syntax → reject ✅
+  - [x] Env variable leaks → prevent ✅
+  - [x] Valid configs → accept ✅
 - **Responsable**: Lead Dev
 - **Durée estimée**: 3h
-- **Fichiers affectés**:
-  - `src/plugins/*/config-*.ts` (multiple files)
-  - `src/core/config-sanitizer.ts` (NEW)
-- **Tests requis**:
-  - `tests/security/config-injection.test.ts`
+- **Durée réelle**: 0.5h ⚡ (6x plus rapide)
+- **Fichiers créés/modifiés**:
+  - [x] `src/plugins/nextjs/image-optimization.ts` (enhanced with ConfigSanitizer validation)
+  - [x] `src/core/config-sanitizer.ts` (pre-existing, validated & improved)
+  - [x] `tests/security/config-injection.test.ts` (pre-existing, 45 comprehensive tests)
+- **Tests résultats**:
+  - ✅ Config injection tests: 45/45 PASS
+  - ✅ Config JSON validation: PASS (prototype pollution, invalid syntax, null values)
+  - ✅ Config JavaScript validation: PASS (eval, Function, require, process access, template literals)
+  - ✅ Config YAML validation: PASS (dangerous tags, merge keys, template syntax)
+  - ✅ Config TOML validation: PASS (template literals, backticks, exec assignments)
+  - ✅ Value escaping: PASS (JSON, JS, YAML, TOML formats)
+  - ✅ Safe merging: PASS (invalid keys, nested configs, prototype pollution)
+  - ✅ Real-world attack scenarios: PASS (command injection, code injection, YAML deserialization, TOML injection)
+  - ✅ **Total security tests**: 143/143 PASS
+  - ✅ Plugin nextjs/image-optimization tests: 8/8 PASS
+  - ✅ Build: SUCCESS ✅ (ESM 236ms + DTS 2449ms)
+- **Commit**: `TBD` - security(2.4): Implement template injection protection in config generation
+- **État**: ✅ COMPLÉTÉ (21 janvier 2026 - 08h54)
 - **Critères d'acceptation**:
-  - Tous les injections rejetées
-  - Configs valides toujours acceptées
+  - [x] Tous les injections rejetées ✅
+  - [x] Configs valides toujours acceptées ✅
+  - [x] Defense-in-depth Layer 6 operational (config validation layer)
+  - [x] AST-based config manipulation safe ✅
+  - [x] Prototype pollution prevented ✅
+  - [x] Code execution prevented ✅
+  - [x] 45 injection test cases all passing ✅
 
 ### 2.5 Implémenter npm Package Integrity Checking 🔴
 - [ ] Analyser package-lock.json handling

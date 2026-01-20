@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import { CompatibilityValidator } from '../../src/core/validator.js'
 import { allCompatibilityRules } from '../../src/core/validator.js'
 import type { Plugin } from '../../src/types/index.js'
+import { Category } from '../../src/types/index.js'
 
 /**
  * Performance tests for O(n²) → O(n) complexity optimization
@@ -30,34 +31,36 @@ import type { Plugin } from '../../src/types/index.js'
  * @returns Array of synthetic plugin objects
  */
 function generateSyntheticPlugins(count: number): Plugin[] {
-  const categories = [
-    'state-management',
-    'ui-framework',
-    'routing',
-    'styling',
-    'testing',
-    'analytics',
-    'authentication',
-    'database',
-    'caching',
-    'monitoring',
+  const categories: Category[] = [
+    Category.STATE,
+    Category.UI,
+    Category.ROUTING,
+    Category.CSS,
+    Category.TESTING,
+    Category.TOOLING,
+    Category.HTTP,
+    Category.FORMS,
+    Category.I18N,
+    Category.ANIMATION,
   ]
 
   const plugins: Plugin[] = []
 
   for (let i = 0; i < count; i++) {
-    const category = categories[i % categories.length]
+    const categoryIndex = i % categories.length
+    const category = categories[categoryIndex]!
     plugins.push({
       name: `plugin-${i}-${category}`,
+      displayName: `Plugin ${i}`,
       version: '1.0.0',
-      framework: 'react',
+      frameworks: ['react'],
       category,
       description: `Synthetic test plugin ${i}`,
       incompatibleWith: [],
       requires: [],
       recommends: [],
-      autoInstall: false,
-      prompt: false,
+      install: async () => ({ success: true, packages: {} }),
+      configure: async () => ({ success: true, files: [] }),
     })
   }
 
@@ -171,20 +174,20 @@ describe('Validator Performance Optimization (O(n²) → O(n))', () => {
     }
 
     // Verify linear scaling: each 10x increase in plugins should increase time ~10x
-    const ratio10to50 = timings[50] / timings[10]
-    const ratio10to100 = timings[100] / timings[10]
-    const ratio10to200 = timings[200] / timings[10]
+    const ratio10to50 = timings[50]! / timings[10]!
+    const ratio10to100 = timings[100]! / timings[10]!
+    const ratio10to200 = timings[200]! / timings[10]!
 
     console.log('\n📊 Complexity Scaling Analysis:')
-    console.log(`  10 plugins:   ${timings[10].toFixed(2)}ms (baseline)`)
+    console.log(`  10 plugins:   ${timings[10]!.toFixed(2)}ms (baseline)`)
     console.log(
-      `  50 plugins:   ${timings[50].toFixed(2)}ms (${ratio10to50.toFixed(1)}x baseline)`
+      `  50 plugins:   ${timings[50]!.toFixed(2)}ms (${ratio10to50.toFixed(1)}x baseline)`
     )
     console.log(
-      `  100 plugins:  ${timings[100].toFixed(2)}ms (${ratio10to100.toFixed(1)}x baseline)`
+      `  100 plugins:  ${timings[100]!.toFixed(2)}ms (${ratio10to100.toFixed(1)}x baseline)`
     )
     console.log(
-      `  200 plugins:  ${timings[200].toFixed(2)}ms (${ratio10to200.toFixed(1)}x baseline)`
+      `  200 plugins:  ${timings[200]!.toFixed(2)}ms (${ratio10to200.toFixed(1)}x baseline)`
     )
     console.log(
       '\n✓ Linear O(n) behavior verified: ratios increase ~10x per 10x plugins'
@@ -289,39 +292,42 @@ describe('Validator Performance Optimization (O(n²) → O(n))', () => {
     const plugins = [
       {
         name: 'react',
+        displayName: 'React',
         version: '18.0.0',
-        framework: 'react',
-        category: 'ui',
+        frameworks: ['react'],
+        category: Category.UI,
         description: 'React',
         incompatibleWith: [],
         requires: [],
         recommends: [],
-        autoInstall: false,
-        prompt: false,
+        install: async () => ({ success: true, packages: {} }),
+        configure: async () => ({ success: true, files: [] }),
       },
       {
         name: 'zustand',
+        displayName: 'Zustand',
         version: '4.0.0',
-        framework: 'react',
-        category: 'state',
+        frameworks: ['react'],
+        category: Category.STATE,
         description: 'Zustand',
         incompatibleWith: ['@reduxjs/toolkit'],
         requires: [],
         recommends: [],
-        autoInstall: false,
-        prompt: false,
+        install: async () => ({ success: true, packages: {} }),
+        configure: async () => ({ success: true, files: [] }),
       },
       {
         name: '@reduxjs/toolkit',
+        displayName: 'Redux Toolkit',
         version: '1.0.0',
-        framework: 'react',
-        category: 'state',
+        frameworks: ['react'],
+        category: Category.STATE,
         description: 'Redux',
         incompatibleWith: ['zustand'],
         requires: [],
         recommends: [],
-        autoInstall: false,
-        prompt: false,
+        install: async () => ({ success: true, packages: {} }),
+        configure: async () => ({ success: true, files: [] }),
       },
     ] as Plugin[]
 
