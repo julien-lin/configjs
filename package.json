@@ -53,7 +53,11 @@
     "test:watch": "vitest watch",
     "test:integration": "vitest run tests/integration",
     "test:e2e": "vitest run tests/e2e",
-    "prepublishOnly": "npm run typecheck && npm run lint && npm run test:unit && npm run build",
+    "test:security": "vitest run tests/security",
+    "audit": "npm audit --audit-level=moderate",
+    "audit:fix": "npm audit fix",
+    "outdated": "npm outdated",
+    "prepublishOnly": "npm run typecheck && npm run lint && npm run test:unit && npm run test:security && npm run build",
     "prepare": "husky install"
   },
   "dependencies": {
