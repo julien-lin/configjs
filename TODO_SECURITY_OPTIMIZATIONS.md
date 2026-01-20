@@ -117,30 +117,42 @@
 - **Commit**: `3af87d6` (merged to security/main)
 
 ### 1.2 Corriger Shell Injection - Angular 🔴
-- [ ] Analyser `src/cli/utils/angular-installer.ts`
-  - [ ] Identifier pattern similaire à Svelte
-  - [ ] Refactoriser avec même approche spawn()
-  - [ ] Copier error handling de 1.1
-- [ ] Tester avec payloads malveillants
+- [x] Analyser `src/cli/utils/angular-installer.ts` ✅
+  - [x] Identifier pattern similaire à Svelte
+  - [x] Refactoriser avec même approche spawn()
+  - [x] Copier error handling de 1.1
+- [x] Ajouter validateProjectName() pour validation input ✅
+- [x] Tester avec payloads malveillants ✅
 - **Responsable**: Lead Dev / Security
-- **Durée estimée**: 1.5h
-- **État**: ⏳ PRÊT À DÉMARRER (dependency 1.1 ✅ débloquée)
-- **Notes**: Réutiliser validateProjectName() et spawn pattern de 1.1
+- **Durée réelle**: 0.5h
+- **État**: ✅ COMPLÉTÉ (20 janvier 2026)
+- **Fichiers modifiés**:
+  - `src/cli/utils/angular-installer.ts` (added: validateProjectName, shell: false)
+- **Tests résultats**:
+  - `tests/security/shell-injection.test.ts`: 34/34 PASS ✅
+  - `tests/security/path-traversal.test.ts`: 30/30 PASS ✅
+  - `tests/security/package-injection.test.ts`: 34/34 PASS ✅
+  - **Total**: 98/98 PASS ✅
+- **Build**: SUCCESS ✅ (ESM 134ms + DTS 2017ms)
+- **Tests unitaires**: 61/61 PASS ✅
 - **Critères d'acceptation**:
-  - Tous tests shell injection pour Angular PASS
-  - Cohérence avec Svelte implementation
+  - [x] Tous tests shell injection pour Angular PASS ✅
+  - [x] Cohérence avec Svelte implementation ✅
+  - [x] Input validation rejetant metacharacters ✅
+  - [x] spawn() avec shell: false ✅
+- **Commit**: `05d7dda` (merged to security/main)
 
 ### 1.3 Corriger Shell Injection - Autres frameworks 🔴
 - [ ] Audit tous les fichiers `src/cli/utils/*-installer.ts`
   - [ ] Next.js, React, Vue, Vite
   - [ ] Documenter tous les `execSync()` usages
 - [ ] Refactoriser de façon systématique
-  - [ ] Réutiliser helpers de 1.1
+  - [ ] Réutiliser helpers de 1.1 et 1.2
   - [ ] Créer `executeCommand()` helper centralisé
 - [ ] Tester couverture complète
 - **Responsable**: Lead Dev
 - **Durée estimée**: 1.5h
-- **Bloqué par**: 1.1 (pattern établi)
+- **État**: ⏳ PRÊT À DÉMARRER (dependency 1.2 ✅ débloquée)
 - **Critères d'acceptation**:
   - Zéro `execSync()` avec `shell: true`
   - Zéro template strings dans commands
@@ -929,38 +941,43 @@
 
 ```
 Phase 0 (Setup):           4h  (✅ COMPLÉTÉ)
-Phase 1 (Critical):       18h  (🔄 EN COURS - 1/7 complétée)
+Phase 1 (Critical):       18h  (🔄 EN COURS - 2/7 complétées)
 Phase 2 (Major):          30h  (⏳ À faire)
 Phase 3 (Performance):    40h  (⏳ À faire)
 Phase 4 (Long-term):      20h  (🟢 Optionnel)
 ─────────────────────────────
 TOTAL:                    112h (88h + 24h optionnel)
 
-COMPLÉTÉ: 4h + 1.5h = 5.5h / 88h (6.2%)
-TEMPS RESTANT: ~82.5h
+COMPLÉTÉ: 4h + 1.5h + 0.5h = 6h / 88h (6.8%)
+TEMPS RESTANT: ~82h
 ```
 
 ### Progress Report
 
 **✅ PHASE 0**: COMPLÉTÉ (4h réel)
 - Setup infrastructure, CI/CD, pre-commit hooks
-- Test framework en place
+- Test framework en place (98/98 tests)
 
-**🔄 PHASE 1**: EN COURS (1.5h réel / 18h estimées)
-- Phase 1.1 ✅ SVELTE: Shell injection corrigée (commit 3af87d6)
-- Phase 1.2 ⏳ ANGULAR: Prêt à démarrer
-- Phase 1.3-1.7: À faire
+**🔄 PHASE 1**: EN COURS (2h réel / 18h estimées)
+- Phase 1.1 ✅ SVELTE: Shell injection corrigée (commit 3af87d6, 1.5h)
+- Phase 1.2 ✅ ANGULAR: Shell injection corrigée (commit 05d7dda, 0.5h)
+- Phase 1.3-1.7: À faire (~16.5h)
+
+**Test Status**: 98/98 PASSING ✅
+- shell-injection: 34/34 ✅
+- path-traversal: 30/30 ✅
+- package-injection: 34/34 ✅
 
 ### Chronologie Mise à Jour
 
 **Immédiat** (aujourd'hui - 20 janvier 2026):
 - ✅ Phase 0: COMPLÉTÉ
-- ✅ Phase 1.1: COMPLÉTÉ (1.5h)
-- ⏳ Phase 1.2: ANGULAR (1.5h) ← COMMENCER MAINTENANT
-- ⏳ Phase 1.3-1.4: À faire
+- ✅ Phase 1.1: COMPLÉTÉ (1.5h) - Svelte shell injection
+- ✅ Phase 1.2: COMPLÉTÉ (0.5h) - Angular shell injection
+- ⏳ Phase 1.3: PRÊT À DÉMARRER (1.5h) - Next.js, React, Vue, Vite
+- ⏳ Phase 1.4-1.7: À faire
 
 **Semaine 1** (3-4h/jour restants):
-- Phase 1.2: Angular fix (1.5h)
 - Phase 1.3: Autres frameworks (1.5h)
 - Phase 1.4: Input validation (6h)
 - Phase 1.5-1.7: Path traversal, packages, timeouts (12h)
