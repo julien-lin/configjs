@@ -7,6 +7,14 @@ import type { SupportedLanguage } from '../i18n/types.js'
 import { getTranslations } from '../i18n/index.js'
 
 /**
+ * Validates project name to prevent shell injection
+ */
+function validateProjectName(name: string): boolean {
+  if (!/^[a-zA-Z0-9._-]+$/.test(name)) return false
+  return !name.includes('..') && !name.includes('/') && !name.includes('\\')
+}
+
+/**
  * Installe un projet Next.js
  *
  * @param options - Options de création du projet
@@ -30,6 +38,11 @@ export async function createNextjsProject(
     appRouter,
     importAlias,
   } = options
+
+  // SECURITY: Validate project name to prevent shell injection
+  if (!validateProjectName(projectName)) {
+    throw new Error(`Invalid project name: ${projectName}`)
+  }
 
   const projectPath = resolve(currentDir, projectName)
 
