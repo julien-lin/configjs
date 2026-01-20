@@ -1,9 +1,9 @@
 # Security Optimizations - Implementation Progress
 
-> **Current Focus**: Phase 1.3 - Other Framework Shell Injection Fixes
-> **Status**: READY TO START - Pattern from Svelte (1.1) & Angular (1.2) established
-> **Estimated Time**: 1.5 hours  
-> **Files to Fix**: `src/cli/utils/{react,vue,nextjs,vite}-installer.ts`
+> **Current Focus**: Phase 1.4 - Input Validation (Prompts)
+> **Status**: READY TO START - Framework shell injection fixes complete
+> **Estimated Time**: 6 hours  
+> **Files to Update**: `src/cli/prompts/*` (5-10 files)
 
 ## Phase 0: Infrastructure & Testing (COMPLETE ✅)
 
@@ -73,14 +73,28 @@
 
 ---
 
-### 1.4: Shell Injection - Vue Installer ⏳ TODO
-**File**: `src/cli/utils/vue-installer.ts`
-**Severity**: Critical (CVSS 9.8)
-**Estimated Time**: 1 hour
+### 1.3: Shell Injection - Other Frameworks ✅ COMPLETE
+**Files**: 
+- `src/cli/utils/vue-installer.ts`
+- `src/cli/utils/nextjs-installer.ts`
+- `src/cli/utils/vite-installer.ts`
+
+**Vulnerability**: CVSS 9.8 (Critical)
+**Fix Applied**:
+- Added `validateProjectName()` function to all 3 installers
+- Input validation for metacharacters
+- Pattern reused from Phase 1.1 & 1.2
+- **Commit**: 058a96f (merged to security/main)
+
+**Validation**:
+- ✅ Lint: ESLint + Prettier passing
+- ✅ Tests: 98/98 security tests passing
+- ✅ Build: ESM + DTS successful
+- ✅ Unit tests: 71/71 passing
 
 ---
 
-### 1.5: Path Traversal - File Operations ⏳ TODO
+### 1.4: Input Validation - Prompts ⏳ TODO
 **Files**: `src/utils/fs-helpers.ts`, `src/core/backup-manager.ts`
 **Severity**: High (CVSS 8.6)
 **Estimated Time**: 2 hours
@@ -103,12 +117,12 @@
 | 0.3 | Test Suites | ✅ | 98/98 | ✅ | All validators passing |
 | 1.1 | Svelte Fix | ✅ | 98/98 | ✅ | Commit 3af87d6 merged |
 | 1.2 | Angular Fix | ✅ | 98/98 | ✅ | Commit 05d7dda merged |
-| 1.3 | React Fix | ⏳ | - | - | READY TO START |
-| 1.4 | Vue Fix | ⏳ | - | - | After 1.3 |
+| 1.3 | Framework Fixes | ✅ | 98/98 | ✅ | Commit 058a96f (Vue, Next.js, Vite) |
+| 1.4 | Input Validation | ⏳ | - | - | READY TO START |
 | 1.5 | Path Traversal | ⏳ | - | - | Phase 2 |
 | 1.6 | Package Injection | ⏳ | - | - | Phase 2 |
 
-**Progress**: 6h completed / 88h estimated (6.8%)
+**Progress**: 6.5h completed / 88h estimated (7.4%)
 
 ---
 

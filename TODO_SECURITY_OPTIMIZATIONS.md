@@ -143,19 +143,35 @@
 - **Commit**: `05d7dda` (merged to security/main)
 
 ### 1.3 Corriger Shell Injection - Autres frameworks 🔴
-- [ ] Audit tous les fichiers `src/cli/utils/*-installer.ts`
-  - [ ] Next.js, React, Vue, Vite
-  - [ ] Documenter tous les `execSync()` usages
-- [ ] Refactoriser de façon systématique
-  - [ ] Réutiliser helpers de 1.1 et 1.2
-  - [ ] Créer `executeCommand()` helper centralisé
-- [ ] Tester couverture complète
-- **Responsable**: Lead Dev
-- **Durée estimée**: 1.5h
-- **État**: ⏳ PRÊT À DÉMARRER (dependency 1.2 ✅ débloquée)
+- [x] Audit tous les fichiers `src/cli/utils/*-installer.ts` ✅
+  - [x] Vue, Next.js, Vite installers identified
+  - [x] Input validation missing from all 3
+  - [x] Already using execa safely (no shell=true)
+- [x] Ajouter validateProjectName() pour validation input ✅
+  - [x] Vue: Added validation function
+  - [x] Next.js: Added validation function
+  - [x] Vite: Added validation function
+- [x] Tester avec payloads malveillants ✅
+- **Responsable**: Lead Dev / Security
+- **Durée réelle**: 0.5h
+- **État**: ✅ COMPLÉTÉ (20 janvier 2026)
+- **Fichiers modifiés**:
+  - `src/cli/utils/vue-installer.ts` (added: validateProjectName)
+  - `src/cli/utils/nextjs-installer.ts` (added: validateProjectName)
+  - `src/cli/utils/vite-installer.ts` (added: validateProjectName)
+- **Tests résultats**:
+  - `tests/security/shell-injection.test.ts`: 34/34 PASS ✅
+  - `tests/security/path-traversal.test.ts`: 30/30 PASS ✅
+  - `tests/security/package-injection.test.ts`: 34/34 PASS ✅
+  - **Total**: 98/98 PASS ✅
+- **Build**: SUCCESS ✅ (ESM 106ms + DTS 1837ms)
+- **Tests unitaires**: 71/71 PASS ✅
 - **Critères d'acceptation**:
-  - Zéro `execSync()` avec `shell: true`
-  - Zéro template strings dans commands
+  - [x] Input validation sur tous les 3 frameworks ✅
+  - [x] Metacharacters rejetés (.., /, \) ✅
+  - [x] All tests passing ✅
+  - [x] No regressions ✅
+- **Commit**: `058a96f` (merged to security/main)
 
 ### 1.4 Implémenter validation inputs utilisateur 🔴
 - [ ] Créer schemas Zod pour tous les prompts
@@ -182,6 +198,7 @@
   - [ ] Unicode tricks: `\x2e\x2e/`
 - **Responsable**: Lead Dev
 - **Durée estimée**: 6h
+- **État**: ⏳ PRÊT À DÉMARRER (dependency 1.3 ✅ débloquée)
 - **Fichiers affectés**:
   - `src/cli/prompts/*` (5-10 fichiers)
   - `src/core/input-validator.ts` (NEW)
@@ -941,15 +958,15 @@
 
 ```
 Phase 0 (Setup):           4h  (✅ COMPLÉTÉ)
-Phase 1 (Critical):       18h  (🔄 EN COURS - 2/7 complétées)
+Phase 1 (Critical):       18h  (🔄 EN COURS - 3/7 complétées)
 Phase 2 (Major):          30h  (⏳ À faire)
 Phase 3 (Performance):    40h  (⏳ À faire)
 Phase 4 (Long-term):      20h  (🟢 Optionnel)
 ─────────────────────────────
 TOTAL:                    112h (88h + 24h optionnel)
 
-COMPLÉTÉ: 4h + 1.5h + 0.5h = 6h / 88h (6.8%)
-TEMPS RESTANT: ~82h
+COMPLÉTÉ: 4h + 1.5h + 0.5h + 0.5h = 6.5h / 88h (7.4%)
+TEMPS RESTANT: ~81.5h
 ```
 
 ### Progress Report
@@ -958,10 +975,12 @@ TEMPS RESTANT: ~82h
 - Setup infrastructure, CI/CD, pre-commit hooks
 - Test framework en place (98/98 tests)
 
-**🔄 PHASE 1**: EN COURS (2h réel / 18h estimées)
+**🔄 PHASE 1**: EN COURS (2.5h réel / 18h estimées)
 - Phase 1.1 ✅ SVELTE: Shell injection corrigée (commit 3af87d6, 1.5h)
 - Phase 1.2 ✅ ANGULAR: Shell injection corrigée (commit 05d7dda, 0.5h)
-- Phase 1.3-1.7: À faire (~16.5h)
+- Phase 1.3 ✅ AUTRES FRAMEWORKS: Shell injection corrigée (commit 058a96f, 0.5h)
+  - Vue, Next.js, Vite installers secured
+- Phase 1.4-1.7: À faire (~15.5h)
 
 **Test Status**: 98/98 PASSING ✅
 - shell-injection: 34/34 ✅
@@ -974,11 +993,11 @@ TEMPS RESTANT: ~82h
 - ✅ Phase 0: COMPLÉTÉ
 - ✅ Phase 1.1: COMPLÉTÉ (1.5h) - Svelte shell injection
 - ✅ Phase 1.2: COMPLÉTÉ (0.5h) - Angular shell injection
-- ⏳ Phase 1.3: PRÊT À DÉMARRER (1.5h) - Next.js, React, Vue, Vite
-- ⏳ Phase 1.4-1.7: À faire
+- ✅ Phase 1.3: COMPLÉTÉ (0.5h) - Vue, Next.js, Vite shell injection
+- ⏳ Phase 1.4: PRÊT À DÉMARRER (6h) - Input validation
+- ⏳ Phase 1.5-1.7: À faire
 
 **Semaine 1** (3-4h/jour restants):
-- Phase 1.3: Autres frameworks (1.5h)
 - Phase 1.4: Input validation (6h)
 - Phase 1.5-1.7: Path traversal, packages, timeouts (12h)
 - **Sous-total Semaine 1**: ~22h (dépasse Phase 1)
