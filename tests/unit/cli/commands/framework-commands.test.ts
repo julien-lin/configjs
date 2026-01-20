@@ -129,7 +129,6 @@ describe.each(frameworkTestCases)(
       vi.spyOn(process, 'exit').mockImplementation(() => {
         throw new Error('process.exit called')
       })
-      vi.spyOn(process, 'chdir').mockImplementation(() => {})
       vi.spyOn(console, 'log').mockImplementation(() => {})
       vi.mocked(languagePrompt.promptLanguage).mockResolvedValue('fr')
       vi.mocked(detector.detectContext).mockResolvedValue(mockContext)
