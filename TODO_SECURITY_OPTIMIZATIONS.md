@@ -34,26 +34,27 @@
 - **Durée**: 12h
 
 ### 0.2 Setup infrastructure de test 🔴
-- [ ] Créer branche `security/main` dans Git
-- [ ] Setup CI/CD pour tests de sécurité
-  - [ ] npm audit integration
-  - [ ] SAST (Static Analysis Security Testing)
-  - [ ] Dependency checking (Snyk)
-- [ ] Configurer pre-commit hooks
-  - [ ] Vérifier pas de credentials
-  - [ ] ESLint security rules
-  - [ ] Zod schema validation
-- [ ] Créer fixtures d'exploitation
-  - [ ] Shell injection payloads
-  - [ ] Path traversal attempts
-  - [ ] Package poisoning tests
+- [x] Créer branche `security/main` dans Git
+- [x] Setup CI/CD pour tests de sécurité
+  - [x] npm audit integration
+  - [x] SAST (Static Analysis Security Testing)
+  - [x] Dependency checking (Snyk)
+- [x] Configurer pre-commit hooks
+  - [x] Vérifier pas de credentials
+  - [x] ESLint security rules
+  - [x] Zod schema validation
+- [x] Créer fixtures d'exploitation
+  - [x] Shell injection payloads
+  - [x] Path traversal attempts
+  - [x] Package poisoning tests
 - **Responsable**: DevOps/Lead Dev
 - **Durée estimée**: 4h
 - **Prérequis**: Aucun
+- **État**: ✅ COMPLÉTÉ (20 janvier 2026)
 - **Critères d'acceptation**:
-  - CI/CD exécute audit npm à chaque commit
-  - Tests de sécurité passent avant merge
-  - Documentation du setup complète
+  - [x] CI/CD exécute audit npm à chaque commit
+  - [x] Tests de sécurité passent avant merge
+  - [x] Documentation du setup complète
 
 ### 0.3 Créer test suites pour exploits 🔴
 - [ ] Suite tests shell injection (15+ cas)
