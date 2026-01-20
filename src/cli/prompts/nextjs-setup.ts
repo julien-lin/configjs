@@ -1,6 +1,12 @@
 import inquirer from 'inquirer'
 import type { SupportedLanguage } from '../i18n/types.js'
 import { getTranslations } from '../i18n/index.js'
+import pc from 'picocolors'
+import {
+  nextjsSetupSchema,
+  validateInput,
+  getValidationErrorMessage,
+} from '../../core/input-validator.js'
 
 export interface NextjsSetupOptions {
   projectName: string
@@ -114,13 +120,20 @@ export async function promptNextjsSetup(
     return null
   }
 
-  return {
-    projectName: answers.projectName.trim(),
-    typescript: answers.typescript,
-    eslint: answers.eslint,
-    tailwind: answers.tailwind,
-    srcDir: answers.srcDir,
-    appRouter: answers.appRouter,
-    importAlias: answers.importAlias.trim(),
+  // SECURITY: Validate all inputs against Zod schema
+  try {
+    const validated = validateInput(nextjsSetupSchema, {
+      projectName: answers.projectName.trim(),
+      typescript: answers.typescript,
+      eslint: answers.eslint,
+      tailwind: answers.tailwind,
+      srcDir: answers.srcDir,
+      appRouter: answers.appRouter,
+      importAlias: answers.importAlias.trim(),
+    })
+    return validated
+  } catch (error) {
+    console.error(pc.red(`❌ ${getValidationErrorMessage(error)}`))
+    throw error
   }
 }
