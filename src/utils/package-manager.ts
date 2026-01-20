@@ -4,6 +4,10 @@ import { resolve, join } from 'path'
 import type { PackageManager } from '../types/index.js'
 import type { IFsAdapter } from '../core/fs-adapter.js'
 import { getModuleLogger } from './logger-provider.js'
+import {
+  validatePackageNames,
+  getPackageValidationErrorMessage,
+} from '../core/package-validator.js'
 
 const logger = getModuleLogger()
 
@@ -112,6 +116,18 @@ export async function installPackages(
     return { success: true, packages: [] }
   }
 
+  // Validate package names to prevent npm flag injection
+  const invalidPackages = validatePackageNames(packages)
+  if (invalidPackages.length > 0) {
+    const errorMessage = getPackageValidationErrorMessage(invalidPackages)
+    logger.error(errorMessage)
+    return {
+      success: false,
+      packages,
+      error: errorMessage,
+    }
+  }
+
   const {
     packageManager,
     projectRoot,
@@ -189,6 +205,18 @@ export async function uninstallPackages(
   if (packages.length === 0) {
     logger.warn('No packages to uninstall')
     return { success: true, packages: [] }
+  }
+
+  // Validate package names to prevent npm flag injection
+  const invalidPackages = validatePackageNames(packages)
+  if (invalidPackages.length > 0) {
+    const errorMessage = getPackageValidationErrorMessage(invalidPackages)
+    logger.error(errorMessage)
+    return {
+      success: false,
+      packages,
+      error: errorMessage,
+    }
   }
 
   const { packageManager, projectRoot } = options
