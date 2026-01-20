@@ -1,9 +1,9 @@
 # Security Optimizations - Implementation Progress
 
-> **Current Focus**: Phase 1.2 - Angular Shell Injection Fix
-> **Status**: READY TO START - Pattern from Svelte (1.1) established and working
-> **Estimated Time**: 1.5-2 hours  
-> **File to Fix**: `src/cli/utils/angular-installer.ts`
+> **Current Focus**: Phase 1.3 - Other Framework Shell Injection Fixes
+> **Status**: READY TO START - Pattern from Svelte (1.1) & Angular (1.2) established
+> **Estimated Time**: 1.5 hours  
+> **Files to Fix**: `src/cli/utils/{react,vue,nextjs,vite}-installer.ts`
 
 ## Phase 0: Infrastructure & Testing (COMPLETE ✅)
 
@@ -48,12 +48,21 @@
 
 ---
 
-### 1.2: Shell Injection - Angular Installer ⏳ TODO
+### 1.2: Shell Injection - Angular Installer ✅ COMPLETE
 **File**: `src/cli/utils/angular-installer.ts`
-**Severity**: Critical (CVSS 9.8)
-**Pattern**: Same as svelte-installer
-**Estimated Time**: 1.5 hours
-**Note**: Reuse security helpers from Phase 1.1
+**Vulnerability**: CVSS 9.8 (Critical)
+**Fix Applied**:
+- Added `validateProjectName()` function
+- Set `shell: false` on spawn call
+- Input validation for metacharacters
+- Pattern reused from Phase 1.1
+- **Commit**: 05d7dda (merged to security/main)
+
+**Validation**:
+- ✅ Lint: ESLint + Prettier passing
+- ✅ Tests: 98/98 security tests passing (34 shell-injection + 30 path-traversal + 34 package-injection)
+- ✅ Build: ESM + DTS successful
+- ✅ Unit tests: 61/61 passing
 
 ---
 
@@ -91,15 +100,15 @@
 |-------|------|--------|-------|-------|-------|
 | 0.1 | Security Audit | ✅ | N/A | N/A | Completed |
 | 0.2 | Infrastructure | ✅ | N/A | ✅ | Pre-commit hooks active |
-| 0.3 | Test Suites | ✅ | 98/98 | ✅ | Ready for validation |
+| 0.3 | Test Suites | ✅ | 98/98 | ✅ | All validators passing |
 | 1.1 | Svelte Fix | ✅ | 98/98 | ✅ | Commit 3af87d6 merged |
-| 1.2 | Angular Fix | 🔄 | - | - | READY TO START |
-| 1.3 | React Fix | ⏳ | - | - | After 1.2 |
+| 1.2 | Angular Fix | ✅ | 98/98 | ✅ | Commit 05d7dda merged |
+| 1.3 | React Fix | ⏳ | - | - | READY TO START |
 | 1.4 | Vue Fix | ⏳ | - | - | After 1.3 |
 | 1.5 | Path Traversal | ⏳ | - | - | Phase 2 |
 | 1.6 | Package Injection | ⏳ | - | - | Phase 2 |
 
-**Progress**: 5.5h completed / 88h estimated (6.2%)
+**Progress**: 6h completed / 88h estimated (6.8%)
 
 ---
 
