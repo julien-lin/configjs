@@ -9,6 +9,7 @@ import type {
 import { getModuleLogger } from '../utils/logger-provider.js'
 import { generateCompatibilityRules } from './compatibility-generator.js'
 import { pluginRegistry } from '../plugins/registry.js'
+import { ValidationIndex } from './indexing.js'
 
 /**
  * Valide la compatibilité entre plugins selon des règles définies
@@ -18,6 +19,8 @@ import { pluginRegistry } from '../plugins/registry.js'
  * - Les conflits (avertissement si des plugins peuvent entrer en conflit)
  * - Les dépendances requises (erreur si une dépendance manque)
  * - Les recommandations (suggestions pour améliorer la configuration)
+ *
+ * Optimisé pour O(n) complexity avec indexes Map-based au lieu de nested loops O(n²)
  *
  * @example
  * ```typescript
@@ -34,14 +37,21 @@ import { pluginRegistry } from '../plugins/registry.js'
  */
 export class CompatibilityValidator {
   private logger = getModuleLogger()
+  private validationIndex: ValidationIndex
 
   /**
    * @param rules - Règles de compatibilité à appliquer
    */
-  constructor(private readonly rules: CompatibilityRule[]) {}
+  constructor(private readonly rules: CompatibilityRule[]) {
+    // Build indexes once on construction for O(1) lookups during validation
+    this.validationIndex = ValidationIndex.build(rules)
+  }
 
   /**
    * Valide la compatibilité d'un ensemble de plugins
+   *
+   * Time complexity: O(n) where n = number of plugins (previously O(n²))
+   * Space complexity: O(n) for index structures
    *
    * @param plugins - Liste des plugins à valider
    * @param ctx - Contexte du projet (optionnel, pour règles spécifiques framework)
@@ -67,16 +77,35 @@ export class CompatibilityValidator {
         )
       : this.rules.filter((rule) => !rule.framework)
 
-    // Vérifications en parallèle
-    const allConflicts = this.checkConflicts(
-      plugins,
+    // Vérifications utilisant indexes O(1) au lieu de nested loops O(n²)
+    const exclusivityViolations = this.checkExclusivity(
       pluginNames,
       applicableRules
     )
+
+    // Séparer les violations d'exclusivité par sévérité selon les règles
+    const exclusivityErrors: ValidationError[] = []
+    const exclusivityWarnings: ValidationWarning[] = []
+
+    for (const violation of exclusivityViolations) {
+      if (!violation.plugins) continue
+      const rule = applicableRules.find(
+        (r) =>
+          r.type === 'EXCLUSIVE' &&
+          violation.plugins.every((p) => r.plugins?.includes(p))
+      )
+      if (rule?.severity === 'warning') {
+        exclusivityWarnings.push(violation)
+      } else {
+        exclusivityErrors.push(violation)
+      }
+    }
+
+    const conflictResults = this.checkConflicts(pluginNames, applicableRules)
     const conflictErrors: ValidationError[] = []
     const conflictWarnings: ValidationWarning[] = []
 
-    for (const conflict of allConflicts) {
+    for (const conflict of conflictResults) {
       const rule = applicableRules.find(
         (r) =>
           r.type === 'CONFLICT' &&
@@ -91,7 +120,7 @@ export class CompatibilityValidator {
 
     // Vérifier les conflits framework
     const frameworkConflicts = ctx
-      ? this.checkFrameworkConflicts(plugins, pluginNames, ctx, applicableRules)
+      ? this.checkFrameworkConflicts(pluginNames, ctx, applicableRules)
       : []
 
     // Séparer les conflits framework par sévérité
@@ -112,34 +141,20 @@ export class CompatibilityValidator {
       }
     }
 
-    // Vérifier les exclusivités et séparer par sévérité
-    const exclusivityResults = this.checkExclusivity(
-      plugins,
+    const dependencyErrors = this.checkDependencies(
+      pluginNames,
+      applicableRules,
+      ctx
+    )
+    const suggestionsList = this.checkRecommendations(
       pluginNames,
       applicableRules
     )
-    const exclusivityErrors: ValidationError[] = []
-    const exclusivityWarnings: ValidationWarning[] = []
-
-    for (const result of exclusivityResults) {
-      // Trouver la règle EXCLUSIVE qui a généré ce résultat
-      // result.plugins est un sous-ensemble de rule.plugins (les plugins sélectionnés)
-      const rule = applicableRules.find(
-        (r) =>
-          r.type === 'EXCLUSIVE' &&
-          result.plugins?.every((p) => r.plugins?.includes(p))
-      )
-      if (rule?.severity === 'warning') {
-        exclusivityWarnings.push(result)
-      } else {
-        exclusivityErrors.push(result)
-      }
-    }
 
     const errors = [
       ...exclusivityErrors,
       ...conflictErrors,
-      ...this.checkDependencies(plugins, pluginNames, applicableRules, ctx),
+      ...dependencyErrors,
       ...frameworkErrors,
     ]
 
@@ -148,32 +163,27 @@ export class CompatibilityValidator {
       ...conflictWarnings,
       ...frameworkWarnings,
     ]
-    const suggestions = this.checkRecommendations(
-      plugins,
-      pluginNames,
-      applicableRules
-    )
 
     const valid = errors.length === 0
 
     this.logger.debug(`Validation result: ${valid ? 'valid' : 'invalid'}`, {
       errors: errors.length,
       warnings: warnings.length,
-      suggestions: suggestions.length,
+      suggestions: suggestionsList.length,
     })
 
     return {
       valid,
       errors,
       warnings,
-      suggestions,
+      suggestions: suggestionsList,
     }
   }
 
   /**
-   * Vérifie les conflits avec le framework
+   * Vérifie les conflits avec le framework (optimized with indexing)
+   * Time complexity: O(selectedPlugins) instead of O(rules × plugins)
    *
-   * @param _plugins - Liste des plugins (non utilisée, conservée pour cohérence)
    * @param pluginNames - Set des noms de plugins pour lookup rapide
    * @param ctx - Contexte du projet
    * @param rules - Règles applicables
@@ -182,7 +192,6 @@ export class CompatibilityValidator {
    * @internal
    */
   private checkFrameworkConflicts(
-    _plugins: Plugin[],
     pluginNames: Set<string>,
     ctx: ProjectContext,
     rules: CompatibilityRule[]
@@ -227,9 +236,9 @@ export class CompatibilityValidator {
   }
 
   /**
-   * Vérifie les règles d'exclusivité (EXCLUSIVE)
+   * Vérifie les règles d'exclusivité (EXCLUSIVE) - Optimized with indexing
+   * Time complexity: O(selectedPlugins) instead of O(rules × plugins)
    *
-   * @param _plugins - Liste des plugins (non utilisée, conservée pour cohérence)
    * @param pluginNames - Set des noms de plugins pour lookup rapide
    * @param rules - Règles applicables
    * @returns Liste des erreurs d'exclusivité
@@ -237,39 +246,20 @@ export class CompatibilityValidator {
    * @internal
    */
   private checkExclusivity(
-    _plugins: Plugin[],
     pluginNames: Set<string>,
-    rules: CompatibilityRule[] = this.rules
+    _rules: CompatibilityRule[] = this.rules
   ): ValidationError[] {
-    const errors: ValidationError[] = []
-
-    for (const rule of rules) {
-      if (rule.type !== 'EXCLUSIVE' || !rule.plugins) {
-        continue
-      }
-
-      // Vérifier si plusieurs plugins exclusifs sont présents
-      const selectedExclusivePlugins = rule.plugins.filter((pluginName) =>
-        pluginNames.has(pluginName)
-      )
-
-      if (selectedExclusivePlugins.length > 1) {
-        errors.push({
-          type: 'EXCLUSIVE',
-          plugins: selectedExclusivePlugins,
-          message: rule.reason,
-          canOverride: rule.allowOverride ?? false,
-        })
-      }
-    }
-
-    return errors
+    // Use index for O(1) lookups instead of O(n²)
+    // Returns already-formatted errors with canOverride
+    return this.validationIndex.exclusivity.getViolations(
+      pluginNames
+    ) as ValidationError[]
   }
 
   /**
-   * Vérifie les conflits entre plugins (CONFLICT)
+   * Vérifie les conflits entre plugins (CONFLICT) - Optimized with indexing
+   * Time complexity: O(selectedPlugins) instead of O(rules × plugins)
    *
-   * @param _plugins - Liste des plugins (non utilisée, conservée pour cohérence)
    * @param pluginNames - Set des noms de plugins pour lookup rapide
    * @param rules - Règles applicables
    * @returns Liste des warnings/erreurs de conflit
@@ -277,44 +267,17 @@ export class CompatibilityValidator {
    * @internal
    */
   private checkConflicts(
-    _plugins: Plugin[],
     pluginNames: Set<string>,
-    rules: CompatibilityRule[] = this.rules
-  ): ValidationWarning[] {
-    const conflicts: ValidationWarning[] = []
-
-    for (const rule of rules) {
-      // Ignorer les règles avec framework (gérées séparément)
-      if (rule.framework) {
-        continue
-      }
-      if (rule.type !== 'CONFLICT' || !rule.plugins) {
-        continue
-      }
-
-      // Vérifier si plusieurs plugins en conflit sont présents
-      const conflictingPlugins = rule.plugins.filter((pluginName) =>
-        pluginNames.has(pluginName)
-      )
-
-      // Un conflit nécessite AU MOINS 2 plugins de la règle présents
-      if (conflictingPlugins.length > 1) {
-        conflicts.push({
-          type: 'CONFLICT',
-          plugins: conflictingPlugins,
-          message: rule.reason,
-          canOverride: rule.allowOverride ?? true,
-        })
-      }
-    }
-
-    return conflicts
+    _rules: CompatibilityRule[] = this.rules
+  ): CompatibilityRule[] {
+    // Use index for O(1) lookups instead of O(n²)
+    return this.validationIndex.conflicts.getConflicts(pluginNames, _rules)
   }
 
   /**
-   * Vérifie les dépendances requises (REQUIRES)
+   * Vérifie les dépendances requises (REQUIRES) - Optimized with indexing
+   * Time complexity: O(selectedPlugins) instead of O(rules × plugins)
    *
-   * @param _plugins - Liste des plugins (non utilisée, conservée pour cohérence)
    * @param pluginNames - Set des noms de plugins pour lookup rapide
    * @param rules - Règles applicables
    * @param ctx - Contexte du projet (optionnel)
@@ -323,20 +286,18 @@ export class CompatibilityValidator {
    * @internal
    */
   private checkDependencies(
-    _plugins: Plugin[],
     pluginNames: Set<string>,
-    rules: CompatibilityRule[] = this.rules,
+    _rules: CompatibilityRule[] = this.rules,
     ctx?: ProjectContext
   ): ValidationError[] {
     const errors: ValidationError[] = []
 
-    for (const rule of rules) {
-      if (rule.type !== 'REQUIRES' || !rule.plugin || !rule.requires) {
-        continue
-      }
+    // Use index for O(1) lookups instead of O(n²)
+    const dependencyRules =
+      this.validationIndex.dependencies.getAllDependencies(pluginNames)
 
-      // Vérifier si le plugin est présent
-      if (!pluginNames.has(rule.plugin)) {
+    for (const rule of dependencyRules) {
+      if (rule.type !== 'REQUIRES' || !rule.plugin || !rule.requires) {
         continue
       }
 
@@ -382,9 +343,9 @@ export class CompatibilityValidator {
   }
 
   /**
-   * Vérifie les recommandations (RECOMMENDS)
+   * Vérifie les recommandations (RECOMMENDS) - Optimized with indexing
+   * Time complexity: O(selectedPlugins) instead of O(rules × plugins)
    *
-   * @param _plugins - Liste des plugins (non utilisée, conservée pour cohérence)
    * @param pluginNames - Set des noms de plugins pour lookup rapide
    * @param rules - Règles applicables
    * @returns Liste des suggestions de plugins recommandés
@@ -392,19 +353,17 @@ export class CompatibilityValidator {
    * @internal
    */
   private checkRecommendations(
-    _plugins: Plugin[],
     pluginNames: Set<string>,
-    rules: CompatibilityRule[] = this.rules
+    _rules: CompatibilityRule[] = this.rules
   ): string[] {
     const suggestions: string[] = []
 
-    for (const rule of rules) {
-      if (rule.type !== 'RECOMMENDS' || !rule.plugin || !rule.recommends) {
-        continue
-      }
+    // Use index for O(1) lookups instead of O(n²)
+    const recommendationRules =
+      this.validationIndex.recommendations.getAllRecommendations(pluginNames)
 
-      // Vérifier si le plugin est présent
-      if (!pluginNames.has(rule.plugin)) {
+    for (const rule of recommendationRules) {
+      if (rule.type !== 'RECOMMENDS' || !rule.plugin || !rule.recommends) {
         continue
       }
 
