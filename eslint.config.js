@@ -40,6 +40,16 @@ export default tseslint.config(
       // Autoriser console dans les commandes CLI (output utilisateur)
       'no-console': 'off',
 
+      // Security-related rules (TypeScript native)
+      // Note: eslint-plugin-security not compatible with ESLint 9 yet
+      // Using native TypeScript rules instead
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-dynamic-delete': 'error',
+      '@typescript-eslint/restrict-template-expressions': 'warn', // Catches template injection
+
       // Prettier
       'prettier/prettier': 'error',
     },
@@ -61,6 +71,16 @@ export default tseslint.config(
     },
   },
 
+  {
+    files: ['src/utils/package-manager.ts', 'src/cli/utils/*-installer.ts'],
+    rules: {
+      // Ces fichiers utilisent execSync/spawn intentionnellement (avec validation)
+      // Les règles les signaleront, ce qui force à documenter pourquoi c'est sûr
+      '@typescript-eslint/no-unsafe-call': 'warn',
+      '@typescript-eslint/restrict-template-expressions': 'warn',
+    },
+  },
+
   // Règles plus souples pour les tests
   {
     files: ['tests/**/*.ts', 'tests/**/*.tsx'],
@@ -74,6 +94,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-dynamic-delete': 'off',
     },
   },
 
