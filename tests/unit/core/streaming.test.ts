@@ -311,7 +311,7 @@ describe('Streaming Utilities - Memory Optimization', () => {
         100,
         async (batch) => {
           return batch.map((x) => x * 2)
-        },
+        }
       )
 
       const before = process.memoryUsage().heapUsed
@@ -325,7 +325,7 @@ describe('Streaming Utilities - Memory Optimization', () => {
           // Periodic check
           const used = process.memoryUsage().heapUsed
           console.log(
-            `  Processed ${processedCount} items, heap: ${((used - before) / 1024 / 1024).toFixed(1)}MB`,
+            `  Processed ${processedCount} items, heap: ${((used - before) / 1024 / 1024).toFixed(1)}MB`
           )
         }
       }
