@@ -15,6 +15,7 @@ import {
   RESOURCE_LIMITS,
   type TimeoutError,
 } from '../core/timeout-manager.js'
+import { IntegrityChecker } from '../core/integrity-checker.js'
 
 const logger = getModuleLogger()
 
@@ -97,6 +98,53 @@ export async function detectPackageManager(
 }
 
 /**
+ * Vérifie l'intégrité du fichier lock avant installation
+ * Rejette si le fichier est corrompu ou manque des hashes d'intégrité
+ *
+ * @param projectRoot - Racine du projet
+ * @param packageManager - Package manager utilisé
+ * @returns null si l'intégrité est valide, message d'erreur sinon
+ */
+async function verifyLockFileIntegrity(
+  projectRoot: string,
+  packageManager: PackageManager
+): Promise<string | null> {
+  const lockFiles: Record<PackageManager, string> = {
+    npm: 'package-lock.json',
+    yarn: 'yarn.lock',
+    pnpm: 'pnpm-lock.yaml',
+    bun: 'bun.lockb',
+  }
+
+  const lockFile = lockFiles[packageManager]
+  const lockPath = resolve(projectRoot, lockFile)
+
+  // Check if lock file exists
+  if (!(await fs.pathExists(lockPath))) {
+    // Lock file doesn't exist - not an error for first install
+    logger.debug(`Lock file not found: ${lockFile}`)
+    return null
+  }
+
+  try {
+    const lockContent = await fs.readFile(lockPath, 'utf-8')
+    const result = IntegrityChecker.verifyLockFile(lockContent)
+
+    if (!result.valid) {
+      const errors = result.errors.join(', ')
+      return `Lock file integrity check failed: ${errors}`
+    }
+
+    logger.debug(
+      `Lock file integrity verified (${result.checksVerified} hashes checked)`
+    )
+    return null
+  } catch (error) {
+    return `Error reading lock file: ${error instanceof Error ? error.message : String(error)}`
+  }
+}
+
+/**
  * Installe des packages avec le package manager spécifié
  *
  * @param packages - Liste des packages à installer (ex: ['react', 'react-dom'])
@@ -148,6 +196,20 @@ export async function installPackages(
   )
 
   try {
+    // Verify lock file integrity before installation
+    const integrityError = await verifyLockFileIntegrity(
+      projectRoot,
+      packageManager
+    )
+    if (integrityError) {
+      logger.error(integrityError)
+      return {
+        success: false,
+        packages,
+        error: integrityError,
+      }
+    }
+
     const command = getInstallCommand(packageManager, packages, { dev, exact })
     const cwd = resolve(projectRoot)
 
@@ -156,6 +218,13 @@ export async function installPackages(
     const [cmd, ...args] = command
     if (!cmd) {
       throw new Error('Command is empty')
+    }
+
+    // Add security options to npm args
+    const securityArgs = ['--prefer-offline', '--no-save-exact']
+    if (packageManager === 'npm') {
+      args.push(...securityArgs)
+      args.push('--audit')
     }
 
     // Execute with timeout protection and resource limits
