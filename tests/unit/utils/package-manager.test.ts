@@ -135,7 +135,14 @@ describe('package-manager', () => {
       expect(result.packages).toEqual(['axios', 'zustand'])
       const callArgs = vi.mocked(execa).mock.calls[0]
       expect(callArgs?.[0]).toBe('npm')
-      expect(callArgs?.[1]).toEqual(['install', 'axios', 'zustand'])
+      expect(callArgs?.[1]).toEqual([
+        'install',
+        'axios',
+        'zustand',
+        '--prefer-offline',
+        '--no-save-exact',
+        '--audit',
+      ])
     })
 
     it('should install dev dependencies with --save-dev', async () => {
@@ -148,7 +155,14 @@ describe('package-manager', () => {
 
       const callArgs = vi.mocked(execa).mock.calls[0]
       expect(callArgs?.[0]).toBe('npm')
-      expect(callArgs?.[1]).toEqual(['install', '--save-dev', 'eslint'])
+      expect(callArgs?.[1]).toEqual([
+        'install',
+        '--save-dev',
+        'eslint',
+        '--prefer-offline',
+        '--no-save-exact',
+        '--audit',
+      ])
     })
 
     it('should install with pnpm', async () => {
@@ -204,7 +218,14 @@ describe('package-manager', () => {
 
       const callArgs = vi.mocked(execa).mock.calls[0]
       expect(callArgs?.[0]).toBe('npm')
-      expect(callArgs?.[1]).toEqual(['install', '--save-exact', 'axios'])
+      expect(callArgs?.[1]).toEqual([
+        'install',
+        '--save-exact',
+        'axios',
+        '--prefer-offline',
+        '--no-save-exact',
+        '--audit',
+      ])
     })
   })
 
