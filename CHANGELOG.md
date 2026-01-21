@@ -13,6 +13,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Interactive configuration wizard
 - VS Code extension
 
+## [1.3.1] - 2026-01-21
+
+### Changed
+- **Dependencies**: Updated all dependencies to latest compatible versions
+  - `@types/node`: `25.0.3` → `25.0.9`
+  - `zod`: `4.3.2` → `4.3.5` (note: Zod 5.x not yet in production)
+  - `@vitest/coverage-v8`: `4.0.16` → `4.0.17`
+  - `eslint-plugin-prettier`: `5.5.4` → `5.5.5`
+  - `inquirer`: `13.1.0` → `13.2.1`
+  - `memfs`: `4.51.1` → `4.56.4`
+  - `ora`: `9.0.0` → `9.1.0`
+  - `prettier`: `3.7.4` → `3.8.0`
+  - `type-fest`: `5.3.1` → `5.4.1`
+  - `typescript-eslint`: `8.51.0` → `8.53.1`
+  - `vitest`: `4.0.16` → `4.0.17`
+  - Plus 81 autres packages mises à jour
+
+### Security
+- ✅ `npm audit`: **0 vulnerabilities** (confirmed post-update)
+- ✅ All dependencies verified for Node.js 20+ compatibility
+- ✅ All 1281 unit tests passing (185 security tests included)
+- ✅ Build validation successful (ESM 250ms + DTS 3238ms)
+
+### Testing
+- ✅ Full test suite: **1281/1281 PASS**
+- ✅ Security tests: **185/185 PASS**
+  - Shell injection tests: 34/34
+  - Path traversal tests: 30/30
+  - Package injection tests: 34/34
+  - Config injection tests: 45/45
+  - Package integrity tests: 42/42
+- ✅ Linting: **0 errors, 0 warnings**
+- ✅ Build: **SUCCESS** (ESM + DTS)
+
 ## [1.3.0] - 2026-01-02
 
 ### Added
