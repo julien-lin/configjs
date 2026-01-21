@@ -2,26 +2,24 @@
   "compilerOptions": {
     /* Language and Environment */
     "target": "ES2022",
-    "lib": ["ES2022"],
-    
+    "lib": [
+      "ES2022"
+    ],
     /* Modules */
     "module": "ESNext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    
     /* Emit */
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
     "removeComments": true,
-    
     /* Interop Constraints */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    
     /* Type Checking */
     "strict": true,
     "noImplicitAny": true,
@@ -38,13 +36,13 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
-    
     /* Completeness */
     "skipLibCheck": true
   },
   "include": [
     "src/**/*",
-    "tests/**/*"
+    "tests/**/*",
+    "scripts/**/*"
   ],
   "exclude": [
     "node_modules",
@@ -52,4 +50,3 @@
     "tests/fixtures"
   ]
 }
-
