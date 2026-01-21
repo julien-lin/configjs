@@ -84,7 +84,7 @@ export class PluginStream<T> {
    */
   async reduce<U>(
     fn: (acc: U, item: T) => U | Promise<U>,
-    initial: U,
+    initial: U
   ): Promise<U> {
     let acc = initial
     for (const item of this.items) {
