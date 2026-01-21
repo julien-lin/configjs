@@ -1,0 +1,241 @@
+name: Performance Benchmarking
+
+on:
+  push:
+    branches: [main, develop, security/main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'package.json'
+      - '.github/workflows/performance.yml'
+  pull_request:
+    branches: [main, develop, security/main]
+  schedule:
+    # Run performance tests daily
+    - cron: '0 2 * * *'
+
+jobs:
+  performance:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [18.x, 20.x]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for comparisons
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install hyperfine
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            sudo apt-get install -y hyperfine
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            brew install hyperfine
+          elif [[ "$RUNNER_OS" == "Windows" ]]; then
+            choco install hyperfine -y
+          fi
+        shell: bash
+
+      - name: Install clinic.js
+        run: npm install -g clinic
+
+      - name: Run performance tests
+        run: npm run test -- tests/performance/
+        env:
+          NODE_OPTIONS: --expose-gc
+
+      - name: Run key metrics
+        run: npm run test -- tests/performance/key-metrics.test.ts
+        env:
+          NODE_OPTIONS: --expose-gc
+
+      - name: Run continuous monitoring
+        run: npm run test -- tests/performance/continuous-monitoring.test.ts
+
+      - name: Check performance regressions
+        run: |
+          npm run perf:check \
+            --slack-webhook ${{ secrets.SLACK_WEBHOOK }} \
+            --output performance-report.txt
+        continue-on-error: true
+
+      - name: Upload performance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report-${{ matrix.os }}-${{ matrix.node-version }}
+          path: performance-report.txt
+          retention-days: 30
+
+      - name: Compare with baseline
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "📊 Performance Comparison"
+          npm run perf:check
+        continue-on-error: true
+
+      - name: Post performance comment
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.existsSync('performance-report.txt') 
+              ? fs.readFileSync('performance-report.txt', 'utf8')
+              : 'Performance check skipped';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 📊 Performance Check Results\n\n\`\`\`\n${report}\n\`\`\``
+            });
+
+      - name: Save baseline
+        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest' && matrix.node-version == '20.x'
+        run: npm run perf:check -- --baseline-save
+
+      - name: Commit baseline update
+        if: github.ref == 'refs/heads/main' && matrix.os == 'ubuntu-latest' && matrix.node-version == '20.x'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'perf: update performance baselines'
+          file_pattern: 'tests/performance/baseline*.json'
+          skip_dirty_check: true
+
+  benchmarks:
+    runs-on: ubuntu-latest
+    needs: performance
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run benchmark comparisons
+        run: |
+          npm run benchmark -- \
+            --compare old new \
+            --output benchmark-results.json
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark-results.json
+          retention-days: 90
+
+  regression-check:
+    runs-on: ubuntu-latest
+    needs: performance
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for regressions
+        run: |
+          RESULT=$(npm run perf:check 2>&1)
+          echo "$RESULT"
+          
+          if echo "$RESULT" | grep -q "❌ FAILED"; then
+            echo "::error::Performance regression detected"
+            exit 1
+          fi
+
+  memory-profile:
+    runs-on: ubuntu-latest
+    needs: performance
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate memory profile
+        run: |
+          node --prof src/cli.ts
+          node --prof-process isolate-*.log > memory-profile.txt
+
+      - name: Upload memory profile
+        uses: actions/upload-artifact@v4
+        with:
+          name: memory-profile
+          path: memory-profile.txt
+          retention-days: 30
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [performance, regression-check]
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare notification
+        run: |
+          STATUS="${{ needs.performance.result }}"
+          if [ "$STATUS" = "failure" ]; then
+            echo "NOTIFICATION_EMOJI=❌" >> $GITHUB_ENV
+            echo "NOTIFICATION_TEXT=Performance tests failed" >> $GITHUB_ENV
+          else
+            echo "NOTIFICATION_EMOJI=✅" >> $GITHUB_ENV
+            echo "NOTIFICATION_TEXT=Performance tests passed" >> $GITHUB_ENV
+          fi
+
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "${{ env.NOTIFICATION_EMOJI }} ${{ env.NOTIFICATION_TEXT }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Performance Test Results*\n${{ env.NOTIFICATION_EMOJI }} ${{ env.NOTIFICATION_TEXT }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

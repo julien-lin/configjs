@@ -1,0 +1,74 @@
+{
+    "version": "1.0",
+    "createdAt": "2026-01-21",
+    "framework": "orchestrateur",
+    "baselines": {
+        "install-time": {
+            "metric": "install-time",
+            "value": 95.3,
+            "unit": "ms",
+            "description": "Framework installation time",
+            "platform": "linux",
+            "nodeVersion": "20.x",
+            "timestamp": "2026-01-21T10:00:00Z"
+        },
+        "plugin-load": {
+            "metric": "plugin-load",
+            "value": 15.2,
+            "unit": "ms",
+            "description": "Plugin loading time for typical configuration",
+            "platform": "linux",
+            "nodeVersion": "20.x",
+            "timestamp": "2026-01-21T10:00:00Z"
+        },
+        "memory-usage": {
+            "metric": "memory-usage",
+            "value": 124.5,
+            "unit": "MB",
+            "description": "Peak memory usage during operation",
+            "platform": "linux",
+            "nodeVersion": "20.x",
+            "timestamp": "2026-01-21T10:00:00Z"
+        },
+        "cpu-utilization": {
+            "metric": "cpu-utilization",
+            "value": 45.2,
+            "unit": "ms",
+            "description": "CPU time for standard operations",
+            "platform": "linux",
+            "nodeVersion": "20.x",
+            "timestamp": "2026-01-21T10:00:00Z"
+        },
+        "config-validation": {
+            "metric": "config-validation",
+            "value": 8.5,
+            "unit": "ms",
+            "description": "Configuration validation time",
+            "platform": "linux",
+            "nodeVersion": "20.x",
+            "timestamp": "2026-01-21T10:00:00Z"
+        }
+    },
+    "thresholds": {
+        "warning": 5,
+        "error": 15,
+        "unit": "percent"
+    },
+    "targets": {
+        "install-time": {
+            "mean": 100,
+            "p95": 110,
+            "unit": "ms"
+        },
+        "plugin-load": {
+            "mean": 20,
+            "p95": 25,
+            "unit": "ms"
+        },
+        "memory-usage": {
+            "mean": 150,
+            "peak": 200,
+            "unit": "MB"
+        }
+    }
+}
