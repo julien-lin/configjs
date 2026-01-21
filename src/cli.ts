@@ -2,7 +2,7 @@
 
 import { Command } from 'commander'
 import { version } from '../package.json'
-import { initializeCLILogging } from './utils/logger-provider.js'
+import { initializeCLILogging, cliLogger } from './utils/logger-provider.js'
 
 // Enable CLI logging at startup
 initializeCLILogging()
@@ -39,7 +39,9 @@ program
         const command = new ReactCommand()
         await command.execute(options)
       } catch (error) {
-        console.error('Error:', error)
+        const errorMessage =
+          error instanceof Error ? error.message : String(error)
+        cliLogger.error(`❌ React configuration failed: ${errorMessage}`)
         process.exit(1)
       }
     }
@@ -71,7 +73,9 @@ program
         const command = new NextjsCommand()
         await command.execute(options)
       } catch (error) {
-        console.error('Error:', error)
+        const errorMessage =
+          error instanceof Error ? error.message : String(error)
+        cliLogger.error(`❌ Next.js configuration failed: ${errorMessage}`)
         process.exit(1)
       }
     }
@@ -102,7 +106,9 @@ program
         const command = new VueCommand()
         await command.execute(options)
       } catch (error) {
-        console.error('Error:', error)
+        const errorMessage =
+          error instanceof Error ? error.message : String(error)
+        cliLogger.error(`❌ Vue configuration failed: ${errorMessage}`)
         process.exit(1)
       }
     }
@@ -134,7 +140,9 @@ program
         const command = new SvelteCommand()
         await command.execute(options)
       } catch (error) {
-        console.error('Error:', error)
+        const errorMessage =
+          error instanceof Error ? error.message : String(error)
+        cliLogger.error(`❌ Svelte configuration failed: ${errorMessage}`)
         process.exit(1)
       }
     }
@@ -166,7 +174,9 @@ program
         const command = new AngularCommand()
         await command.execute(options)
       } catch (error) {
-        console.error('Error:', error)
+        const errorMessage =
+          error instanceof Error ? error.message : String(error)
+        cliLogger.error(`❌ Angular configuration failed: ${errorMessage}`)
         process.exit(1)
       }
     }
@@ -181,7 +191,9 @@ program
       const { listLibraries } = await import('./cli/commands/list.js')
       listLibraries(options)
     } catch (error) {
-      console.error('Error:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      cliLogger.error(`❌ Failed to list libraries: ${errorMessage}`)
       process.exit(1)
     }
   })
@@ -195,7 +207,9 @@ program
       const { checkCompatibility } = await import('./cli/commands/check.js')
       await checkCompatibility(options)
     } catch (error) {
-      console.error('Error:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      cliLogger.error(`❌ Compatibility check failed: ${errorMessage}`)
       process.exit(1)
     }
   })
@@ -208,7 +222,9 @@ program
       const { installedCommand } = await import('./cli/commands/installed.js')
       await installedCommand()
     } catch (error) {
-      console.error('Error:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      cliLogger.error(`❌ Failed to list installed plugins: ${errorMessage}`)
       process.exit(1)
     }
   })
@@ -221,7 +237,9 @@ program
       const { removeCommand } = await import('./cli/commands/remove.js')
       await removeCommand(plugin)
     } catch (error) {
-      console.error('Error:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      cliLogger.error(`❌ Failed to remove plugin '${plugin}': ${errorMessage}`)
       process.exit(1)
     }
   })
