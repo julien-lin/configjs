@@ -814,7 +814,236 @@ vi.mock('fs-extra', () => ({
 }))
 ```
 
-## 🚫 Interdictions ABSOLUES
+## � Security Rules
+
+### Input Validation (CRITICAL)
+
+```typescript
+// ✅ CORRECT - Validate all user inputs
+import { z } from 'zod'
+
+const frameworkSchema = z.enum(['react', 'vue', 'angular', 'svelte'])
+const pathSchema = z.string().min(1).max(500).regex(/^[\w.\-/]+$/)
+
+export function validateFramework(input: unknown): Framework {
+  return frameworkSchema.parse(input)
+}
+
+export function validateProjectPath(input: unknown): string {
+  return pathSchema.parse(input)
+}
+
+// ❌ WRONG - Direct usage without validation
+export function processFramework(framework: string) {
+  // No validation - vulnerable to injection
+}
+```
+
+### Security Checklist
+
+- [ ] **No shell injection** - Never use `exec()`, use `spawn()` with array args
+- [ ] **Input sanitization** - Use Zod schemas for ALL user inputs
+- [ ] **Whitelist approach** - Whitelist allowed values, not blacklist forbidden
+- [ ] **No dynamic requires** - Never `require(userInput)`
+- [ ] **No credential logging** - Filter secrets from logs
+- [ ] **No eval/Function()** - Never execute arbitrary code
+- [ ] **Path validation** - Prevent directory traversal `../`
+- [ ] **URL validation** - Validate before HTTP requests
+- [ ] **Checksum verification** - Verify integrity of external files
+
+---
+
+## 💬 Error Messages & UX
+
+### Error Message Format (MANDATORY)
+
+**EVERY error must be:**
+1. **Specific** - What exactly failed?
+2. **Actionable** - What should user do?
+3. **Formatted** - Clean, scannable output
+4. **Contextual** - Include relevant details
+
+```typescript
+// ✅ CORRECT - Specific + Actionable + Formatted
+try {
+  await detectFramework(projectRoot)
+} catch (error) {
+  logger.error(
+    '❌ Framework detection failed\n' +
+    '\n' +
+    'Possible causes:\n' +
+    '  1. package.json not found in project root\n' +
+    '  2. Invalid project structure\n' +
+    '  3. Permission denied reading files\n' +
+    '\n' +
+    'Solutions:\n' +
+    `  1. Run from project root: cd ${projectRoot}\n` +
+    '  2. Check file permissions: chmod 644 package.json\n' +
+    '  3. Debug: npm run debug -- --framework-detection\n' +
+    '\n' +
+    `Full error: ${error.message}`
+  )
+  process.exit(EXIT_CODES.VALIDATION_ERROR)
+}
+
+// ❌ WRONG - Generic, not actionable
+try {
+  await detectFramework(projectRoot)
+} catch (error) {
+  logger.error('Error!')
+  throw error
+}
+```
+
+### Exit Codes (CLI STANDARD)
+
+```typescript
+// MANDATORY - Use consistent exit codes
+export const EXIT_CODES = {
+  SUCCESS: 0,              // Success
+  GENERAL_ERROR: 1,        // Generic error
+  VALIDATION_ERROR: 2,     // Input/config validation failed
+  NETWORK_ERROR: 3,        // Network request failed
+  INSTALLATION_ERROR: 4,   // Package installation failed
+  USER_CANCELLED: 130,     // SIGINT (Ctrl+C)
+  TIMEOUT: 124,            // Command timeout
+}
+
+// Proper exit handling
+process.on('SIGINT', () => {
+  logger.info('\n✋ Installation cancelled by user')
+  cleanup() // Cleanup resources
+  process.exit(EXIT_CODES.USER_CANCELLED)
+})
+
+process.on('SIGTERM', () => {
+  logger.warn('Received termination signal')
+  cleanup()
+  process.exit(1)
+})
+
+// Always exit with correct code
+if (validationResult.valid === false) {
+  logger.error('Validation failed')
+  process.exit(EXIT_CODES.VALIDATION_ERROR)
+}
+```
+
+---
+
+## 🧪 Testing Strategy (EXTENDED)
+
+### Types of Tests Required
+
+```
+Unit Tests (80%+ coverage)     → Vitest, mocked dependencies
+Integration Tests              → Real files, mocked npm
+Smoke Tests (MANDATORY)        → Full workflow, real project
+Performance Tests (OPTIONAL)   → Installation time benchmarks
+```
+
+### Smoke Test Pattern (CRITICAL)
+
+**Every major feature MUST have a smoke test:**
+
+```typescript
+// tests/e2e/smoke-tests.ts
+describe('Smoke Tests - Full Workflows', () => {
+  it('should setup React + TypeScript + Vitest from scratch', async () => {
+    // 1. Create temp project
+    const projectDir = await createTempDir()
+    
+    // 2. Initialize with npm
+    await initializeProject(projectDir)
+    
+    // 3. Run ConfigJS setup
+    const result = await cliRun(
+      'setup',
+      '--framework react',
+      '--typescript',
+      '--with vitest',
+      '--cwd',
+      projectDir
+    )
+    
+    // 4. Verify setup succeeded
+    expect(result.exitCode).toBe(EXIT_CODES.SUCCESS)
+    
+    // 5. Verify files created
+    expect(await fileExists(`${projectDir}/vitest.config.ts`)).toBe(true)
+    expect(await fileExists(`${projectDir}/tsconfig.json`)).toBe(true)
+    
+    // 6. Verify npm test works
+    const testResult = await runCommand('npm', ['test'], { cwd: projectDir })
+    expect(testResult.exitCode).toBe(0)
+    
+    // 7. Cleanup
+    await removeDir(projectDir)
+  }, 60000) // 60 second timeout
+})
+```
+
+**Checklist for Smoke Tests:**
+- [ ] Real project directory (not mocked)
+- [ ] Real npm install (can mock registry with verdaccio)
+- [ ] Full workflow end-to-end
+- [ ] Verify output files are valid
+- [ ] Verify commands work after setup
+- [ ] 60+ second timeout (slower than unit tests)
+- [ ] Cleanup after test
+
+---
+
+## 🔒 Dependency Security
+
+### Security Audit Requirements
+
+```bash
+# MANDATORY - Before every commit
+npm audit                          # Check vulnerabilities
+npm outdated                       # Check outdated packages
+npm ls --depth=0                   # View direct dependencies
+```
+
+### Dependency Rules
+
+```typescript
+// MANDATORY Checks
+- [ ] No direct dependencies on deprecated packages
+- [ ] No known CVE vulnerabilities in node-check-cves
+- [ ] Bundle size impact < 50KB (when added)
+- [ ] No duplicate dependencies (npm ls --all)
+- [ ] Security advisories resolved (npm audit fix)
+- [ ] Major version bumps reviewed (breaking changes?)
+- [ ] Peer dependencies satisfied
+- [ ] License compatible (MIT/Apache/BSD preferred)
+```
+
+### Package Addition Checklist
+
+```typescript
+// Before adding a dependency:
+// 1. Check npm audit
+npm install <package> && npm audit
+
+// 2. Check downloads/week (popularity)
+npm view <package> downloads
+
+// 3. Check maintenance status
+npm view <package> time.modified  # Recent?
+npm view <package> maintainers    # Active?
+
+// 4. Check alternatives
+npm search <package> --json       # Similar packages?
+
+// 5. Document decision
+// Why this package? Why not alternatives?
+// Go in comments or docs.
+```
+
+---
+
+## �🚫 Interdictions ABSOLUES
 
 ### Code
 
