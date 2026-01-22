@@ -4,7 +4,6 @@ import {
   initializeCLILogging,
   loggerProvider,
 } from '../../../src/utils/logger-provider.js'
-import { logger as cliLogger } from '../../../src/utils/logger.js'
 
 describe('Logger Provider', () => {
   beforeEach(() => {
@@ -65,8 +64,10 @@ describe('Logger Provider', () => {
       initializeCLILogging()
       const logger = getModuleLogger()
 
-      // After init, should be the real logger
-      expect(logger).toBe(cliLogger)
+      // After init, should be a logger instance (ScrubbingLogger wrapping cliLogger)
+      expect(logger).toBeDefined()
+      expect(typeof logger.debug).toBe('function')
+      expect(typeof logger.info).toBe('function')
     })
 
     it('should allow modules to use the real logger after initialization', () => {
@@ -83,7 +84,7 @@ describe('Logger Provider', () => {
   describe('disableLogging', () => {
     it('should revert to no-op logger after being initialized', () => {
       initializeCLILogging()
-      expect(getModuleLogger()).toBe(cliLogger)
+      expect(getModuleLogger()).toBeDefined()
 
       loggerProvider.disableLogging()
       const logger = getModuleLogger()
@@ -124,9 +125,16 @@ describe('Logger Provider', () => {
       const module1RealLogger = getModuleLogger()
       const module2RealLogger = getModuleLogger()
 
-      // Both should now be the CLI logger
-      expect(module1RealLogger).toBe(cliLogger)
-      expect(module2RealLogger).toBe(cliLogger)
+      // Both should return a logger instance (ScrubbingLogger wrapping cliLogger for security)
+      expect(module1RealLogger).toBeDefined()
+      expect(module2RealLogger).toBeDefined()
+      // They should be the same instance
+      expect(module1RealLogger).toBe(module2RealLogger)
+      // They should be usable without errors
+      expect(() => {
+        module1RealLogger.info('test')
+        module2RealLogger.info('test')
+      }).not.toThrow()
     })
   })
 })
