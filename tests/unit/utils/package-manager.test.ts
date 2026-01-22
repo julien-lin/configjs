@@ -10,6 +10,18 @@ import type { PackageManager } from '../../../src/types/index.js'
 
 vi.mock('execa')
 vi.mock('fs-extra')
+const rateLimiterCheckMock = vi.fn().mockReturnValue({
+  allowed: true,
+  remainingTokens: 1,
+  resetTime: Date.now(),
+  cooldownMs: 0,
+})
+
+vi.mock('../../../src/core/rate-limiter.js', () => ({
+  getGlobalRateLimiter: () => ({
+    checkRequest: rateLimiterCheckMock,
+  }),
+}))
 
 describe('package-manager', () => {
   const mockProjectRoot = '/tmp/test-project'
@@ -205,6 +217,22 @@ describe('package-manager', () => {
 
       expect(result.success).toBe(true)
       expect(result.packages).toEqual([])
+      expect(execa).not.toHaveBeenCalled()
+    })
+
+    it('should return error when rate limited', async () => {
+      rateLimiterCheckMock.mockReturnValueOnce({
+        allowed: false,
+        remainingTokens: 0,
+        resetTime: Date.now(),
+        cooldownMs: 1000,
+        message: 'Rate limit exceeded',
+      })
+
+      const result = await installPackages(['axios'], mockOptions)
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Rate limit exceeded')
       expect(execa).not.toHaveBeenCalled()
     })
 
