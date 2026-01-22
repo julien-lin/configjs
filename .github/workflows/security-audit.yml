@@ -140,12 +140,27 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set TruffleHog scan range
+        id: trufflehog-range
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "base=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+            echo "head=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          elif [ -n "${{ github.event.before }}" ]; then
+            echo "base=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+            echo "head=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=${{ github.event.repository.default_branch }}" >> "$GITHUB_OUTPUT"
+            echo "head=HEAD" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: TruffleHog - Scan for secrets
+        if: steps.trufflehog-range.outputs.base != steps.trufflehog-range.outputs.head
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
+          base: ${{ steps.trufflehog-range.outputs.base }}
+          head: ${{ steps.trufflehog-range.outputs.head }}
           extra_args: --debug
 
   dependency-check:
