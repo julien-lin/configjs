@@ -54,6 +54,8 @@
     "test:integration": "vitest run tests/integration",
     "test:e2e": "vitest run tests/e2e",
     "test:security": "vitest run tests/security",
+    "test:performance": "vitest run tests/performance",
+    "perf:check": "vitest run tests/performance --reporter=json > performance-report.json 2>&1 || true",
     "audit": "npm audit --audit-level=moderate",
     "audit:fix": "npm audit fix",
     "outdated": "npm outdated",
