@@ -345,7 +345,7 @@ describe('Key Metrics - Performance Benchmarking', () => {
 
     it('should not flag minor variations as regressions', async () => {
       await engine.measureExecutionTime('stable-performance', async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10))
+        await new Promise((resolve) => setTimeout(resolve, 50))
       })
       engine.saveBaseline('stable-performance')
 
@@ -353,8 +353,8 @@ describe('Key Metrics - Performance Benchmarking', () => {
       const nearly = await engine.measureExecutionTime(
         'stable-performance',
         async () => {
-          const variation = Math.random() * 0.1
-          await new Promise((resolve) => setTimeout(resolve, 10 + variation))
+          const variation = Math.random() * 1
+          await new Promise((resolve) => setTimeout(resolve, 50 + variation))
         }
       )
 
