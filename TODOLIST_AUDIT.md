@@ -683,6 +683,9 @@ if (IGNORED_DIRS.has(file)) continue
 - **Description:** Remplacer boucle séquentielle par `Promise.all()` pour charger plugins en parallèle.
 - **Effort:** 1-2 heures
 - **Gain:** 70% (~300-400ms sur 10 plugins)
+- **Status:** 🟢 COMPLÉTÉ
+- **Complété:** 22 jan 2026
+- **Notes:** Déjà parallèle via `loadPlugins()` → `Promise.all()`
 
 **AVANT:**
 
