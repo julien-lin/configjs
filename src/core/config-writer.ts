@@ -1,7 +1,7 @@
 import { resolve, dirname } from 'path'
+import { createHash } from 'crypto'
 import type { PackageJson } from 'type-fest'
 import {
-  readPackageJson,
   writePackageJson,
   readFileContent,
   writeFileContent,
@@ -58,6 +58,8 @@ export interface WriteOptions {
  */
 export class ConfigWriter {
   private logger = getModuleLogger()
+  private jsonCache: Map<string, { hash: string; parsed: PackageJson }> =
+    new Map()
 
   /**
    * @param backupManager - Gestionnaire de backups à utiliser
@@ -186,11 +188,17 @@ export class ConfigWriter {
     modifier: (pkg: PackageJson) => PackageJson
   ): Promise<void> {
     const fullPath = resolve(projectRoot)
+    const packageJsonPath = resolve(fullPath, 'package.json')
 
     // Lire le package.json actuel
     let pkg: PackageJson
+    let existingContent: string
     try {
-      pkg = await readPackageJson(fullPath, this.fsAdapter)
+      existingContent = await readFileContent(
+        packageJsonPath,
+        'utf-8',
+        this.fsAdapter
+      )
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
@@ -199,17 +207,21 @@ export class ConfigWriter {
       )
     }
 
+    try {
+      pkg = this.parseJsonWithCache(packageJsonPath, existingContent)
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      throw new Error(
+        `Failed to read package.json: ${errorMessage}. File may be invalid JSON.`
+      )
+    }
+
     // Backup
-    const packageJsonPath = resolve(fullPath, 'package.json')
     if (this.backupManager.hasBackup(packageJsonPath)) {
       // Backup déjà fait, ne pas le refaire
     } else {
       try {
-        const existingContent = await readFileContent(
-          packageJsonPath,
-          'utf-8',
-          this.fsAdapter
-        )
         this.backupManager.backup(packageJsonPath, existingContent)
       } catch (error) {
         const errorMessage =
@@ -227,6 +239,7 @@ export class ConfigWriter {
     try {
       await writePackageJson(fullPath, modifiedPkg, this.fsAdapter)
       this.logger.debug(`Modified package.json: ${packageJsonPath}`)
+      this.jsonCache.delete(packageJsonPath)
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
@@ -371,5 +384,17 @@ export class ConfigWriter {
     })
 
     this.logger.debug(`Injected import into ${fullPath}`)
+  }
+
+  private parseJsonWithCache(filePath: string, content: string): PackageJson {
+    const hash = createHash('sha256').update(content).digest('hex')
+    const cached = this.jsonCache.get(filePath)
+    if (cached?.hash === hash) {
+      return cached.parsed
+    }
+
+    const parsed = JSON.parse(content) as PackageJson
+    this.jsonCache.set(filePath, { hash, parsed })
+    return parsed
   }
 }
