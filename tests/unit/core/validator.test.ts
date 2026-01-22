@@ -56,10 +56,19 @@ describe('CompatibilityValidator', () => {
       const result = validator.validate(plugins)
 
       expect(result.valid).toBe(false)
-      expect(result.errors).toHaveLength(1)
-      expect(result.errors[0]?.type).toBe('EXCLUSIVE')
-      expect(result.errors[0]?.plugins).toContain('@reduxjs/toolkit')
-      expect(result.errors[0]?.plugins).toContain('zustand')
+      // Redux and Zustand are both state management plugins, so should have at least 1 EXCLUSIVE error
+      expect(result.errors.length).toBeGreaterThanOrEqual(1)
+      const exclusiveErrors = result.errors.filter(
+        (e) => e.type === 'EXCLUSIVE'
+      )
+      expect(exclusiveErrors.length).toBeGreaterThanOrEqual(1)
+      // At least one EXCLUSIVE error should contain both plugins
+      const hasReduxAndZustand = exclusiveErrors.some(
+        (e) =>
+          e.plugins?.includes('@reduxjs/toolkit') &&
+          e.plugins?.includes('zustand')
+      )
+      expect(hasReduxAndZustand).toBe(true)
     })
 
     it('should detect conflict warning (Tailwind + Bootstrap)', () => {

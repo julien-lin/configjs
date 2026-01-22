@@ -8,6 +8,7 @@ import type {
 import { Category } from '../../types/index.js'
 import { ConfigWriter } from '../../core/config-writer.js'
 import { BackupManager } from '../../core/backup-manager.js'
+import { ConfigSanitizer } from '../../core/config-sanitizer.js'
 import {
   checkPathExists,
   readFileContent,
@@ -88,6 +89,15 @@ export const nextjsImageOptimizationPlugin: Plugin = {
           'utf-8',
           ctx.fsAdapter
         )
+
+        // Validate existing config before modification
+        const configFormat = extension === 'ts' ? 'js' : 'js'
+        if (!ConfigSanitizer.canSafelyModify(existingContent, configFormat)) {
+          throw new Error(
+            `Invalid or unsafe next.config.${extension} - cannot safely modify`
+          )
+        }
+
         const updatedContent = injectImageConfig(existingContent, extension)
 
         if (updatedContent !== existingContent) {
@@ -190,12 +200,18 @@ module.exports = nextConfig
 
 /**
  * Injecte la configuration d'images dans next.config.js/ts existant
+ * Valide la structure avant injection et refuse les configs malformées
  */
 function injectImageConfig(content: string, _extension: string): string {
   // Vérifier si la configuration images existe déjà
   if (content.includes('images:') && content.includes('remotePatterns')) {
     logger.warn('Image configuration already exists in next.config')
     return content
+  }
+
+  // Valider que le fichier est du JavaScript valide
+  if (!ConfigSanitizer.canSafelyModify(content, 'js')) {
+    throw new Error('Invalid JavaScript in next.config file')
   }
 
   let modifiedContent = content
@@ -213,24 +229,38 @@ function injectImageConfig(content: string, _extension: string): string {
           return match
         }
 
+        // Construire l'injection de configuration d'images
+        const imageConfig = buildImageConfig()
+
         // Ajouter images avant la fermeture
         const trimmed = configContent.trim()
         const hasTrailingComma = trimmed.endsWith(',')
-        const imageConfig = `  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-    ],
-  },${hasTrailingComma ? '' : '\n'}`
 
         return `${start}${trimmed}${hasTrailingComma ? '' : ','}\n${imageConfig}\n}`
       }
     )
   } else {
     // Si on ne trouve pas la structure, ajouter à la fin
-    const imageConfig = `\n  images: {
+    const imageConfig = buildImageConfig()
+    modifiedContent = modifiedContent.replace(
+      /(\}\s*)$/,
+      (match) => `  ${imageConfig}\n${match}`
+    )
+  }
+
+  // Valider que le résultat est du JavaScript valide
+  if (!ConfigSanitizer.canSafelyModify(modifiedContent, 'js')) {
+    throw new Error('Failed to safely inject image configuration')
+  }
+
+  return modifiedContent
+}
+
+/**
+ * Construit la configuration d'images de manière sûre
+ */
+function buildImageConfig(): string {
+  return `  images: {
     remotePatterns: [
       {
         protocol: 'https',
@@ -238,11 +268,4 @@ function injectImageConfig(content: string, _extension: string): string {
       },
     ],
   },`
-    modifiedContent = modifiedContent.replace(
-      /(\}\s*)$/,
-      (match) => `${imageConfig}\n${match}`
-    )
-  }
-
-  return modifiedContent
 }

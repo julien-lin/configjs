@@ -1,0 +1,31 @@
+#!/bin/sh
+# Commit message hook: Validate commit message format
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Reject if commit message is empty (but allow merge commits)
+if [ -z "$COMMIT_MSG" ] && [ "$2" != "merge" ]; then
+  echo "❌ Commit message cannot be empty"
+  exit 1
+fi
+
+# For security commits, require detailed messages
+if echo "$COMMIT_MSG" | grep -q "^security\|^fix:.*vulnerab\|^fix:.*inject\|^fix:.*traversal"; then
+  # Require at least 50 characters
+  if [ ${#COMMIT_MSG} -lt 50 ]; then
+    echo "⚠️  Security-related commits should have descriptive messages (min 50 characters)"
+    echo "Current message: $COMMIT_MSG"
+    exit 1
+  fi
+  
+  # Require reference to ticket/issue
+  if ! echo "$COMMIT_MSG" | grep -qE '#[0-9]+|SECURITY-[0-9]+'; then
+    echo "⚠️  Please reference an issue or security ticket (e.g., #123 or SECURITY-456)"
+    exit 1
+  fi
+fi
+
+echo "✅ Commit message format valid"
+exit 0
+

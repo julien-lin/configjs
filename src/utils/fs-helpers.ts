@@ -3,6 +3,10 @@ import type { PackageJson } from 'type-fest'
 import { getModuleLogger } from './logger-provider.js'
 import type { IFsAdapter } from '../core/fs-adapter.js'
 import { createDefaultFsAdapter } from '../core/fs-adapter.js'
+import {
+  validatePathInProjectWithSymlinks,
+  getPathValidationErrorMessage,
+} from '../core/path-validator.js'
 
 const logger = getModuleLogger()
 
@@ -229,25 +233,44 @@ export async function ensureDirectory(
 /**
  * Copie un fichier vers une destination
  *
- * @param src - Chemin source
- * @param dest - Chemin destination
+ * @param src - Chemin source (relatif ou absolu)
+ * @param dest - Chemin destination (relatif ou absolu)
  * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
+ * @param projectRoot - Chemin racine du projet pour validation (sécurité contre path traversal)
  * @returns Promise qui se résout quand la copie est terminée
- * @throws {Error} Si la copie échoue
+ * @throws {Error} Si la copie échoue ou si les chemins tentent une traversal
  *
  * @example
  * ```typescript
- * await copyFile('/path/to/source.txt', '/path/to/dest.txt')
+ * await copyFile(
+ *   'src/template.json',
+ *   'src/config.json',
+ *   undefined,
+ *   '/home/user/my-project'
+ * )
  * ```
  */
 export async function copyFile(
   src: string,
   dest: string,
-  fsAdapter?: IFsAdapter
+  fsAdapter?: IFsAdapter,
+  projectRoot?: string
 ): Promise<void> {
   const adapter = fsAdapter || createDefaultFsAdapter()
-  const srcPath = resolve(src)
-  const destPath = resolve(dest)
+  let srcPath = resolve(src)
+  let destPath = resolve(dest)
+
+  // SECURITY: Validate paths stay within projectRoot if provided
+  if (projectRoot) {
+    try {
+      srcPath = await validatePathInProjectWithSymlinks(projectRoot, src)
+      destPath = await validatePathInProjectWithSymlinks(projectRoot, dest)
+    } catch (error) {
+      const errorMsg = getPathValidationErrorMessage(error)
+      logger.error(`Path traversal attempt blocked: ${errorMsg}`)
+      throw new Error(`Invalid path: ${errorMsg}`)
+    }
+  }
 
   // Vérifier que le fichier source existe
   if (!(await adapter.pathExists(srcPath))) {
@@ -351,24 +374,42 @@ export async function restoreBackup(
 /**
  * Lit le contenu d'un fichier texte
  *
- * @param filePath - Chemin du fichier
+ * @param filePath - Chemin du fichier (relatif à CWD ou absolu)
  * @param encoding - Encodage (défaut: 'utf-8')
  * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
+ * @param projectRoot - Chemin racine du projet pour validation (sécurité contre path traversal)
  * @returns Contenu du fichier
- * @throws {Error} Si la lecture échoue
+ * @throws {Error} Si la lecture échoue ou si le chemin tente une traversal
  *
  * @example
  * ```typescript
- * const content = await readFileContent('/path/to/file.txt')
+ * const content = await readFileContent(
+ *   'src/config.json',
+ *   'utf-8',
+ *   undefined,
+ *   '/home/user/my-project'
+ * )
  * ```
  */
 export async function readFileContent(
   filePath: string,
   encoding: BufferEncoding = 'utf-8',
-  fsAdapter?: IFsAdapter
+  fsAdapter?: IFsAdapter,
+  projectRoot?: string
 ): Promise<string> {
   const adapter = fsAdapter || createDefaultFsAdapter()
-  const fullPath = resolve(filePath)
+  let fullPath = resolve(filePath)
+
+  // SECURITY: Validate path stays within projectRoot if provided
+  if (projectRoot) {
+    try {
+      fullPath = await validatePathInProjectWithSymlinks(projectRoot, filePath)
+    } catch (error) {
+      const errorMsg = getPathValidationErrorMessage(error)
+      logger.error(`Path traversal attempt blocked: ${errorMsg}`)
+      throw new Error(`Invalid path: ${errorMsg}`)
+    }
+  }
 
   if (!(await adapter.pathExists(fullPath))) {
     throw new Error(`File not found: ${fullPath}`)
@@ -387,26 +428,45 @@ export async function readFileContent(
 /**
  * Écrit du contenu dans un fichier texte
  *
- * @param filePath - Chemin du fichier
+ * @param filePath - Chemin du fichier (relatif à CWD ou absolu)
  * @param content - Contenu à écrire
  * @param encoding - Encodage (défaut: 'utf-8')
  * @param fsAdapter - Adaptateur de filesystem optionnel (pour tests avec memfs)
+ * @param projectRoot - Chemin racine du projet pour validation (sécurité contre path traversal)
  * @returns Promise qui se résout quand l'écriture est terminée
- * @throws {Error} Si l'écriture échoue
+ * @throws {Error} Si l'écriture échoue ou si le chemin tente une traversal
  *
  * @example
  * ```typescript
- * await writeFileContent('/path/to/file.txt', 'Hello World')
+ * await writeFileContent(
+ *   'src/config.json',
+ *   '{"name": "app"}',
+ *   'utf-8',
+ *   undefined,
+ *   '/home/user/my-project'
+ * )
  * ```
  */
 export async function writeFileContent(
   filePath: string,
   content: string,
   encoding: string = 'utf-8',
-  fsAdapter?: IFsAdapter
+  fsAdapter?: IFsAdapter,
+  projectRoot?: string
 ): Promise<void> {
   const adapter = fsAdapter || createDefaultFsAdapter()
-  const fullPath = resolve(filePath)
+  let fullPath = resolve(filePath)
+
+  // SECURITY: Validate path stays within projectRoot if provided
+  if (projectRoot) {
+    try {
+      fullPath = await validatePathInProjectWithSymlinks(projectRoot, filePath)
+    } catch (error) {
+      const errorMsg = getPathValidationErrorMessage(error)
+      logger.error(`Path traversal attempt blocked: ${errorMsg}`)
+      throw new Error(`Invalid path: ${errorMsg}`)
+    }
+  }
 
   // Créer le dossier parent si nécessaire
   const parentDir = dirname(fullPath)

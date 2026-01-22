@@ -1,6 +1,12 @@
 import inquirer from 'inquirer'
 import type { SupportedLanguage } from '../i18n/types.js'
 import { getTranslations } from '../i18n/index.js'
+import pc from 'chalk'
+import {
+  vueSetupSchema,
+  validateInput,
+  getValidationErrorMessage,
+} from '../../core/input-validator.js'
 
 export interface VueSetupOptions {
   projectName: string
@@ -59,8 +65,15 @@ export async function promptVueSetup(
     return null
   }
 
-  return {
-    projectName: answers.projectName.trim(),
-    typescript: answers.typescript,
+  // SECURITY: Validate all inputs against Zod schema
+  try {
+    const validated = validateInput(vueSetupSchema, {
+      projectName: answers.projectName.trim(),
+      typescript: answers.typescript,
+    })
+    return validated
+  } catch (error) {
+    console.error(pc.red(`❌ ${getValidationErrorMessage(error)}`))
+    throw error
   }
 }

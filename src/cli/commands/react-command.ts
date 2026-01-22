@@ -4,7 +4,7 @@ import { BaseFrameworkCommand } from './base-framework-command.js'
 import { detectContext, DetectionError } from '../../core/detector.js'
 import { getFrameworkMetadata } from '../../core/framework-registry.js'
 import { getTranslations } from '../i18n/index.js'
-import pc from 'picocolors'
+import pc from 'chalk'
 
 /**
  * Commande d'installation pour React
@@ -52,8 +52,7 @@ export class ReactCommand extends BaseFrameworkCommand {
           language
         )
 
-        // Changer vers le nouveau répertoire
-        process.chdir(newProjectPath)
+        // Use the new project path (no process.chdir needed)
         projectRoot = newProjectPath
 
         console.log()

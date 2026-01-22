@@ -1,7 +1,12 @@
 import type { SupportedLanguage } from '../i18n/types.js'
 import { getTranslations } from '../i18n/index.js'
 import { input, confirm } from '@inquirer/prompts'
-import pc from 'picocolors'
+import pc from 'chalk'
+import {
+  svelteSetupSchema,
+  validateInput,
+  getValidationErrorMessage,
+} from '../../core/input-validator.js'
 
 export interface SvelteSetupOptions {
   projectName: string
@@ -45,8 +50,15 @@ export async function promptSvelteSetup(
     default: true,
   })
 
-  return {
-    projectName: projectName.trim(),
-    useTypeScript,
+  // SECURITY: Validate all inputs before returning
+  try {
+    const validated = validateInput(svelteSetupSchema, {
+      projectName: projectName.trim(),
+      useTypeScript,
+    })
+    return validated
+  } catch (error) {
+    console.error(pc.red(`❌ ${getValidationErrorMessage(error)}`))
+    throw error
   }
 }

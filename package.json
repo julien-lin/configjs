@@ -53,10 +53,18 @@
     "test:watch": "vitest watch",
     "test:integration": "vitest run tests/integration",
     "test:e2e": "vitest run tests/e2e",
-    "prepublishOnly": "npm run typecheck && npm run lint && npm run test:unit && npm run build",
+    "test:security": "vitest run tests/security",
+    "test:performance": "vitest run tests/performance",
+    "perf:check": "vitest run tests/performance --reporter=json --outputFile=performance-report.json || true",
+    "audit": "npm audit --audit-level=moderate",
+    "audit:fix": "npm audit fix",
+    "outdated": "npm outdated",
+    "prepublishOnly": "npm run typecheck && npm run lint && npm run test:unit && npm run test:security && npm run build",
     "prepare": "husky install"
   },
   "dependencies": {
+    "@babel/parser": "^7.28.6",
+    "@iarna/toml": "^2.2.5",
     "chalk": "^5.6.2",
     "commander": "^14.0.2",
     "conf": "^15.0.2",
@@ -64,9 +72,9 @@
     "fs-extra": "^11.3.3",
     "inquirer": "^13.1.0",
     "ora": "^9.0.0",
-    "picocolors": "^1.1.1",
     "type-fest": "^5.3.1",
-    "zod": "^4.3.2"
+    "yaml": "^2.8.2",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

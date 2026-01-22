@@ -1,10 +1,16 @@
 import inquirer from 'inquirer'
 import type { SupportedLanguage } from '../i18n/types.js'
 import { getTranslations } from '../i18n/index.js'
+import pc from 'chalk'
+import {
+  viteSetupSchema,
+  validateInput,
+  getValidationErrorMessage,
+} from '../../core/input-validator.js'
 
 export interface ViteSetupOptions {
   projectName: string
-  template: 'react' | 'react-ts'
+  template: 'react' | 'react-ts' | 'vue' | 'vue-ts' | 'svelte' | 'svelte-ts'
 }
 
 /**
@@ -59,8 +65,15 @@ export async function promptViteSetup(
     return null
   }
 
-  return {
-    projectName: answers.projectName.trim(),
-    template: answers.typescript ? 'react-ts' : 'react',
+  // SECURITY: Validate all inputs against Zod schema
+  try {
+    const validated = validateInput(viteSetupSchema, {
+      projectName: answers.projectName.trim(),
+      template: answers.typescript ? 'react-ts' : 'react',
+    })
+    return validated
+  } catch (error) {
+    console.error(pc.red(`❌ ${getValidationErrorMessage(error)}`))
+    throw error
   }
 }

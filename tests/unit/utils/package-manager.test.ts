@@ -10,6 +10,18 @@ import type { PackageManager } from '../../../src/types/index.js'
 
 vi.mock('execa')
 vi.mock('fs-extra')
+const rateLimiterCheckMock = vi.fn().mockReturnValue({
+  allowed: true,
+  remainingTokens: 1,
+  resetTime: Date.now(),
+  cooldownMs: 0,
+})
+
+vi.mock('../../../src/core/rate-limiter.js', () => ({
+  getGlobalRateLimiter: () => ({
+    checkRequest: rateLimiterCheckMock,
+  }),
+}))
 
 describe('package-manager', () => {
   const mockProjectRoot = '/tmp/test-project'
@@ -135,7 +147,14 @@ describe('package-manager', () => {
       expect(result.packages).toEqual(['axios', 'zustand'])
       const callArgs = vi.mocked(execa).mock.calls[0]
       expect(callArgs?.[0]).toBe('npm')
-      expect(callArgs?.[1]).toEqual(['install', 'axios', 'zustand'])
+      expect(callArgs?.[1]).toEqual([
+        'install',
+        'axios',
+        'zustand',
+        '--prefer-offline',
+        '--no-save-exact',
+        '--audit',
+      ])
     })
 
     it('should install dev dependencies with --save-dev', async () => {
@@ -148,7 +167,14 @@ describe('package-manager', () => {
 
       const callArgs = vi.mocked(execa).mock.calls[0]
       expect(callArgs?.[0]).toBe('npm')
-      expect(callArgs?.[1]).toEqual(['install', '--save-dev', 'eslint'])
+      expect(callArgs?.[1]).toEqual([
+        'install',
+        '--save-dev',
+        'eslint',
+        '--prefer-offline',
+        '--no-save-exact',
+        '--audit',
+      ])
     })
 
     it('should install with pnpm', async () => {
@@ -194,6 +220,22 @@ describe('package-manager', () => {
       expect(execa).not.toHaveBeenCalled()
     })
 
+    it('should return error when rate limited', async () => {
+      rateLimiterCheckMock.mockReturnValueOnce({
+        allowed: false,
+        remainingTokens: 0,
+        resetTime: Date.now(),
+        cooldownMs: 1000,
+        message: 'Rate limit exceeded',
+      })
+
+      const result = await installPackages(['axios'], mockOptions)
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Rate limit exceeded')
+      expect(execa).not.toHaveBeenCalled()
+    })
+
     it('should use exact version with --save-exact', async () => {
       vi.mocked(execa).mockResolvedValue(mockExecaResult)
 
@@ -204,7 +246,14 @@ describe('package-manager', () => {
 
       const callArgs = vi.mocked(execa).mock.calls[0]
       expect(callArgs?.[0]).toBe('npm')
-      expect(callArgs?.[1]).toEqual(['install', '--save-exact', 'axios'])
+      expect(callArgs?.[1]).toEqual([
+        'install',
+        '--save-exact',
+        'axios',
+        '--prefer-offline',
+        '--no-save-exact',
+        '--audit',
+      ])
     })
   })
 
