@@ -1,5 +1,5 @@
 /**
- * Config Sanitizer - Safe configuration generation and modification (SEC-007)
+ * Config Sanitizer - Safe configuration generation and modification (SEC-008)
  *
  * Prevents template injection attacks by:
  * 1. **Validating Structure**: Checks config format against strict schemas
@@ -18,8 +18,8 @@
  *
  * Implementation Strategy:
  * - Format-specific validators (JSON, JS, YAML, TOML)
- * - Regex-based dangerous pattern detection
- * - Safe escaping for each format
+ * - AST-based JavaScript validation
+ * - Safe parsing for YAML/TOML
  * - Recursive prototype pollution checks
  *
  * References:
@@ -31,9 +31,13 @@
  */
 
 /**
- * Configuration sanitizer for safe config file handling (SEC-007)
+ * Configuration sanitizer for safe config file handling (SEC-008)
  * Supports: JSON, JavaScript, YAML, TOML with format-specific validation
  */
+import { parse } from '@babel/parser'
+import { parseDocument } from 'yaml'
+import { parse as parseToml } from '@iarna/toml'
+
 export class ConfigSanitizer {
   /**
    * Validates and sanitizes JSON configuration
@@ -86,33 +90,108 @@ export class ConfigSanitizer {
    * @throws Error if JavaScript is invalid or contains suspicious code
    */
   static validateJavaScript(content: string): string {
-    // Check for dangerous patterns
-    const dangerousPatterns = [
-      /eval\s*\(/gi, // eval() calls
-      /new\s+Function\s*\(/gi, // new Function() constructor
-      /require\s*\(/gi, // Dynamic require() calls (not static import from)
-      /import\s*\(/gi, // Dynamic import() calls
-      /process\s*\./gi, // process access
-      /__dirname\s*/gi, // __dirname
-      /__filename\s*/gi, // __filename
-      /child_process/gi, // child_process module
-      /fs\s*\./gi, // fs module direct access (not import)
-      /`\$\{[^}]*\}`/g, // template literals with any expression
-    ]
+    const ast = this.parseJavaScriptAst(content)
 
-    for (const pattern of dangerousPatterns) {
-      if (pattern.test(content)) {
-        throw new Error(
-          `Dangerous pattern detected in JavaScript: ${pattern.source}`
-        )
+    const blockedModules = new Set([
+      'child_process',
+      'node:child_process',
+      'fs',
+      'node:fs',
+      'fs/promises',
+      'node:fs/promises',
+    ])
+
+    this.walkAst(ast, (node, parent, parentKey) => {
+      if (node['type'] === 'CallExpression') {
+        const callee = node['callee'] as Record<string, unknown> | undefined
+        if (callee?.['type'] === 'Identifier' && callee['name'] === 'eval') {
+          throw new Error('Dangerous pattern detected in JavaScript: eval()')
+        }
+        if (callee?.['type'] === 'Identifier' && callee['name'] === 'require') {
+          throw new Error('Dangerous pattern detected in JavaScript: require()')
+        }
+        const requireObject =
+          callee?.['type'] === 'MemberExpression'
+            ? (callee['object'] as Record<string, unknown> | undefined)
+            : undefined
+
+        if (
+          callee?.['type'] === 'MemberExpression' &&
+          requireObject?.['type'] === 'Identifier' &&
+          requireObject['name'] === 'require'
+        ) {
+          throw new Error('Dangerous pattern detected in JavaScript: require()')
+        }
       }
-    }
 
-    // Note: Static imports like "import type { NextConfig } from 'next'"
-    // are safe and allowed. Only dynamic imports/require are rejected.
+      if (node['type'] === 'NewExpression') {
+        const callee = node['callee'] as Record<string, unknown> | undefined
+        if (
+          callee?.['type'] === 'Identifier' &&
+          callee['name'] === 'Function'
+        ) {
+          throw new Error(
+            'Dangerous pattern detected in JavaScript: new Function()'
+          )
+        }
+      }
 
-    // Note: We can't fully validate JS/TS syntax without a full parser
-    // But we've checked for dangerous patterns above
+      if (node['type'] === 'ImportExpression') {
+        throw new Error('Dangerous pattern detected in JavaScript: import()')
+      }
+
+      if (node['type'] === 'ImportDeclaration') {
+        const source = node['source'] as Record<string, unknown> | undefined
+        const sourceValue = source?.['value']
+        if (
+          typeof sourceValue === 'string' &&
+          blockedModules.has(sourceValue)
+        ) {
+          throw new Error(
+            `Dangerous pattern detected in JavaScript: import ${sourceValue}`
+          )
+        }
+      }
+
+      if (node['type'] === 'MemberExpression') {
+        const objectNode = node['object'] as Record<string, unknown> | undefined
+        if (
+          objectNode?.['type'] === 'Identifier' &&
+          objectNode['name'] === 'process'
+        ) {
+          throw new Error(
+            'Dangerous pattern detected in JavaScript: process access'
+          )
+        }
+      }
+
+      if (node['type'] === 'Identifier') {
+        const identifierName = node['name']
+        const isObjectKey =
+          parent?.['type'] === 'ObjectProperty' &&
+          parentKey === 'key' &&
+          parent['computed'] === false
+
+        if (!isObjectKey && identifierName === '__dirname') {
+          throw new Error('Dangerous pattern detected in JavaScript: __dirname')
+        }
+
+        if (!isObjectKey && identifierName === '__filename') {
+          throw new Error(
+            'Dangerous pattern detected in JavaScript: __filename'
+          )
+        }
+      }
+
+      if (node['type'] === 'TemplateLiteral') {
+        const expressions = node['expressions']
+        if (Array.isArray(expressions) && expressions.length > 0) {
+          throw new Error(
+            'Dangerous pattern detected in JavaScript: template literal'
+          )
+        }
+      }
+    })
 
     return content
   }
@@ -129,44 +208,38 @@ export class ConfigSanitizer {
    * @throws Error if YAML is invalid or contains injection attempts
    */
   static validateYAML(content: string): string {
-    // Check for dangerous YAML tags
-    const dangerousTags = [
-      /!!.*\//g, // Custom tags with paths
-      /!!python/gi,
-      /!!env/gi,
-      /!!perl/gi,
-      /!!ruby/gi,
-      /<<\s*:\s*/g, // Merge keys with colons
-    ]
+    const document = parseDocument(content, {
+      schema: 'core',
+    })
 
-    for (const pattern of dangerousTags) {
-      if (pattern.test(content)) {
-        throw new Error(`Dangerous YAML tag detected: ${pattern.source}`)
-      }
+    if (document.errors.length > 0) {
+      throw new Error(
+        `Invalid YAML: ${document.errors[0]?.message ?? 'unknown'}`
+      )
     }
 
-    // Basic YAML structure validation
-    const lines = content.split('\n')
+    this.validateYamlNodes(document.contents)
 
-    for (const line of lines) {
-      const trimmed = line.trim()
+    const parsed = document.toJS({ maxAliasCount: 50 }) as unknown
 
-      // Skip empty lines and comments
-      if (!trimmed || trimmed.startsWith('#')) {
-        continue
-      }
+    if (this.hasPrototypePollution(parsed)) {
+      throw new Error('Prototype pollution detected in YAML')
+    }
 
-      // Check indentation consistency
-      const currentIndent = line.search(/\S/)
-      if (currentIndent > 0 && currentIndent % 2 !== 0) {
-        // YAML typically uses 2-space indents
-        // This is a warning, not an error
-      }
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
+      throw new Error('YAML must be an object')
+    }
 
-      // Check for suspicious patterns
-      if (trimmed.includes('${') || trimmed.includes('`')) {
-        throw new Error('Template syntax detected in YAML')
-      }
+    if (this.hasSuspiciousStringValue(parsed)) {
+      throw new Error('Template syntax detected in YAML')
+    }
+
+    if (this.hasDangerousKey(parsed, new Set(['exec', 'eval', 'require']))) {
+      throw new Error('Dangerous key detected in YAML')
     }
 
     return content
@@ -184,47 +257,33 @@ export class ConfigSanitizer {
    * @throws Error if TOML is invalid or contains injection attempts
    */
   static validateTOML(content: string): string {
-    // Check for dangerous patterns
-    const dangerousPatterns = [
-      /\$\{.*?\}/g, // Template literals
-      /`[\s\S]*?`/g, // Backticks
-      /exec\s*=|eval\s*=/gi,
-      /require\s*=/gi,
-      /import\s*=/gi,
-    ]
-
-    for (const pattern of dangerousPatterns) {
-      if (pattern.test(content)) {
-        throw new Error(`Dangerous pattern detected in TOML: ${pattern.source}`)
-      }
+    let parsed: unknown
+    try {
+      parsed = parseToml(content) as unknown
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      throw new Error(`Invalid TOML: ${errorMessage}`)
     }
 
-    // Basic TOML structure validation
-    const lines = content.split('\n')
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
-      const trimmed = line?.trim() || ''
+    if (this.hasPrototypePollution(parsed)) {
+      throw new Error('Prototype pollution detected in TOML')
+    }
 
-      // Skip comments and empty lines
-      if (!trimmed || trimmed.startsWith('#')) {
-        continue
-      }
+    if (
+      typeof parsed !== 'object' ||
+      parsed === null ||
+      Array.isArray(parsed)
+    ) {
+      throw new Error('TOML must be an object')
+    }
 
-      // Check for balanced brackets
-      const openBrackets = (line?.match(/\[/g) || []).length
-      const closeBrackets = (line?.match(/\]/g) || []).length
+    if (this.hasSuspiciousStringValue(parsed)) {
+      throw new Error('Template syntax detected in TOML')
+    }
 
-      if (openBrackets !== closeBrackets) {
-        // This is okay in multi-line sections, just warning
-      }
-
-      // Validate key=value format
-      if (!trimmed.startsWith('[') && trimmed.includes('=')) {
-        const [key, _value] = trimmed.split('=', 2)
-        if (!key || !key.trim()) {
-          throw new Error(`Invalid TOML key=value on line ${i + 1}`)
-        }
-      }
+    if (this.hasDangerousKey(parsed, new Set(['exec', 'eval', 'require']))) {
+      throw new Error('Dangerous key detected in TOML')
     }
 
     return content
@@ -290,6 +349,142 @@ export class ConfigSanitizer {
       // Recursively check nested objects
       if (typeof value === 'object' && value !== null) {
         if (this.hasPrototypePollution(value)) {
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  private static parseJavaScriptAst(content: string): unknown {
+    try {
+      return parse(content, {
+        sourceType: 'module',
+        plugins: ['typescript', 'jsx'],
+      })
+    } catch {
+      try {
+        return parse(content, {
+          sourceType: 'script',
+          plugins: ['typescript', 'jsx'],
+        })
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error)
+        throw new Error(`Invalid JavaScript: ${errorMessage}`)
+      }
+    }
+  }
+
+  private static walkAst(
+    node: unknown,
+    visitor: (
+      node: Record<string, unknown>,
+      parent?: Record<string, unknown>,
+      parentKey?: string
+    ) => void,
+    parent?: Record<string, unknown>,
+    parentKey?: string
+  ): void {
+    if (!node || typeof node !== 'object') {
+      return
+    }
+
+    const currentNode = node as Record<string, unknown>
+    if (typeof currentNode['type'] !== 'string') {
+      return
+    }
+
+    visitor(currentNode, parent, parentKey)
+
+    for (const [key, value] of Object.entries(currentNode)) {
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          this.walkAst(item, visitor, currentNode, key)
+        }
+      } else if (value && typeof value === 'object') {
+        this.walkAst(value, visitor, currentNode, key)
+      }
+    }
+  }
+
+  private static validateYamlNodes(node: unknown): void {
+    if (!node || typeof node !== 'object') {
+      return
+    }
+
+    const currentNode = node as {
+      tag?: string
+      items?: unknown[]
+      key?: { value?: unknown }
+      value?: unknown
+    }
+
+    if (currentNode.tag) {
+      const allowedTags = new Set([
+        'tag:yaml.org,2002:map',
+        'tag:yaml.org,2002:seq',
+        'tag:yaml.org,2002:str',
+        'tag:yaml.org,2002:int',
+        'tag:yaml.org,2002:float',
+        'tag:yaml.org,2002:bool',
+        'tag:yaml.org,2002:null',
+      ])
+
+      if (!allowedTags.has(currentNode.tag)) {
+        throw new Error(`Dangerous YAML tag detected: ${currentNode.tag}`)
+      }
+    }
+
+    if (Array.isArray(currentNode.items)) {
+      for (const item of currentNode.items) {
+        const pair = item as { key?: { value?: unknown }; value?: unknown }
+        const keyValue = pair?.key?.value
+        if (keyValue === '<<') {
+          throw new Error('Dangerous YAML merge key detected')
+        }
+        this.validateYamlNodes(pair?.key)
+        this.validateYamlNodes(pair?.value)
+      }
+    }
+
+    this.validateYamlNodes(currentNode.key)
+    this.validateYamlNodes(currentNode.value)
+  }
+
+  private static hasSuspiciousStringValue(value: unknown): boolean {
+    if (typeof value === 'string') {
+      return value.includes('${') || value.includes('`')
+    }
+
+    if (Array.isArray(value)) {
+      return value.some((item) => this.hasSuspiciousStringValue(item))
+    }
+
+    if (value && typeof value === 'object') {
+      return Object.values(value).some((item) =>
+        this.hasSuspiciousStringValue(item)
+      )
+    }
+
+    return false
+  }
+
+  private static hasDangerousKey(
+    value: unknown,
+    dangerousKeys: Set<string>
+  ): boolean {
+    if (Array.isArray(value)) {
+      return value.some((item) => this.hasDangerousKey(item, dangerousKeys))
+    }
+
+    if (value && typeof value === 'object') {
+      for (const [key, item] of Object.entries(value)) {
+        if (dangerousKeys.has(key)) {
+          return true
+        }
+        if (this.hasDangerousKey(item, dangerousKeys)) {
           return true
         }
       }
