@@ -37,27 +37,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install hyperfine (optional)
+      - name: Install hyperfine
         run: |
           if [[ "$RUNNER_OS" == "Linux" ]]; then
-            sudo apt-get install -y hyperfine
+            sudo apt-get update && sudo apt-get install -y hyperfine
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             brew install hyperfine
           elif [[ "$RUNNER_OS" == "Windows" ]]; then
-            choco install hyperfine -y
+            # Use Scoop instead of Chocolatey for better reliability
+            powershell -Command "iwr -useb get.scoop.sh | iex"
+            scoop install hyperfine
           fi
         shell: bash
-        continue-on-error: true
 
-      - name: Install clinic.js (optional)
+      - name: Install clinic.js
         run: npm install -g clinic
-        continue-on-error: true
 
       - name: Run performance tests
         run: npm run test -- tests/performance/
         env:
           NODE_OPTIONS: --expose-gc
-
       - name: Run key metrics
         run: npm run test -- tests/performance/key-metrics.test.ts
         env:
