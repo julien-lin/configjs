@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install hyperfine
+      - name: Install hyperfine (optional)
         run: |
           if [[ "$RUNNER_OS" == "Linux" ]]; then
             sudo apt-get install -y hyperfine
@@ -47,9 +47,11 @@ jobs:
             choco install hyperfine -y
           fi
         shell: bash
+        continue-on-error: true
 
-      - name: Install clinic.js
+      - name: Install clinic.js (optional)
         run: npm install -g clinic
+        continue-on-error: true
 
       - name: Run performance tests
         run: npm run test -- tests/performance/
