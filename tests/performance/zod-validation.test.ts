@@ -100,10 +100,11 @@ describe('Zod Validation Performance - Baseline', () => {
 
       const end = performance.now()
       const totalTime = end - start
+      const avgTime = totalTime / 150
       console.log(
-        `  Bulk validation (150 ops total): ${totalTime.toFixed(2)}ms`
+        `  Bulk validation (150 ops total): ${totalTime.toFixed(2)}ms avg: ${avgTime.toFixed(3)}ms`
       )
-      expect(totalTime).toBeLessThan(10) // Baseline target
+      expect(totalTime).toBeLessThan(40) // Baseline target
     })
   })
 

@@ -712,6 +712,8 @@ await Promise.all(
 - **Description:** Mémoriser résultat `verifyLockFileIntegrity()` pour éviter re-lectures. Invalider après installation.
 - **Effort:** 1 heure
 - **Gain:** 200-250ms sur multiple installs
+- **Status:** 🟢 COMPLÉTÉ
+- **Complété:** 22 jan 2026
 
 ---
 
