@@ -19,6 +19,29 @@ import { IntegrityChecker } from '../core/integrity-checker.js'
 
 const logger = getModuleLogger()
 
+interface LockIntegrityCacheEntry {
+  result: string | null
+  mtimeMs?: number
+  exists: boolean
+}
+
+const lockIntegrityCache = new Map<string, LockIntegrityCacheEntry>()
+
+function getLockIntegrityCacheKey(
+  projectRoot: string,
+  packageManager: PackageManager
+): string {
+  return `${projectRoot}:${packageManager}`
+}
+
+function invalidateLockFileIntegrityCache(projectRoot: string): void {
+  for (const key of lockIntegrityCache.keys()) {
+    if (key.startsWith(`${projectRoot}:`)) {
+      lockIntegrityCache.delete(key)
+    }
+  }
+}
+
 /**
  * SEC-001: Whitelist of Safe NPM Arguments
  * Security: Only allow known-safe flags to prevent argument injection
@@ -336,29 +359,57 @@ async function verifyLockFileIntegrity(
 
   const lockFile = lockFiles[packageManager]
   const lockPath = resolve(projectRoot, lockFile)
+  const cacheKey = getLockIntegrityCacheKey(projectRoot, packageManager)
 
   // Check if lock file exists
   if (!(await fs.pathExists(lockPath))) {
     // Lock file doesn't exist - not an error for first install
     logger.debug(`Lock file not found: ${lockFile}`)
+    lockIntegrityCache.set(cacheKey, {
+      result: null,
+      exists: false,
+    })
     return null
   }
 
   try {
+    const stats = await fs.stat(lockPath)
+    const cached = lockIntegrityCache.get(cacheKey)
+    if (cached?.exists && cached.mtimeMs === stats.mtimeMs) {
+      return cached.result
+    }
+
     const lockContent = await fs.readFile(lockPath, 'utf-8')
     const result = IntegrityChecker.verifyLockFile(lockContent)
 
     if (!result.valid) {
       const errors = result.errors.join(', ')
-      return `Lock file integrity check failed: ${errors}`
+      const errorResult = `Lock file integrity check failed: ${errors}`
+      lockIntegrityCache.set(cacheKey, {
+        result: errorResult,
+        mtimeMs: stats.mtimeMs,
+        exists: true,
+      })
+      return errorResult
     }
 
     logger.debug(
       `Lock file integrity verified (${result.checksVerified} hashes checked)`
     )
+    lockIntegrityCache.set(cacheKey, {
+      result: null,
+      mtimeMs: stats.mtimeMs,
+      exists: true,
+    })
     return null
   } catch (error) {
-    return `Error reading lock file: ${error instanceof Error ? error.message : String(error)}`
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorResult = `Error reading lock file: ${errorMessage}`
+    lockIntegrityCache.set(cacheKey, {
+      result: errorResult,
+      exists: true,
+    })
+    return errorResult
   }
 }
 
@@ -493,6 +544,7 @@ export async function installPackages(
     }
 
     logger.success(`Successfully installed ${packages.length} package(s)`)
+    invalidateLockFileIntegrityCache(projectRoot)
     return {
       success: true,
       packages,
