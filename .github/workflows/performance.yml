@@ -37,18 +37,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install hyperfine
+      - name: Install hyperfine (Linux)
+        if: runner.os == 'Linux'
         run: |
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
-            sudo apt-get update && sudo apt-get install -y hyperfine
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            brew install hyperfine
-          elif [[ "$RUNNER_OS" == "Windows" ]]; then
-            # Use Scoop instead of Chocolatey for better reliability
-            powershell -Command "iwr -useb get.scoop.sh | iex"
-            scoop install hyperfine
-          fi
-        shell: bash
+          sudo apt-get update && sudo apt-get install -y hyperfine
+
+      - name: Install hyperfine (macOS)
+        if: runner.os == 'macOS'
+        run: brew install hyperfine
+
+      - name: Install hyperfine (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          # Install Scoop
+          iwr -useb get.scoop.sh | iex
+          # Refresh PATH
+          $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
+          # Install hyperfine
+          scoop install hyperfine
 
       - name: Install clinic.js
         run: npm install -g clinic
