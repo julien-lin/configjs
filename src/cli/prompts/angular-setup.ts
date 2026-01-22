@@ -1,4 +1,4 @@
-import pc from 'picocolors'
+import pc from 'chalk'
 import {
   angularSetupSchema,
   validateInput,

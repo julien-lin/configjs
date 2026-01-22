@@ -1,7 +1,7 @@
 import type { SupportedLanguage } from '../i18n/types.js'
 import { getTranslations } from '../i18n/index.js'
 import { input, confirm } from '@inquirer/prompts'
-import pc from 'picocolors'
+import pc from 'chalk'
 import {
   svelteSetupSchema,
   validateInput,

@@ -4,7 +4,7 @@ import { BaseFrameworkCommand } from './base-framework-command.js'
 import { detectContext, DetectionError } from '../../core/detector.js'
 import { getFrameworkMetadata } from '../../core/framework-registry.js'
 import { getTranslations } from '../i18n/index.js'
-import pc from 'picocolors'
+import pc from 'chalk'
 
 /**
  * Commande d'installation pour Vue.js
