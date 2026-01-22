@@ -21,6 +21,18 @@ import { createDefaultFsAdapter } from './fs-adapter.js'
  */
 const detectionCache = new Map<string, ProjectContext>()
 
+const IGNORED_DIRS = new Set([
+  'node_modules',
+  '.git',
+  '.next',
+  'dist',
+  'build',
+  'coverage',
+  '.nuxt',
+  '.vite',
+  'out',
+])
+
 /**
  * Erreur personnalisée pour les erreurs de détection
  */
@@ -397,6 +409,9 @@ async function detectVueApi(
     async function findVueFiles(dir: string): Promise<void> {
       const entries = await adapter.readdir(dir)
       for (const entryName of entries) {
+        if (IGNORED_DIRS.has(entryName)) {
+          continue
+        }
         const fullPath = join(dir, entryName)
         const stat = await adapter.stat(fullPath)
         if (stat.isDirectory()) {
