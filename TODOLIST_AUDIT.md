@@ -652,6 +652,8 @@ this.accessOrder.set(key, true)  // O(1)
 - **Description:** Ajouter `IGNORED_DIRS` Set avec `node_modules`, `.git`, `.next`, `dist`, etc. Éviter scans inutiles.
 - **Effort:** 1-2 heures
 - **Gain:** 50-70% détection sur gros projets
+- **Status:** 🟢 COMPLÉTÉ
+- **Complété:** 22 jan 2026
 
 **Implémentation:**
 
