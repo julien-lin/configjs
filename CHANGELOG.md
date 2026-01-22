@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
+
 - Additional framework support (Svelte, Preact, Solid)
 - Plugin marketplace
 - Interactive configuration wizard
@@ -16,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.1] - 2026-01-21
 
 ### Changed
+
 - **Dependencies**: Updated all dependencies to latest compatible versions
   - `@types/node`: `25.0.3` → `25.0.9`
   - `zod`: `4.3.2` → `4.3.5` (note: Zod 5.x not yet in production)
@@ -36,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Critical security hardening implemented with comprehensive input validation, argument sanitization, and credential protection:
 
 #### SEC-001: NPM Argument Injection Prevention
+
 - **Impact**: Critical (CVSS 9.0+)
 - **Issue**: User-supplied npm arguments could be used to inject arbitrary flags
 - **Fix**: Implemented whitelist-based argument validation (`SAFE_NPM_FLAGS`)
@@ -46,7 +49,8 @@ Critical security hardening implemented with comprehensive input validation, arg
 - **Tests**: 34/34 injection tests passing
 - **Files**: `src/utils/package-manager.ts`
 
-#### SEC-002: Environment Variable Leakage Prevention  
+#### SEC-002: Environment Variable Leakage Prevention
+
 - **Impact**: Critical (CVSS 9.0+)
 - **Issue**: Process environment variables exposed to subprocess (could contain sensitive credentials)
 - **Fix**: Implemented safe environment filtering (`createSafeEnvironment()`)
@@ -58,6 +62,7 @@ Critical security hardening implemented with comprehensive input validation, arg
 - **Files**: `src/utils/package-manager.ts`, `src/utils/logger-provider.ts`
 
 #### SEC-003: Sensitive Data in Logs (Automatic Redaction)
+
 - **Impact**: High (CVSS 7.5)
 - **Issue**: Credentials and tokens accidentally logged in error messages or debug output
 - **Fix**: Implemented `ScrubbingLogger` with automatic pattern-based redaction
@@ -70,6 +75,7 @@ Critical security hardening implemented with comprehensive input validation, arg
 - **Files**: `src/utils/logger-provider.ts`, `src/utils/logger.ts`
 
 #### SEC-004: Package Version Injection Prevention
+
 - **Impact**: High (CVSS 8.0)
 - **Issue**: Malicious version strings in package specifications (e.g., `pkg@--registry=evil`)
 - **Fix**: Implemented strict version string validation using regex boundaries
@@ -82,6 +88,7 @@ Critical security hardening implemented with comprehensive input validation, arg
 - **Files**: `src/core/package-validator.ts`
 
 #### SEC-005: Additional Arguments Validation (CLI & Plugin Layer)
+
 - **Impact**: High (CVSS 7.5)
 - **Issue**: External code (plugins, CLI) could pass unsafe arguments bypassing initial validation
 - **Fix**: Implemented comprehensive argument validation layer
@@ -95,6 +102,7 @@ Critical security hardening implemented with comprehensive input validation, arg
 - **Files**: `src/utils/package-manager.ts`
 
 #### Additional Security Improvements
+
 - **Path Traversal Prevention** (SEC-006): Boundary checking with `path.resolve()` + `path.normalize()`
   - Blocks: `../../../etc/passwd`, Windows paths (`..\..\..\windows`), symlink escapes
   - Tests: 30/30 path traversal tests passing
@@ -113,6 +121,7 @@ Critical security hardening implemented with comprehensive input validation, arg
   - Files: `src/core/input-validator.ts`
 
 ### Security Testing
+
 - ✅ Full security test suite: **185/185 PASS** (Phase 1)
   - Shell Injection Tests: 34/34 ✅
   - Path Traversal Tests: 30/30 ✅
@@ -123,6 +132,7 @@ Critical security hardening implemented with comprehensive input validation, arg
   - Environment Variable Tests: 21/21 ✅
 
 ### Security Policy
+
 - ✅ `SECURITY.md` published with responsible disclosure process
   - 90-day coordinated disclosure window
   - Critical vulnerabilities: <24h patch
@@ -131,6 +141,7 @@ Critical security hardening implemented with comprehensive input validation, arg
   - Previous issues documented (SEC-001 through SEC-005)
 
 ### Audit & Compliance
+
 - ✅ `npm audit`: **0 vulnerabilities**
 - ✅ All dependencies Node.js 20+ compatible
 - ✅ All 1281 unit tests passing (including 185 security tests)
@@ -144,6 +155,7 @@ Critical security hardening implemented with comprehensive input validation, arg
 ### Added
 
 #### Vue.js Support
+
 - 🚀 Full Vue.js 3 support with `npx @configjs/cli vue` command
 - 🔍 Automatic Vue.js project detection (Vue 3 only)
 - 📦 Vue.js project creation wizard using Vite (TypeScript, Router, Pinia, Vitest, ESLint, Prettier)
@@ -160,6 +172,7 @@ Critical security hardening implemented with comprehensive input validation, arg
 - 🧪 E2E and integration tests for Vue.js workflows
 
 #### Improvements
+
 - Enhanced framework detection to support Vue.js
 - API style detection (Composition API vs Options API)
 - Framework-specific compatibility rules for Vue.js
@@ -170,6 +183,7 @@ Critical security hardening implemented with comprehensive input validation, arg
 ### Added
 
 #### Next.js Support
+
 - 🚀 Full Next.js support with `npx @configjs/cli nextjs` command
 - 🔍 Automatic Next.js project detection
 - 📦 Next.js project creation wizard (TypeScript, ESLint, TailwindCSS, App/Pages Router)
@@ -188,6 +202,7 @@ Critical security hardening implemented with comprehensive input validation, arg
 - 🧪 E2E and integration tests for Next.js workflows
 
 #### Improvements
+
 - Enhanced framework detection to prioritize Next.js over React
 - Router-specific configuration (App Router vs Pages Router)
 - Framework-specific compatibility rules
@@ -203,6 +218,7 @@ This is the first stable release of confjs, ready for production use.
 ### Added
 
 #### Core Features
+
 - 🚀 Interactive CLI for plugin installation (`confjs react`)
 - 🔍 Automatic project detection (framework, package manager, TypeScript)
 - ✅ Plugin compatibility validation system
@@ -213,54 +229,66 @@ This is the first stable release of confjs, ready for production use.
 #### Plugin Categories
 
 **Routing** (2 plugins)
+
 - React Router DOM (`react-router-dom`) - Complete setup with routes
 - TanStack Router (`@tanstack/react-router`) - File-based routing
 
 **State Management** (3 plugins)
+
 - Zustand (`zustand`) - Lightweight state management
 - Redux Toolkit (`@reduxjs/toolkit`) - Full Redux setup with slices
 - Jotai (`jotai`) - Atomic state management
 
 **HTTP/Data Fetching** (2 plugins)
+
 - Axios (`axios`) - Configured HTTP client
 - TanStack Query (`@tanstack/react-query`) - Data fetching and caching
 
 **CSS/Styling** (4 plugins)
+
 - TailwindCSS (`tailwindcss`) - Utility-first CSS
 - Styled Components (`styled-components`) - CSS-in-JS
 - Emotion (`@emotion/react`) - CSS-in-JS with performance
 - React Bootstrap (`react-bootstrap`) - Bootstrap components
 
 **Forms** (2 plugins)
+
 - React Hook Form (`react-hook-form`) - Form validation
 - Zod (`zod`) - Schema validation
 
 **UI Components** (4 plugins)
+
 - shadcn/ui (`shadcn-ui`) - Component library
 - Radix UI (`@radix-ui/react`) - Unstyled components
 - React Icons (`react-icons`) - Icon library
 - React Hot Toast (`react-hot-toast`) - Toast notifications
 
 **Animation** (1 plugin)
+
 - Framer Motion (`framer-motion`) - Animation library
 
 **Testing** (1 plugin)
+
 - React Testing Library (`@testing-library/react`) - Testing utilities
 
 **Tooling** (3 plugins)
+
 - ESLint (`eslint`) - Code linting
 - Prettier (`prettier`) - Code formatting
 - Husky (`husky`) - Git hooks
 
 **Utilities** (1 plugin)
+
 - date-fns (`date-fns`) - Date utilities
 
 #### CLI Commands
+
 - `confjs react` - Install plugins for React projects
 - `confjs react check` - Validate current setup
 - `confjs react list` - List available plugins
 
 #### CLI Features
+
 - Interactive plugin selection with categories
 - Language selection prompt
 - Colored terminal output with spinners
@@ -268,18 +296,21 @@ This is the first stable release of confjs, ready for production use.
 - Error handling with user-friendly messages
 
 #### Testing
+
 - 586+ unit tests
 - Integration tests for plugin combinations
 - E2E CLI tests
 - Test fixtures for different project types
 
 #### Documentation
+
 - Complete README with usage examples
 - Plugin development guide (PLUGIN_DEVELOPMENT.md)
 - Contribution guidelines (CONTRIBUTING.md)
 - Comprehensive documentation in DOCUMENTATION/ folder
 
 ### Technical Details
+
 - TypeScript strict mode enabled
 - ESM module system
 - Node.js >= 20.0.0 requirement
@@ -287,8 +318,8 @@ This is the first stable release of confjs, ready for production use.
 - Package manager detection (npm, yarn, pnpm, bun)
 
 ### Developer Experience
+
 - Hot reload in development mode
 - Comprehensive type safety
 - Modular plugin architecture
 - Easy to extend with new plugins
-
