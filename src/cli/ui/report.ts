@@ -2,7 +2,7 @@ import type { InstallationReport } from '../../types/index.js'
 import type { Plugin } from '../../types/index.js'
 import type { SupportedLanguage } from '../i18n/types.js'
 import { getTranslations } from '../i18n/index.js'
-import pc from 'picocolors'
+import pc from 'chalk'
 
 /**
  * Affiche le rapport final d'installation

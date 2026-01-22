@@ -1,7 +1,7 @@
 import inquirer from 'inquirer'
 import type { SupportedLanguage } from '../i18n/types.js'
 import { getTranslations } from '../i18n/index.js'
-import pc from 'picocolors'
+import pc from 'chalk'
 import {
   nextjsSetupSchema,
   validateInput,

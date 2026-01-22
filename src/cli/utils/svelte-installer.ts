@@ -3,7 +3,7 @@ import { join } from 'path'
 import type { SvelteSetupOptions } from '../prompts/svelte-setup.js'
 import type { SupportedLanguage } from '../i18n/types.js'
 import { getTranslations } from '../i18n/index.js'
-import pc from 'picocolors'
+import pc from 'chalk'
 import { checkPathExists } from '../../utils/fs-helpers.js'
 
 /**

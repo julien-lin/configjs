@@ -1,4 +1,4 @@
-import pc from 'picocolors'
+import pc from 'chalk'
 
 export enum LogLevel {
   DEBUG = 0,
