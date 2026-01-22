@@ -583,11 +583,14 @@ Les problèmes JWT/localStorage/tokens ne concernent que:
 - **Description:** Auditer chaque plugin (routing/, state/, http/, etc) pour code malveillant/injection. Documenter findings.
 - **Effort:** 4-6 heures
 - **Scope:** Tous les plugins sous `src/plugins/`
+- **Status:** 🟢 COMPLÉTÉ
+- **Complété:** 22 jan 2026
+- **Findings:** Aucun pattern dangereux détecté. `import()` présents uniquement dans contenu généré (templates).
 - **Checklist:**
   - ✅ Pas de `eval()`, `Function()`, `require()` dynamique
   - ✅ Pas d'accès `process.env` sans raison
   - ✅ Pas de réseau non autorisé (fetch, axios)
-  - ✅ Pas de filesystem access dangerous
+  - ✅ Pas de filesystem access dangereux
 
 ---
 
@@ -601,6 +604,9 @@ Les problèmes JWT/localStorage/tokens ne concernent que:
   - Plugin modifié → rejeté
   - Signature invalide → erreur
   - Clé obsète → rejection
+- **Status:** 🟢 COMPLÉTÉ
+- **Complété:** 22 jan 2026
+- **Notes:** Tests ajoutés (signature OK / mismatch / fichier manquant / signature obsolète)
 
 ---
 
