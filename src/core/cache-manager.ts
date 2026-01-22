@@ -59,7 +59,7 @@ export interface CacheOptions {
  */
 export class CacheManager {
   private cache: Map<string, CacheEntry<unknown>> = new Map()
-  private accessOrder: string[] = []
+  private accessOrder: Map<string, true> = new Map()
   private stats = {
     hits: 0,
     misses: 0,
@@ -93,16 +93,14 @@ export class CacheManager {
     if (entry.ttl && Date.now() - entry.timestamp > entry.ttl) {
       this.cache.delete(key)
       this.currentMemory -= entry.size
+      this.accessOrder.delete(key)
       this.stats.misses++
       return undefined
     }
 
     // Update LRU: move to end
-    const index = this.accessOrder.indexOf(key)
-    if (index > -1) {
-      this.accessOrder.splice(index, 1)
-    }
-    this.accessOrder.push(key)
+    this.accessOrder.delete(key)
+    this.accessOrder.set(key, true)
 
     // Update stats
     entry.hits++
@@ -123,10 +121,7 @@ export class CacheManager {
     const existing = this.cache.get(key)
     if (existing) {
       this.currentMemory -= existing.size
-      const index = this.accessOrder.indexOf(key)
-      if (index > -1) {
-        this.accessOrder.splice(index, 1)
-      }
+      this.accessOrder.delete(key)
     }
 
     // Check memory pressure
@@ -149,7 +144,7 @@ export class CacheManager {
     }
 
     this.cache.set(key, entry)
-    this.accessOrder.push(key)
+    this.accessOrder.set(key, true)
     this.currentMemory += size
   }
 
@@ -165,10 +160,7 @@ export class CacheManager {
     if (entry.ttl && Date.now() - entry.timestamp > entry.ttl) {
       this.cache.delete(key)
       this.currentMemory -= entry.size
-      const index = this.accessOrder.indexOf(key)
-      if (index > -1) {
-        this.accessOrder.splice(index, 1)
-      }
+      this.accessOrder.delete(key)
       return false
     }
 
@@ -183,10 +175,7 @@ export class CacheManager {
     if (entry) {
       this.cache.delete(key)
       this.currentMemory -= entry.size
-      const index = this.accessOrder.indexOf(key)
-      if (index > -1) {
-        this.accessOrder.splice(index, 1)
-      }
+      this.accessOrder.delete(key)
     }
   }
 
@@ -216,7 +205,7 @@ export class CacheManager {
    */
   clear(): void {
     this.cache.clear()
-    this.accessOrder = []
+    this.accessOrder.clear()
     this.currentMemory = 0
     this.stats = {
       hits: 0,
@@ -249,17 +238,18 @@ export class CacheManager {
    * Internal: Evict least recently used entry
    */
   private evictLRU(): void {
-    if (this.accessOrder.length === 0) {
+    if (this.accessOrder.size === 0) {
       return
     }
 
-    const keyToEvict = this.accessOrder.shift()
+    const keyToEvict = this.accessOrder.keys().next().value
     if (keyToEvict) {
       const entry = this.cache.get(keyToEvict)
       if (entry) {
         this.currentMemory -= entry.size
       }
       this.cache.delete(keyToEvict)
+      this.accessOrder.delete(keyToEvict)
     }
   }
 }

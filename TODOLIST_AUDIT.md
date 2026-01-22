@@ -621,6 +621,8 @@ Les problèmes JWT/localStorage/tokens ne concernent que:
 - **Description:** Remplacer `accessOrder: string[]` par LinkedHashMap ou Map avec ordre d'insertion. Éliminer `Array.indexOf()` O(n).
 - **Effort:** 2-3 heures
 - **Gain:** 15-20% latence sur opérations répétées
+- **Status:** 🟢 COMPLÉTÉ
+- **Complété:** 22 jan 2026
 - **Problème Actuel:**
 
 ```typescript
