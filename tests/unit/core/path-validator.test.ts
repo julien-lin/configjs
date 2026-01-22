@@ -7,7 +7,13 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { validatePathInProject } from '../../../src/core/path-validator.js'
+import { join } from 'path'
+import { tmpdir } from 'os'
+import { ensureDir, mkdtemp, remove, symlink, writeFile } from 'fs-extra'
+import {
+  validatePathInProject,
+  validatePathInProjectWithSymlinks,
+} from '../../../src/core/path-validator.js'
 
 describe('Path Validator - SEC-006: Path Traversal Prevention', () => {
   const projectRoot = '/home/user/my-project'
@@ -251,6 +257,54 @@ describe('Path Validator - SEC-006: Path Traversal Prevention', () => {
       const nestedPath = 'a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z'
       const result = validatePathInProject(projectRoot, nestedPath)
       expect(result).toContain(nestedPath)
+    })
+  })
+
+  describe('Symlink Traversal - SEC-007', () => {
+    const linkType = process.platform === 'win32' ? 'junction' : 'dir'
+
+    it('should block symlink pointing outside project root', async () => {
+      const baseDir = await mkdtemp(join(tmpdir(), 'configjs-path-'))
+      const localRoot = join(baseDir, 'project')
+      const outsideRoot = join(baseDir, 'outside')
+
+      try {
+        await ensureDir(localRoot)
+        await ensureDir(outsideRoot)
+        await writeFile(join(outsideRoot, 'secret.txt'), 'secret')
+
+        const linkPath = join(localRoot, 'link-out')
+        await symlink(outsideRoot, linkPath, linkType)
+
+        await expect(
+          validatePathInProjectWithSymlinks(localRoot, 'link-out/secret.txt')
+        ).rejects.toThrow('Symlink traversal detected')
+      } finally {
+        await remove(baseDir)
+      }
+    })
+
+    it('should allow symlink pointing inside project root', async () => {
+      const baseDir = await mkdtemp(join(tmpdir(), 'configjs-path-'))
+      const localRoot = join(baseDir, 'project')
+      const targetDir = join(localRoot, 'real')
+
+      try {
+        await ensureDir(targetDir)
+        await writeFile(join(targetDir, 'ok.txt'), 'ok')
+
+        const linkPath = join(localRoot, 'link-in')
+        await symlink(targetDir, linkPath, linkType)
+
+        const result = await validatePathInProjectWithSymlinks(
+          localRoot,
+          'link-in/ok.txt'
+        )
+
+        expect(result).toBe(join(localRoot, 'link-in/ok.txt'))
+      } finally {
+        await remove(baseDir)
+      }
     })
   })
 

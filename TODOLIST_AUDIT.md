@@ -1,10 +1,28 @@
 # 📋 Todo List Complète - Audit Sécurité & Performance ConfigJS
 
 **Date de Création:** 22 janvier 2026  
-**Dernière Mise à Jour:** 23 janvier 2026 (SEC-003, SEC-005 completed, Performance CI cleanup)  
+**Dernière Mise à Jour:** 22 janvier 2026 (clarifications + alignement état du repo)  
 **Effort Total:** ~70-90 heures  
 **Durée Estimée:** 2-3 mois (4h/jour)  
 **Priorité Globale:** 🔴 CRITIQUE - Non-négociable pour production
+
+---
+
+## ✅ Mode de lecture (important)
+
+Ce document est **vivant** et combine :
+- **Historique** (ce qui a été fait / décidé)
+- **État réel** (tel que constaté dans le repo au moment de l’update)
+- **Plan d’action** (ce qui reste à faire)
+
+**Source de vérité** pour l’état actuel :
+- Le repo lui‑même (code + tests)
+- `package.json` (version publiée/locale)
+- Les rapports d’audit associés (si disponibles)
+
+**Version observée dans le repo (package.json)** : `1.1.16`  
+> Les mentions `v1.3.1` dans ce doc peuvent refléter une **release cible** ou un état futur.  
+> Si divergence, **prioriser la version du repo** et mettre à jour cette todo.
 
 ---
 
@@ -202,6 +220,8 @@ Effort estimé: 15-20 heures sur 2-3 semaines.
 
 ## 10 tâches sécurité + tests + integration
 
+### ✅ Réalisé (Phase 2 déjà fait)
+
 ### [6] ✅ SEC-006: Path Traversal Prevention
 
 - **Sévérité:** 🟠 Élevé
@@ -210,6 +230,7 @@ Effort estimé: 15-20 heures sur 2-3 semaines.
 - **Effort:** 3-4 heures ✅ COMPLÉTÉ
 - **Status:** 🟢 IMPLÉMENTÉ ET TESTÉ
 - **Complété:** 23 jan 2026
+- **Note:** À revalider dans le repo (symlink check à confirmer)
 - **CWE Reference:** CWE-22 (Improper Limitation of a Pathname to a Restricted Directory)
 - **CVSS:** 7.5 (High)
 
@@ -387,61 +408,16 @@ interface InstallOptions {
 
 ---
 
-### 🎯 BONUS - GitHub Actions Performance CI Cleanup
+### 🎯 Historique CI performance (archivé)
 
-**Status:** ✅ COMPLÉTÉ (23 jan 2026)
-
-#### Problèmes Rencontrés & Fixes
-
-1. **Exit Code 9 & 1 Errors**
-   - **Cause:** Node 18.x incompatible avec test suite (nécessite 20.x+)
-   - **Fix:** Supprimé Node 18.x de la workflow matrix
-   - **Commit:** 09d2745
-
-2. **Test Flakiness (Performance Metrics)**
-   - **Cause:** Tolérance trop stricte (10% vs 10.52% variance)
-   - **Fix:** Augmenté à 15% (réaliste pour variance système)
-   - **Commit:** 09d2745
-
-3. **Missing perf:check Script**
-   - **Cause:** Syntaxe shell redirect invalide en npm script
-   - **Fix:** Utilisé flag `--outputFile` à la place
-   - **Commit:** 09d2745
-
-4. **Windows Runner Failures (Hyperfine Download)**
-   - **Cause:** Chocolatey 503/504 errors + Scoop PATH issues
-   - **Attempts:**
-     - 1️⃣ Chocolatey + continue-on-error (rejected - ignores errors)
-     - 2️⃣ Scoop avec PATH refresh (still failed)
-     - 3️⃣ Platform-specific steps avec PowerShell (complex)
-   - **Final Fix:** Supprimé entièrement le workflow (pas nécessaire)
-   - **Commit:** 0600fb9
-
-#### Décision: Suppression Workflow Benchmarking
-
-**Raison:** Workflow performance.yml (263 lignes, 5 jobs complexes) était:
-
-- ❌ Overly complex pour CLI tool
-- ❌ Platform-specific issues (Windows, macOS, Linux incompatibilities)
-- ❌ Not essential (tests locaux suffisent)
-- ❌ External tool dependencies (hyperfine, clinic.js) problématiques
-
-**Performance Validation Maintenant Provided By:**
-
-- ✅ Unit tests (171 tests dans `key-metrics.test.ts`)
-- ✅ Security validation
-- ✅ TypeScript strict mode
-- ✅ ESLint checks
-
-**Résultat Final:**
-
-- ✅ Supprimé `.github/workflows/performance.yml` (263 lignes)
-- ✅ Simplifié CI/CD (aucune dépendance externe)
-- ✅ Tous les tests passent (1728/1728)
-- ✅ Windows runner: ✓ (no more failures)
-- ✅ Commit: 0600fb9 (chore: Remove performance benchmarking workflow)
+- ✅ Suppression du workflow `.github/workflows/performance.yml` (trop complexe / instable)
+- ✅ Ajustement de la tolérance perf (10% → 15%) + cleanup scripts
+- ✅ Décision : tests perf locaux + unit tests suffisent pour l’instant
+- ✅ Commits associés : `09d2745`, `0600fb9`
 
 ---
+
+### 🔜 À faire (Phase 2)
 
 ### [9] SEC-007: Protéger Symlink Traversal
 
@@ -1225,7 +1201,11 @@ The overall coverage of 77.35% is strong, with critical security modules (config
 
 # 📊 RÉSUMÉ EFFORT & CHRONOLOGIE
 
-## Par Phase (Original)
+## Historique (ancien planning, archivé)
+
+> ⚠️ Ce planning est conservé pour trace. Le **plan actif** est la section "Par Phase (RÉVISÉ)".
+
+### Par Phase (ancien)
 
 | Phase                    | Tâches | Effort      | Durée           | Priorité    |
 | ------------------------ | ------ | ----------- | --------------- | ----------- |
@@ -1266,35 +1246,16 @@ Semaine 7:   Management (5-8h) + Release v1.2.0
 
 ---
 
-## ⚡ PRIORITÉS IMMÉDIATES (This Week)
+## ⚡ PRIORITÉS IMMÉDIATES (révalidation rapide)
 
-### Tâches Rapides à Faire (4-7h total)
+> Ces points étaient des “quick wins”. **À revalider uniquement si divergence** entre doc et repo.
 
-**[26] Picocolors → Chalk Migration** (30 min)
+**[26] Picocolors → Chalk Migration** ✅  
+**[29] SECURITY.md** ✅  
+**[30] JSDoc sécurité** ✅  
+**[31] CHANGELOG sécurité** ✅
 
-- Remplacer imports simples dans logger.ts
-- Tests: npm test -- tests/unit/logger\*
-- ✅ Low risk
-
-**[29] Créer SECURITY.md** (1h)
-
-- Fichier d'une page avec contact + process
-- Template: GitHub security reporting
-- ✅ Documentation standard
-
-**[30] Documenter Sécurité Code** (2h)
-
-- JSDoc dans 5 fichiers critiques
-- Expliquer chaque validation/sanitization
-- ✅ Code clarity
-
-**[31] CHANGELOG v1.2.0** (1-2h)
-
-- Ajouter section Security
-- Lister SEC-001 à SEC-005 avec descriptions
-- ✅ Release preparation
-
-**Total immédiat:** 4-7 heures = **1-2 jours de travail**
+**Temps estimé si revalidation:** 1-2h (check rapide des fichiers + scripts)
 
 ---
 
@@ -1310,7 +1271,7 @@ Semaine 7:   Management (5-8h) + Release v1.2.0
 
 ## Phase 2 (Semaines 2-3)
 
-- [ ] Tous logs scrubbing de secrets
+- [x] Log scrubbing des secrets
 - [ ] Config file TOCTOU fixé
 - [ ] Symlink traversal protection
 - [ ] Tests Phase 2 passent 100%

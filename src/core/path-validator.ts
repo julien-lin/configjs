@@ -1,4 +1,5 @@
-import { resolve, normalize, sep, isAbsolute } from 'path'
+import { resolve, normalize, sep, isAbsolute, dirname } from 'path'
+import { pathExists, realpath } from 'fs-extra'
 import { z } from 'zod'
 
 /**
@@ -131,6 +132,79 @@ export function validatePathInProject(
     )
   }
 
+  return resolvedPath
+}
+
+async function findClosestExistingPath(
+  boundaryRoot: string,
+  resolvedPath: string
+): Promise<string | null> {
+  let currentPath = resolvedPath
+
+  while (true) {
+    if (await pathExists(currentPath)) {
+      return currentPath
+    }
+
+    if (currentPath === boundaryRoot) {
+      return null
+    }
+
+    const parentPath = dirname(currentPath)
+    if (parentPath === currentPath) {
+      return null
+    }
+
+    currentPath = parentPath
+  }
+}
+
+async function validateSymlinkBoundary(
+  projectRoot: string,
+  resolvedPath: string
+): Promise<void> {
+  const normalizedRoot = normalize(resolve(projectRoot))
+  const realRoot = await realpath(normalizedRoot).catch(() => normalizedRoot)
+  const existingPath = await findClosestExistingPath(
+    normalizedRoot,
+    resolvedPath
+  )
+
+  if (!existingPath) {
+    return
+  }
+
+  const realExisting = await realpath(existingPath).catch(() => existingPath)
+  const normalizedRealExisting = normalize(realExisting)
+  const normalizedRealRoot = normalize(realRoot)
+
+  const isWithinBoundary =
+    normalizedRealExisting === normalizedRealRoot ||
+    normalizedRealExisting.startsWith(normalizedRealRoot + sep)
+
+  if (!isWithinBoundary) {
+    throw new Error(
+      `Symlink traversal detected: "${resolvedPath}" resolves outside project root. ` +
+        `Resolved: "${normalizedRealExisting}", allowed: "${normalizedRealRoot}"`
+    )
+  }
+}
+
+/**
+ * Validates and resolves a user-provided path with symlink traversal protection (SEC-007)
+ * Ensures the resolved path stays within projectRoot even after symlink resolution.
+ *
+ * @param projectRoot - Absolute path to the project root directory
+ * @param userPath - User-provided path (relative)
+ * @returns Validated absolute path within projectRoot
+ * @throws {Error} If path is invalid or attempts to escape projectRoot via symlink
+ */
+export async function validatePathInProjectWithSymlinks(
+  projectRoot: string,
+  userPath: string
+): Promise<string> {
+  const resolvedPath = validatePathInProject(projectRoot, userPath)
+  await validateSymlinkBoundary(projectRoot, resolvedPath)
   return resolvedPath
 }
 
