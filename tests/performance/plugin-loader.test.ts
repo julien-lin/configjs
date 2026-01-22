@@ -1,4 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
+import { createHash } from 'crypto'
+import { join } from 'path'
+import { tmpdir } from 'os'
+import { mkdtemp, remove, writeFile } from 'fs-extra'
 import {
   LazyPluginLoader,
   type PluginModule,
@@ -316,6 +320,64 @@ describe('LazyPluginLoader', () => {
       loader.destroy()
 
       expect(loader.getAllMetadata()).toHaveLength(0)
+    })
+  })
+
+  describe('Signature Verification', () => {
+    it('should load plugin when signature matches', async () => {
+      const baseDir = await mkdtemp(join(tmpdir(), 'configjs-plugin-'))
+      const pluginPath = join(baseDir, 'plugin.js')
+      const content = 'export const plugin = {}'
+
+      try {
+        await writeFile(pluginPath, content)
+        const signature = createHash('sha256').update(content).digest('hex')
+
+        const mockModule: PluginModule = { name: 'test', version: '1.0.0' }
+        const mockLoader = async () => mockModule
+
+        loader.registerPlugin(
+          'test',
+          {
+            version: '1.0.0',
+            signature,
+            signaturePath: pluginPath,
+          },
+          mockLoader
+        )
+
+        await expect(loader.loadPlugin('test')).resolves.toBeDefined()
+      } finally {
+        await remove(baseDir)
+      }
+    })
+
+    it('should reject plugin when signature mismatches', async () => {
+      const baseDir = await mkdtemp(join(tmpdir(), 'configjs-plugin-'))
+      const pluginPath = join(baseDir, 'plugin.js')
+
+      try {
+        await writeFile(pluginPath, 'export const plugin = {}')
+
+        const mockModule: PluginModule = { name: 'test', version: '1.0.0' }
+        const mockLoader = async () => mockModule
+
+        loader.registerPlugin(
+          'test',
+          {
+            version: '1.0.0',
+            signature: 'deadbeef',
+            signaturePath: pluginPath,
+          },
+          mockLoader
+        )
+
+        await expect(loader.loadPlugin('test')).rejects.toThrow(
+          'Invalid signature'
+        )
+      } finally {
+        await remove(baseDir)
+      }
     })
   })
 })

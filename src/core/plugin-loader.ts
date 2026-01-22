@@ -1,5 +1,8 @@
 import type { CacheManager } from './cache-manager'
 import { getGlobalCacheManager } from './cache-manager'
+import { createHash } from 'crypto'
+import { readFile, pathExists } from 'fs-extra'
+import { resolve } from 'path'
 
 /**
  * Plugin execution context
@@ -19,6 +22,8 @@ export interface PluginMetadata {
   category?: string
   lazyLoad?: boolean
   priority?: number // Lower = load first
+  signature?: string
+  signaturePath?: string
 }
 
 /**
@@ -156,6 +161,7 @@ export class LazyPluginLoader {
     const attempts = this.loadAttempts?.get(name) || 0
 
     try {
+      await this.verifySignature(entry)
       const module = await entry.loader()
 
       // Initialize module if initialization hook exists
@@ -201,6 +207,41 @@ export class LazyPluginLoader {
       throw new Error(
         `Failed to load plugin "${name}" after ${this.maxRetries} retries: ${err.message}`
       )
+    }
+  }
+
+  private async verifySignature(entry: LazyPluginEntry): Promise<void> {
+    const signature = entry.metadata.signature
+    const signaturePath = entry.metadata.signaturePath
+
+    if (!signature && !signaturePath) {
+      return
+    }
+
+    if (!signature || !signaturePath) {
+      throw new Error(
+        `Signature metadata incomplete for plugin "${entry.metadata.name}"`
+      )
+    }
+
+    const resolvedPath = resolve(signaturePath)
+    if (!(await pathExists(resolvedPath))) {
+      throw new Error(
+        `Signature file not found for plugin "${entry.metadata.name}": ${resolvedPath}`
+      )
+    }
+
+    const fileContent = await readFile(resolvedPath)
+    const actualSignature = createHash('sha256')
+      .update(fileContent)
+      .digest('hex')
+    const expectedSignature = signature
+      .replace(/^sha256:/i, '')
+      .trim()
+      .toLowerCase()
+
+    if (actualSignature !== expectedSignature) {
+      throw new Error(`Invalid signature for plugin "${entry.metadata.name}"`)
     }
   }
 
