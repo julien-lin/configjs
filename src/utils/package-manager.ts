@@ -40,6 +40,15 @@ const SAFE_NPM_FLAGS = new Set([
 ])
 
 /**
+ * Helper to check for control characters in a string
+ * Returns true if any control character (0x00-0x1f) is found
+ */
+function hasControlCharacters(str: string): boolean {
+  // eslint-disable-next-line no-control-regex
+  return /[\x00-\x1f]/.test(str)
+}
+
+/**
  * Validates npm arguments to prevent flag injection attacks
  * Only allows whitelisted flags; rejects unknown flags starting with --
  *
@@ -66,6 +75,93 @@ function validateNpmArguments(args: string[]): string | null {
       const flagName = arg.split('=')[0] ?? arg
       if (!SAFE_NPM_FLAGS.has(flagName)) {
         return `Dangerous argument: ${arg}`
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * SEC-005: Validates additional arguments provided by plugins or external code
+ * Ensures they cannot be used for shell injection or argument tampering
+ *
+ * Rules:
+ * - Must start with -- (flag format)
+ * - Flag name (before =) must be in SAFE_NPM_FLAGS whitelist
+ * - No dangerous shell metacharacters allowed
+ * - No encoded escaping attempts
+ *
+ * @param args - Additional arguments to validate
+ * @returns Error message if invalid, null if valid
+ *
+ * @security
+ * Prevents: Shell injection via metacharacters
+ * Prevents: Flags starting with - or non-whitelisted flags
+ * Prevents: Encoded bypass attempts
+ *
+ * @example
+ * ```typescript
+ * validateAdditionalArgs(['--save-dev']) // null (valid)
+ * validateAdditionalArgs(['--registry=https://evil.com']) // 'Invalid flag...' (rejected)
+ * validateAdditionalArgs(['rm -rf /']) // 'Invalid argument format...' (rejected)
+ * ```
+ */
+export function validateAdditionalArgs(args: string[]): string | null {
+  if (!Array.isArray(args)) {
+    return 'Additional arguments must be an array'
+  }
+
+  for (const arg of args) {
+    if (typeof arg !== 'string') {
+      return `Invalid argument type: ${typeof arg} (expected string)`
+    }
+
+    // Check for empty strings
+    if (arg.length === 0) {
+      return 'Arguments cannot be empty strings'
+    }
+
+    // Must be in --flag or --flag=value format
+    if (!arg.startsWith('--')) {
+      return `Invalid argument format: ${arg} (must start with --)`
+    }
+
+    // Extract the flag name (everything before the first = if present)
+    const equalsIndex = arg.indexOf('=')
+    const flagName = equalsIndex === -1 ? arg : arg.substring(0, equalsIndex)
+
+    // Check flag name for dangerous characters (shell metacharacters only, not quotes)
+    if (/[;&|`$()[\]{}<>\\]/.test(flagName) || hasControlCharacters(flagName)) {
+      return `Invalid argument format: ${arg} contains dangerous characters`
+    }
+
+    // Now validate that the flag is whitelisted
+    if (!SAFE_NPM_FLAGS.has(flagName)) {
+      return `Unknown or unsafe flag: ${flagName}`
+    }
+
+    // If flag has a value (--flag=value), validate it
+    if (equalsIndex !== -1) {
+      const value = arg.substring(equalsIndex + 1)
+      if (value.length === 0) {
+        return `Flag ${flagName} has empty value`
+      }
+
+      // Check value for dangerous patterns (no shell metacharacters in value)
+      // Include quotes in value check (for escaping attempts)
+      // Also check for non-ASCII characters (unicode, emojis)
+      // eslint-disable-next-line no-control-regex
+      const hasShellChars = /[;&|`$()[\]{}\\<>'":\x00-\x1f]/.test(value)
+      const hasNonAscii = /[^\x20-\x7e\t\n-]/.test(value)
+
+      if (hasShellChars || hasNonAscii) {
+        return `Invalid argument format: ${arg} contains dangerous characters`
+      }
+
+      // Check for path traversal attempts
+      if (value.includes('../') || value.includes('..\\')) {
+        return `Invalid argument format: ${arg} contains dangerous characters`
       }
     }
   }
@@ -128,6 +224,13 @@ export interface InstallOptions {
   exact?: boolean
   /** Mode silencieux */
   silent?: boolean
+  /**
+   * SEC-005: Additional arguments to pass to npm/yarn/pnpm
+   * All arguments are validated against dangerous patterns before use
+   * Only whitelisted flags are allowed
+   * @security Prevents argument injection from plugins
+   */
+  additionalArgs?: string[]
 }
 
 /**
@@ -284,11 +387,23 @@ export async function installPackages(
     dev = false,
     exact = false,
     silent = false,
+    additionalArgs = [],
   } = options
 
   logger.info(
     `Installing ${packages.length} package(s) with ${packageManager}...`
   )
+
+  // SEC-005: Validate additional arguments to prevent injection
+  const additionalArgsError = validateAdditionalArgs(additionalArgs)
+  if (additionalArgsError) {
+    logger.error(`Invalid additional arguments: ${additionalArgsError}`)
+    return {
+      success: false,
+      packages,
+      error: additionalArgsError,
+    }
+  }
 
   try {
     // Verify lock file integrity before installation
@@ -331,6 +446,12 @@ export async function installPackages(
     if (packageManager === 'npm') {
       args.push(...securityArgs)
       args.push('--audit')
+    }
+
+    // SEC-005: Add validated additional arguments
+    if (additionalArgs.length > 0) {
+      logger.debug(`Adding ${additionalArgs.length} additional argument(s)`)
+      args.push(...additionalArgs)
     }
 
     // SEC-002: Use safe environment (whitelist sensitive vars)
