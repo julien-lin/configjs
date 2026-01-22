@@ -379,5 +379,65 @@ describe('LazyPluginLoader', () => {
         await remove(baseDir)
       }
     })
+
+    it('should reject plugin when signature file is missing', async () => {
+      const baseDir = await mkdtemp(join(tmpdir(), 'configjs-plugin-'))
+      const pluginPath = join(baseDir, 'missing.js')
+
+      try {
+        const mockModule: PluginModule = { name: 'test', version: '1.0.0' }
+        const mockLoader = async () => mockModule
+
+        loader.registerPlugin(
+          'test',
+          {
+            version: '1.0.0',
+            signature: 'deadbeef',
+            signaturePath: pluginPath,
+          },
+          mockLoader
+        )
+
+        await expect(loader.loadPlugin('test')).rejects.toThrow(
+          'Signature file not found'
+        )
+      } finally {
+        await remove(baseDir)
+      }
+    })
+
+    it('should reject plugin when signature is outdated', async () => {
+      const baseDir = await mkdtemp(join(tmpdir(), 'configjs-plugin-'))
+      const pluginPath = join(baseDir, 'plugin.js')
+
+      try {
+        const originalContent = 'export const plugin = { version: 1 }'
+        await writeFile(pluginPath, originalContent)
+        const signature = createHash('sha256')
+          .update(originalContent)
+          .digest('hex')
+
+        await writeFile(pluginPath, 'export const plugin = { version: 2 }')
+
+        const mockModule: PluginModule = { name: 'test', version: '1.0.0' }
+        const mockLoader = async () => mockModule
+
+        loader.registerPlugin(
+          'test',
+          {
+            version: '1.0.0',
+            signature: `sha256:${signature}`,
+            signaturePath: pluginPath,
+          },
+          mockLoader
+        )
+
+        await expect(loader.loadPlugin('test')).rejects.toThrow(
+          'Invalid signature'
+        )
+      } finally {
+        await remove(baseDir)
+      }
+    })
   })
 })
