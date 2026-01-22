@@ -8,6 +8,7 @@ import {
   validatePackageNames,
   getPackageValidationErrorMessage,
 } from '../core/package-validator.js'
+import { getGlobalRateLimiter } from '../core/rate-limiter.js'
 import {
   withTimeout,
   getTimeoutErrorMessage,
@@ -477,6 +478,20 @@ export async function installPackages(
   }
 
   try {
+    const rateLimiter = getGlobalRateLimiter()
+    const rateLimitResult = rateLimiter.checkRequest(projectRoot)
+    if (!rateLimitResult.allowed) {
+      const message =
+        rateLimitResult.message ??
+        'Rate limit exceeded. Please retry after cooldown.'
+      logger.warn(message)
+      return {
+        success: false,
+        packages,
+        error: message,
+      }
+    }
+
     // Verify lock file integrity before installation
     const integrityError = await verifyLockFileIntegrity(
       projectRoot,

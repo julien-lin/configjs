@@ -735,6 +735,8 @@ await Promise.all(
 - **Fichier:** `src/utils/package-manager.ts`
 - **Description:** Utiliser `rate-limiter.ts` existant pour limiter installations npm parallèles. Éviter saturation système.
 - **Effort:** 1-2 heures
+- **Status:** 🟢 COMPLÉTÉ
+- **Complété:** 22 jan 2026
 
 ---
 
@@ -744,6 +746,8 @@ await Promise.all(
 - **Fichier:** `src/core/cache-manager.ts`
 - **Description:** Implémenter expiration automatique cache (1h par défaut). Éviter memory leaks sur 1000+ appels.
 - **Effort:** 1-2 heures
+- **Status:** 🟢 COMPLÉTÉ
+- **Complété:** 22 jan 2026
 
 ---
 

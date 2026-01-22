@@ -113,6 +113,8 @@ export class CacheManager {
    * Set value in cache
    */
   set<T = unknown>(key: string, value: T, ttl?: number): void {
+    this.pruneExpired()
+
     // Calculate size (rough estimate)
     const serialized = JSON.stringify(value) ?? 'undefined'
     const size = serialized.length
@@ -218,6 +220,7 @@ export class CacheManager {
    * Get cache statistics
    */
   getStats(): CacheStats {
+    this.pruneExpired()
     const totalHits = this.stats.hits
     const totalMisses = this.stats.misses
     const total = totalHits + totalMisses
@@ -250,6 +253,16 @@ export class CacheManager {
       }
       this.cache.delete(keyToEvict)
       this.accessOrder.delete(keyToEvict)
+    }
+  }
+
+  private pruneExpired(now: number = Date.now()): void {
+    for (const [key, entry] of this.cache.entries()) {
+      if (entry.ttl && now - entry.timestamp > entry.ttl) {
+        this.cache.delete(key)
+        this.accessOrder.delete(key)
+        this.currentMemory -= entry.size
+      }
     }
   }
 }

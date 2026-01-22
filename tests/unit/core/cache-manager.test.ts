@@ -96,6 +96,14 @@ describe('CacheManager', () => {
       expect(cache.get('permanent')).toBe('value')
       expect(cache.get('permanent')).toBe('value')
     })
+
+    it('should evict expired entries during stats collection', async () => {
+      cache.set('temp', 'value', 50)
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      const stats = cache.getStats()
+      expect(stats.totalEntries).toBe(0)
+    })
   })
 
   describe('LRU Eviction', () => {
