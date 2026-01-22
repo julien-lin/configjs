@@ -129,9 +129,6 @@ describe('ConfigWriter', () => {
         },
       } as PackageJson
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
       vi.mocked(fsHelpers.readFileContent).mockResolvedValue(
         JSON.stringify(mockPackageJson)
       )
@@ -162,9 +159,6 @@ describe('ConfigWriter', () => {
         version: '1.0.0',
       } as PackageJson
 
-      vi.mocked(fsHelpers.readPackageJson).mockResolvedValue(
-        mockPackageJson as never
-      )
       vi.mocked(fsHelpers.readFileContent).mockResolvedValue(
         JSON.stringify(mockPackageJson)
       )
@@ -179,7 +173,7 @@ describe('ConfigWriter', () => {
     it('should throw error if package.json not found', async () => {
       const projectRoot = '/project'
 
-      vi.mocked(fsHelpers.readPackageJson).mockRejectedValue(
+      vi.mocked(fsHelpers.readFileContent).mockRejectedValue(
         new Error('package.json not found')
       )
 

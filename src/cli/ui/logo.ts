@@ -1,5 +1,5 @@
 /* eslint-disable */
-import pc from 'picocolors'
+import pc from 'chalk'
 
 /**
  * ASCII Art Logo for ConfigJS

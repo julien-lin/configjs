@@ -11,6 +11,8 @@ import type { IFs } from 'memfs'
 import { CompatibilityValidator } from './validator.js'
 import type { BackupManager } from './backup-manager.js'
 import { PluginTracker } from './plugin-tracker.js'
+import { SnapshotManager } from './snapshot-manager.js'
+import { TransactionLog, TransactionActionType } from './transaction-log.js'
 import { getModuleLogger } from '../utils/logger-provider.js'
 
 /**
@@ -48,6 +50,8 @@ interface ResolvedPlugins {
  */
 export class Installer {
   private tracker: PluginTracker
+  private snapshotManager: SnapshotManager
+  private transactionLog: TransactionLog
   private logger = getModuleLogger()
 
   /**
@@ -64,6 +68,8 @@ export class Installer {
     _fs?: IFs
   ) {
     this.tracker = new PluginTracker(ctx.projectRoot, ctx.fsAdapter)
+    this.snapshotManager = new SnapshotManager(ctx.projectRoot, ctx.fsAdapter)
+    this.transactionLog = new TransactionLog(ctx.projectRoot)
     // Note: fsAdapter est déjà passé à ConfigWriter et BackupManager lors de leur création
     // dans base-framework-command.ts. Ici, on garde fs pour référence future si nécessaire.
   }
@@ -89,7 +95,20 @@ export class Installer {
     const startTime = Date.now()
     this.logger.info(`Starting installation of ${plugins.length} plugin(s)`)
 
+    // PHASE 0: Initialize atomic transaction
+    const txId = this.transactionLog.startTransaction(
+      plugins.map((p) => p.name)
+    )
+    let snapshotId: string | undefined
+
     try {
+      // PHASE 1: VALIDATION (NO MODIFICATIONS)
+      this.logger.debug('PHASE 1: Validation (no modifications)')
+      this.transactionLog.log(
+        TransactionActionType.VALIDATION_START,
+        'Starting validation phase'
+      )
+
       // 0. Charger le tracker
       await this.tracker.load()
 
@@ -136,6 +155,7 @@ export class Installer {
 
       if (notInstalled.length === 0) {
         this.logger.info('All plugins are already installed')
+        this.transactionLog.endTransaction(true)
         return {
           success: true,
           duration: Date.now() - startTime,
@@ -156,7 +176,7 @@ export class Installer {
         }
       }
 
-      // 1. Validation
+      // 1. Validation de compatibilité
       this.logger.debug('Validating plugins compatibility...')
       const validationResult = this.validator.validate(notInstalled, this.ctx)
 
@@ -174,10 +194,22 @@ export class Installer {
           `Found ${validationResult.warnings.length} warning(s):`,
           validationResult.warnings.map((w) => w.message)
         )
+        for (const warning of validationResult.warnings) {
+          this.transactionLog.logWarning(warning.message)
+        }
       }
+
+      this.transactionLog.log(
+        TransactionActionType.VALIDATION_COMPLETE,
+        `Validation passed for ${notInstalled.length} plugin(s)`
+      )
 
       // 2. Résolution des dépendances
       this.logger.debug('Resolving dependencies...')
+      this.transactionLog.log(
+        TransactionActionType.DEPENDENCY_RESOLUTION,
+        'Resolving plugin dependencies'
+      )
       const resolved = this.resolveDependencies(notInstalled)
       const allPlugins = resolved.plugins
 
@@ -187,9 +219,27 @@ export class Installer {
         )
       }
 
+      // PHASE 2: BACKUP & SNAPSHOT (before any modifications)
+      this.logger.debug('PHASE 2: Creating backup and snapshot')
+      snapshotId = await this.snapshotManager.createSnapshot(
+        `Before installing ${allPlugins.map((p) => p.displayName).join(', ')}`
+      )
+      this.transactionLog.log(
+        TransactionActionType.SNAPSHOT_CREATED,
+        `Snapshot created for rollback protection`,
+        { snapshotId }
+      )
+
       // 3. Pre-install hooks
       this.logger.debug('Running pre-install hooks...')
+      this.transactionLog.log(
+        TransactionActionType.PRE_INSTALL_HOOK,
+        'Running pre-install hooks'
+      )
       await this.runPreInstallHooks(allPlugins)
+
+      // PHASE 3: INSTALLATION (with per-plugin rollback capability)
+      this.logger.debug('PHASE 3: Installation')
 
       // 4. Installation des packages (sauf si skipPackageInstall)
       let installResults: InstallResult[] = []
@@ -197,6 +247,10 @@ export class Installer {
         this.logger.info('Skipping package installation (--no-install mode)')
       } else {
         this.logger.debug('Installing packages...')
+        this.transactionLog.log(
+          TransactionActionType.PACKAGE_INSTALL_START,
+          'Starting package installation'
+        )
         installResults = await this.installPackages(allPlugins)
 
         // Vérifier les échecs d'installation
@@ -206,6 +260,11 @@ export class Installer {
             `Failed to install packages for ${failedInstalls.length} plugin(s)`
           )
         }
+
+        this.transactionLog.log(
+          TransactionActionType.PACKAGE_INSTALL_COMPLETE,
+          `Successfully installed packages for ${allPlugins.length} plugin(s)`
+        )
       }
 
       // 5. Configuration (séquentielle pour respecter l'ordre)
@@ -216,6 +275,12 @@ export class Installer {
       for (const plugin of allPlugins) {
         try {
           this.logger.debug(`Configuring ${plugin.displayName}...`)
+          this.transactionLog.log(
+            TransactionActionType.PLUGIN_CONFIGURE_START,
+            `Starting configuration for ${plugin.displayName}`,
+            { plugin: plugin.name }
+          )
+
           const configResult = await plugin.configure(this.ctx)
           configResults.push(configResult)
           filesCreated.push(...(configResult.files || []))
@@ -225,11 +290,25 @@ export class Installer {
               `Configuration failed for ${plugin.displayName}: ${configResult.message || 'Unknown error'}`
             )
           }
+
+          this.transactionLog.log(
+            TransactionActionType.PLUGIN_CONFIGURE_COMPLETE,
+            `Configuration complete for ${plugin.displayName}`,
+            {
+              plugin: plugin.name,
+              filesCreated: configResult.files?.length ?? 0,
+            }
+          )
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : String(error)
           this.logger.error(
             `Configuration failed for ${plugin.displayName}: ${errorMessage}`
+          )
+          this.transactionLog.logError(
+            `Configuration failed for ${plugin.displayName}`,
+            error instanceof Error ? error : new Error(errorMessage),
+            { plugin: plugin.name }
           )
           throw error
         }
@@ -237,7 +316,18 @@ export class Installer {
 
       // 6. Post-install hooks
       this.logger.debug('Running post-install hooks...')
+      this.transactionLog.log(
+        TransactionActionType.POST_INSTALL_HOOK,
+        'Running post-install hooks'
+      )
       await this.runPostInstallHooks(allPlugins)
+
+      // PHASE 4: CLEANUP (on success)
+      this.logger.debug('PHASE 4: Cleanup on success')
+      this.transactionLog.log(
+        TransactionActionType.CLEANUP_START,
+        'Starting cleanup'
+      )
 
       // 7. Marquer les plugins comme installés
       this.logger.debug('Tracking installed plugins...')
@@ -264,6 +354,16 @@ export class Installer {
         })
       }
 
+      // Release snapshot on success (no longer needed for rollback)
+      if (snapshotId) {
+        this.snapshotManager.releaseSnapshot(snapshotId)
+      }
+
+      this.transactionLog.log(
+        TransactionActionType.CLEANUP_COMPLETE,
+        'Cleanup complete'
+      )
+
       // 8. Rapport final
       const duration = Date.now() - startTime
       const installed = allPlugins.map((p) => p.name)
@@ -271,6 +371,8 @@ export class Installer {
       this.logger.info(
         `Successfully installed ${installed.length} plugin(s) in ${duration}ms`
       )
+
+      this.transactionLog.endTransaction(true, snapshotId)
 
       return {
         success: true,
@@ -283,20 +385,57 @@ export class Installer {
       const errorMessage =
         error instanceof Error ? error.message : String(error)
       this.logger.error(`Installation failed: ${errorMessage}`)
+      this.transactionLog.logError(
+        'Installation failed',
+        error instanceof Error ? error : new Error(errorMessage)
+      )
 
-      // Rollback
-      this.logger.debug('Rolling back changes...')
+      // ROLLBACK PHASE
+      this.logger.debug('ROLLBACK: Starting rollback procedure')
+      this.transactionLog.log(
+        TransactionActionType.ROLLBACK_START,
+        'Starting rollback'
+      )
+
       try {
+        // 1. Restore snapshot first (most important)
+        if (snapshotId && this.snapshotManager.hasSnapshot(snapshotId)) {
+          this.logger.debug(
+            `Restoring snapshot ${snapshotId} to previous state`
+          )
+          await this.snapshotManager.restoreSnapshot(snapshotId)
+          this.logger.info('Snapshot restored successfully')
+        }
+
+        // 2. Call plugin-specific rollback hooks
         await this.rollback(plugins)
+
+        // 3. Keep snapshot available for debugging (don't release)
+        this.transactionLog.log(
+          TransactionActionType.ROLLBACK_COMPLETE,
+          'Rollback complete - snapshot retained for debugging'
+        )
       } catch (rollbackError) {
         const rollbackMessage =
           rollbackError instanceof Error
             ? rollbackError.message
             : String(rollbackError)
         this.logger.error(`Rollback failed: ${rollbackMessage}`)
+        this.transactionLog.logError(
+          'Rollback procedure failed',
+          rollbackError instanceof Error
+            ? rollbackError
+            : new Error(rollbackMessage)
+        )
       }
 
       const duration = Date.now() - startTime
+
+      this.transactionLog.endTransaction(false, snapshotId)
+
+      // Log transaction report for debugging
+      const txReport = this.transactionLog.formatReport(txId)
+      this.logger.debug(`Transaction report:\n${txReport}`)
 
       return {
         success: false,
@@ -305,6 +444,9 @@ export class Installer {
         warnings: [],
         filesCreated: [],
       }
+    } finally {
+      // Cleanup resources
+      this.snapshotManager.destroy()
     }
   }
 

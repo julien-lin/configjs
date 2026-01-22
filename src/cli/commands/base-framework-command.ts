@@ -21,7 +21,7 @@ import { SpinnerManager } from '../ui/spinner.js'
 import { displayInstallationReport } from '../ui/report.js'
 import { displayLogo } from '../ui/logo.js'
 import { getFrameworkMetadata } from '../../core/framework-registry.js'
-import pc from 'picocolors'
+import pc from 'chalk'
 
 /**
  * Classe abstraite de base pour les commandes d'installation de framework
