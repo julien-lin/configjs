@@ -783,6 +783,7 @@ await Promise.all(
   - ✅ Credits & Contact
 
 **Conformité Standards:**
+
 - ✅ Suit GitHub SECURITY.md template
 - ✅ Conforme au standard CVSS pour sévérités
 - ✅ Coordinated disclosure (industrie standard)
@@ -790,12 +791,41 @@ await Promise.all(
 
 ---
 
-### [30] 📖 À FAIRE: Documenter Sécurité Code
+### [30] ✅ COMPLÉTÉ: Documenter Sécurité Code
+
+- **Status:** 🟢 DÉPLOIÉ (22 jan 2026)
+- **Effort:** 2 heures ✅ COMPLÉTÉ
+- **Fichiers documentés:**
+  - ✅ **path-validator.ts** (SEC-006): Boundary checking, normalization, traversal blocks
+  - ✅ **config-sanitizer.ts** (SEC-007): Pattern detection, escaping, prototype pollution
+  - ✅ **input-validator.ts** (SEC-005): Zod schemas, whitelist approach, transformation
+  - ✅ **package-manager.ts** (SEC-001): Whitelist flags, safe environment, argument validation
+  - ✅ **logger-provider.ts** (SEC-003): Scrubbing, automatic redaction, 16+ pattern types
+
+**Documentation ajoutée:**
+- ✅ Descriptions détaillées des mesures de sécurité pour chaque module
+- ✅ Attack vectors explicites (avec ❌ symboles pour clarté)
+- ✅ References OWASP & CWE pour chaque issue
+- ✅ CVSS severity scores
+- ✅ Implementation strategies et patterns
+- ✅ Examples de code pour les attaques bloquées
+- ✅ JSDoc complets suivant standards TypeScript
+- ✅ Links vers specs officielles (npm config, OWASP, etc.)
+
+**Impact:**
+- Developers + security auditors peuvent rapidement comprendre le modèle de sécurité
+- Futurs contributers ont une reference pour les nouvelles features
+- Compliance avec OWASP & CWE standards
+- Facilite code reviews et security assessments
+
+---
+
+### [31] 📝 À FAIRE: CHANGELOG Sécurité v1.2.0
 
 - **Sévérité:** 🟢 Bas
-- **Fichiers:** path-validator.ts, config-sanitizer.ts, input-validator.ts, package-manager.ts, logger-provider.ts
-- **Description:** JSDoc expliquant mesures sécurité (validation, sanitization, whitelisting)
-- **Effort:** 2 heures
+- **Fichier:** `CHANGELOG.md` (ajouter section Security)
+- **Description:** Documenter SEC-001/002/003/004/005 avec descriptions et impacts
+- **Effort:** 1-2 heures
 
 ---
 

