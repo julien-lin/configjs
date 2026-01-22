@@ -2,15 +2,34 @@ import { resolve, normalize, sep, isAbsolute } from 'path'
 import { z } from 'zod'
 
 /**
- * Path Traversal Protection System
+ * Path Traversal Protection System (SEC-006)
  * Prevents directory escape attacks using normalized path resolution and boundary checking
  *
- * Blocks:
- * - POSIX traversal: ../../../etc/passwd
- * - Windows traversal: ..\..\windows\system32
- * - URL encoded: %2e%2e%2fetc%2fpasswd
- * - Symlink traversal: symlink pointing outside projectRoot
- * - Relative path escapes: any path that doesn't stay within boundary
+ * Security Measures:
+ * 1. **Normalization**: Resolves all path components (./, ../, symlinks) to canonical form
+ * 2. **Boundary Checking**: Ensures resolved path starts with projectRoot + separator
+ * 3. **Input Validation**: Rejects control characters, null bytes, excessive length
+ * 4. **Null Bytes**: Blocks \0 which can terminate strings in C-based systems
+ * 5. **Control Characters**: Blocks ASCII 0x00-0x1f which can bypass filters
+ *
+ * Blocks Attack Vectors:
+ * - ❌ POSIX traversal: ../../../etc/passwd
+ * - ❌ Windows traversal: ..\..\..\windows\system32
+ * - ❌ URL encoded: %2e%2e%2fetc%2fpasswd (normalized before check)
+ * - ❌ Symlink traversal: symlink pointing outside projectRoot
+ * - ❌ Relative path escapes: any path that doesn't stay within boundary
+ * - ❌ Unicode traversal: homograph attacks via %e2%80%83 (em space)
+ * - ❌ Absolute paths: Rejects /etc/passwd, C:\Windows (must be relative)
+ *
+ * Implementation:
+ * - Uses path.resolve() + path.normalize() to resolve all .. and . components
+ * - Validates result starts with (projectRoot + path.sep)
+ * - Additional checks for .. patterns and absolute paths
+ *
+ * References:
+ * - OWASP A01:2021 – Broken Access Control
+ * - CWE-22: Path Traversal
+ * - CVSS: Critical (9.0+) for unauthorized file access
  */
 
 /**

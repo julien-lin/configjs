@@ -80,9 +80,42 @@ class NoOpLogger implements ILogger {
 }
 
 /**
- * SEC-003: ScrubbingLogger - Wraps ILogger with sensitive data redaction
+ * SEC-003: ScrubbingLogger - Wraps ILogger with Sensitive Data Redaction
  * All log messages are automatically scrubbed of credentials, tokens, and URLs with auth
- * This is a defensive security layer to prevent accidental credential leakage
+ * This is a **defensive security layer** to prevent accidental credential leakage
+ *
+ * Security Properties:
+ * - **Automatic Redaction**: Every log message is passed through scrubSensitiveData()
+ * - **Pattern Matching**: Regex patterns detect 16+ sensitive data types
+ * - **Layered Defense**: Even if code accidentally logs secrets, they get redacted
+ * - **Transparent Wrapping**: Modules don't need to know about scrubbing
+ *
+ * Patterns Blocked (from logger.ts scrubSensitiveData):
+ * - ❌ NPM_TOKEN=xxx → [REDACTED]
+ * - ❌ Authorization: Bearer token123 → [REDACTED]
+ * - ❌ http://user:password@host → [REDACTED]
+ * - ❌ AWS_SECRET_ACCESS_KEY=xxx → [REDACTED]
+ * - ❌ PRIVATE_KEY=-----BEGIN PRIVATE KEY----- → [REDACTED]
+ * - ❌ GH_TOKEN, GH_PAT, GITHUB_TOKEN → [REDACTED]
+ * - ❌ Database URLs with passwords → [REDACTED]
+ * - ❌ API keys, JWT tokens, OAuth tokens → [REDACTED]
+ * - ❌ Slack tokens, Discord tokens → [REDACTED]
+ * - ❌ SSH keys, API credentials → [REDACTED]
+ * - ❌ Encryption keys → [REDACTED]
+ * - ❌ Email addresses (optional) → [REDACTED]
+ * - ❌ IPv4 addresses (optional) → [REDACTED]
+ * - ❌ Credit card numbers (optional) → [REDACTED]
+ *
+ * Implementation:
+ * - Wraps ILogger and intercepts all method calls
+ * - Scrubs message and all arguments before delegation
+ * - Handles serialization (objects → JSON) for comprehensive coverage
+ * - Graceful failure (returns original arg if serialization fails)
+ *
+ * References:
+ * - OWASP A02:2021 – Cryptographic Failures
+ * - CWE-532: Sensitive Data Exposure in Logs
+ * - CVSS: High (7.0-8.9) for credential leakage
  */
 class ScrubbingLogger implements ILogger {
   constructor(private innerLogger: ILogger) {}

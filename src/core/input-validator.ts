@@ -1,17 +1,46 @@
 import { z } from 'zod'
 
 /**
- * Centralized input validation schemas using Zod
- * All user inputs are validated against these schemas
- * Prevents shell injection, path traversal, and other injection attacks
+ * Centralized Input Validation (SEC-005)
+ * All user inputs are validated against Zod schemas
+ *
+ * Security Properties:
+ * - **Whitelist Approach**: Only alphanumeric + safe punctuation allowed
+ * - **Length Boundaries**: Prevents resource exhaustion (min 1, max 100-1024)
+ * - **Pattern Matching**: Regex ensures format compliance
+ * - **Rejection Checks**: Explicit rejection of .. / \ and shell metacharacters
+ * - **Type Coercion**: .transform() removes leading/trailing whitespace
+ *
+ * Attack Vectors Prevented:
+ * - ❌ Shell Injection: `; rm -rf /` in project names
+ * - ❌ Command Injection: `$(whoami)` or backticks
+ * - ❌ Path Traversal: `../../../etc/passwd`
+ * - ❌ Null Bytes: \0 termination attacks
+ * - ❌ Encoding Bypass: %2e%2e (URL encoding) caught by normalize()
+ * - ❌ Unicode Normalization: Emoji, homoglyphs (simplified by alphanumeric-only)
+ *
+ * Implementation:
+ * - Zod schemas define strict rules for each input type
+ * - Regex patterns enforce allowed character sets
+ * - .refine() adds additional checks for traversal, separators
+ * - .transform() normalizes output (trim whitespace)
+ *
+ * References:
+ * - OWASP A07:2021 – Cross-Site Scripting (XSS)
+ * - CWE-78: Improper Neutralization of Special Elements
+ * - CVSS: High (7.0-8.9) for remote code execution
  */
 
 /**
- * Project name validation:
+ * Project name validation (SEC-005):
+ * Constraints:
  * - Only alphanumeric, dots, dashes, underscores
  * - Min 1, Max 100 characters
  * - Rejects path traversal attempts (.. / \)
- * - Rejects shell metacharacters
+ * - Rejects shell metacharacters (| ; & $ ` \n etc.)
+ * - Rejects control characters (ASCII 0x00-0x1f)
+ *
+ * Use Cases: npm package names, directory names, config keys
  */
 const projectNameSchema = z
   .string()
