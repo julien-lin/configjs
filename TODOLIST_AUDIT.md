@@ -724,6 +724,8 @@ await Promise.all(
 - **Description:** Mémoriser `JSON.parse()` results pendant opération. Éviter re-parsing répétés.
 - **Effort:** 1-2 heures
 - **Gain:** 40-50ms par modification
+- **Status:** 🟢 COMPLÉTÉ
+- **Complété:** 22 jan 2026
 
 ---
 
