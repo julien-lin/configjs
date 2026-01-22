@@ -112,6 +112,7 @@ chore: update deps
    - Coverage ≥ 80% obligatoire
    - 0 erreur ESLint
    - 0 warning TypeScript
+   - ✅ **Pour valider une étape** : `npm run typecheck`, `npm run lint`, `npm run test:unit` doivent tous passer
    - Types explicites (pas de `any`)
    - Fonctions pures quand possible
 

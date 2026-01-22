@@ -4,7 +4,7 @@ import { getModuleLogger } from './logger-provider.js'
 import type { IFsAdapter } from '../core/fs-adapter.js'
 import { createDefaultFsAdapter } from '../core/fs-adapter.js'
 import {
-  validatePathInProject,
+  validatePathInProjectWithSymlinks,
   getPathValidationErrorMessage,
 } from '../core/path-validator.js'
 
@@ -263,8 +263,8 @@ export async function copyFile(
   // SECURITY: Validate paths stay within projectRoot if provided
   if (projectRoot) {
     try {
-      srcPath = validatePathInProject(projectRoot, src)
-      destPath = validatePathInProject(projectRoot, dest)
+      srcPath = await validatePathInProjectWithSymlinks(projectRoot, src)
+      destPath = await validatePathInProjectWithSymlinks(projectRoot, dest)
     } catch (error) {
       const errorMsg = getPathValidationErrorMessage(error)
       logger.error(`Path traversal attempt blocked: ${errorMsg}`)
@@ -403,7 +403,7 @@ export async function readFileContent(
   // SECURITY: Validate path stays within projectRoot if provided
   if (projectRoot) {
     try {
-      fullPath = validatePathInProject(projectRoot, filePath)
+      fullPath = await validatePathInProjectWithSymlinks(projectRoot, filePath)
     } catch (error) {
       const errorMsg = getPathValidationErrorMessage(error)
       logger.error(`Path traversal attempt blocked: ${errorMsg}`)
@@ -460,7 +460,7 @@ export async function writeFileContent(
   // SECURITY: Validate path stays within projectRoot if provided
   if (projectRoot) {
     try {
-      fullPath = validatePathInProject(projectRoot, filePath)
+      fullPath = await validatePathInProjectWithSymlinks(projectRoot, filePath)
     } catch (error) {
       const errorMsg = getPathValidationErrorMessage(error)
       logger.error(`Path traversal attempt blocked: ${errorMsg}`)

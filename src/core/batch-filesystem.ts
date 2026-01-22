@@ -2,8 +2,7 @@
  * Batch Filesystem Adapter
  *
  * Optimizes I/O operations by batching reads and writes:
- * - Groups operations by type (reads, writes, mkdir, etc.)
- * - Executes batches in parallel
+ * - Executes per-file queues in parallel
  * - Maintains FIFO ordering per file
  * - Reduces system call overhead
  *
@@ -35,16 +34,6 @@ interface QueuedOperation<T = unknown> {
   resolve: (value: T) => void
   reject: (reason?: unknown) => void
   timestamp: number
-}
-
-/**
- * Batch of operations of the same type
- */
-interface OperationBatch {
-  type: OperationType
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  operations: QueuedOperation<any>[]
-  createdAt: number
 }
 
 /**
@@ -156,10 +145,12 @@ export class BatchFilesystem {
     this.clearTimer()
 
     try {
-      const batches = this.groupIntoBatches()
+      const queuedEntries = Array.from(this.queue.entries())
+      this.queue.clear()
 
-      // Execute batches in parallel (same type operations)
-      await Promise.all(batches.map((batch) => this.executeBatch(batch)))
+      await Promise.all(
+        queuedEntries.map(([, operations]) => this.executeFileQueue(operations))
+      )
     } finally {
       this.inProgress = false
     }
@@ -250,47 +241,19 @@ export class BatchFilesystem {
   }
 
   /**
-   * Internal: Group operations into batches by type
+   * Internal: Execute queued operations sequentially per file
    */
-  private groupIntoBatches(): OperationBatch[] {
-    const batches = new Map<OperationType, OperationBatch>()
-
-    for (const operations of this.queue.values()) {
-      for (const op of operations) {
-        if (!batches.has(op.type)) {
-          batches.set(op.type, {
-            type: op.type,
-            operations: [],
-            createdAt: Date.now(),
-          })
-        }
-        const batch = batches.get(op.type)
-        if (batch) {
-          batch.operations.push(op)
-        }
+  private async executeFileQueue(
+    operations: QueuedOperation<unknown>[]
+  ): Promise<void> {
+    for (const op of operations) {
+      try {
+        await this.executeOperation(op)
+      } catch {
+        // Error already passed to op.reject in executeOperation
+        // Continue processing remaining operations
       }
     }
-
-    this.queue.clear()
-    return Array.from(batches.values())
-  }
-
-  /**
-   * Internal: Execute a batch of operations
-   */
-  private async executeBatch(batch: OperationBatch): Promise<void> {
-    const promises = batch.operations.map((op) =>
-      this.executeOperation(op)
-        .then(() => {
-          // Success - operation already resolved in executeOperation
-        })
-        .catch(() => {
-          // Error already passed to op.reject in executeOperation
-          // Don't re-throw to allow other operations to complete
-        })
-    )
-
-    await Promise.all(promises)
   }
 
   /**

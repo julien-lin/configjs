@@ -1,15 +1,82 @@
-import { readFile } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { readFile, pathExists } from 'fs-extra'
+import { join, resolve, relative } from 'path'
+import { createHash } from 'crypto'
 import { pluginRegistry } from '../../plugins/registry.js'
 import {
   CompatibilityValidator,
   allCompatibilityRules,
 } from '../../core/validator.js'
 import { logger } from '../../utils/logger.js'
+import { ConfigSanitizer } from '../../core/config-sanitizer.js'
+import {
+  validatePathInProjectWithSymlinks,
+  getPathValidationErrorMessage,
+} from '../../core/path-validator.js'
 
 interface ConfigFile {
   plugins: string[]
+}
+
+function hashContent(content: string | Buffer): string {
+  return createHash('sha256').update(content).digest('hex')
+}
+
+function parseConfigFile(content: string): ConfigFile {
+  const parsed = ConfigSanitizer.validateJSON(content)
+  const plugins = parsed['plugins']
+
+  if (!Array.isArray(plugins)) {
+    throw new Error(
+      'Le champ "plugins" doit être un tableau de noms de packages'
+    )
+  }
+
+  const normalizedPlugins = plugins.filter(
+    (plugin): plugin is string => typeof plugin === 'string'
+  )
+
+  if (normalizedPlugins.length !== plugins.length) {
+    throw new Error('Le champ "plugins" doit contenir uniquement des chaînes')
+  }
+
+  return { plugins: normalizedPlugins }
+}
+
+async function readConfigFileSafely(
+  configPath: string,
+  projectRoot: string
+): Promise<ConfigFile> {
+  const resolvedRoot = resolve(projectRoot)
+  const resolvedConfigPath = resolve(configPath)
+  const relativePath = relative(resolvedRoot, resolvedConfigPath)
+
+  let safePath = resolvedConfigPath
+  try {
+    safePath = await validatePathInProjectWithSymlinks(
+      resolvedRoot,
+      relativePath
+    )
+  } catch (error) {
+    const errorMessage = getPathValidationErrorMessage(error)
+    throw new Error(`Chemin de config invalide: ${errorMessage}`)
+  }
+
+  if (!(await pathExists(safePath))) {
+    throw new Error(`Fichier de configuration introuvable: ${safePath}`)
+  }
+
+  const firstRead = await readFile(safePath, 'utf-8')
+  const firstHash = hashContent(firstRead)
+  const secondRead = await readFile(safePath, 'utf-8')
+  const secondHash = hashContent(secondRead)
+
+  if (firstHash !== secondHash) {
+    throw new Error(
+      'Le fichier de configuration a changé pendant la lecture (TOCTOU détecté). Relancez la commande.'
+    )
+  }
+
+  return parseConfigFile(firstRead)
 }
 
 /**
@@ -21,15 +88,22 @@ export async function checkCompatibility(options: {
   config?: string
 }): Promise<void> {
   try {
-    console.log('\n🔍 Vérification de la compatibilité\n')
+    logger.header('Vérification de la compatibilité')
 
     // 1. Lire le fichier de configuration
     const configPath = options.config || join(process.cwd(), '.confjs.json')
 
-    if (!existsSync(configPath)) {
-      console.error(`❌ Fichier de configuration introuvable: ${configPath}`)
-      console.log('\n💡 Créez un fichier .confjs.json avec le format suivant:')
-      console.log(
+    let config: ConfigFile
+    try {
+      config = await readConfigFileSafely(configPath, process.cwd())
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      logger.error(
+        `Erreur de lecture du fichier de configuration: ${errorMessage}`
+      )
+      logger.info('Créez un fichier .confjs.json avec le format suivant:')
+      logger.info(
         JSON.stringify(
           {
             plugins: ['react-router-dom', 'zustand', 'tailwindcss'],
@@ -41,23 +115,9 @@ export async function checkCompatibility(options: {
       process.exit(1)
     }
 
-    const configContent = await readFile(configPath, 'utf-8')
-    let config: ConfigFile
-    try {
-      const parsed: unknown = JSON.parse(configContent)
-      config = parsed as ConfigFile
-    } catch {
-      console.error(
-        '❌ Erreur de parsing JSON dans le fichier de configuration'
-      )
-      process.exit(1)
-    }
-
     if (!config.plugins || !Array.isArray(config.plugins)) {
-      console.error('❌ Format de configuration invalide')
-      console.log(
-        '   Le champ "plugins" doit être un tableau de noms de packages'
-      )
+      logger.error('Format de configuration invalide')
+      logger.info('Le champ "plugins" doit être un tableau de noms de packages')
       process.exit(1)
     }
 
@@ -67,7 +127,7 @@ export async function checkCompatibility(options: {
       .filter(Boolean)
 
     if (selectedPlugins.length === 0) {
-      console.error('❌ Aucun plugin valide trouvé dans la configuration')
+      logger.error('Aucun plugin valide trouvé dans la configuration')
       process.exit(1)
     }
 
@@ -75,21 +135,21 @@ export async function checkCompatibility(options: {
       (name) => !pluginRegistry.find((p) => p.name === name)
     )
     if (notFound.length > 0) {
-      console.warn('\n⚠️  Plugins non trouvés:')
+      logger.warn('Plugins non trouvés:')
       for (const name of notFound) {
-        console.warn(`   • ${name}`)
+        logger.item(name, 'yellow')
       }
     }
 
-    console.log(`📦 Plugins à vérifier: ${selectedPlugins.length}`)
+    logger.section(`Plugins à vérifier: ${selectedPlugins.length}`)
     for (const plugin of selectedPlugins) {
       if (plugin) {
-        console.log(`   • ${plugin.displayName} (${plugin.name})`)
+        logger.item(`${plugin.displayName} (${plugin.name})`, 'blue')
       }
     }
 
     // 3. Validation
-    console.log('\n🔍 Analyse de compatibilité...\n')
+    logger.section('Analyse de compatibilité...')
 
     const validator = new CompatibilityValidator(allCompatibilityRules)
     const validation = validator.validate(
@@ -98,54 +158,48 @@ export async function checkCompatibility(options: {
 
     // 4. Afficher les résultats
     if (validation.errors.length === 0) {
-      console.log('✅ Aucun conflit détecté\n')
+      logger.success('Aucun conflit détecté')
     } else {
-      console.error('❌ Conflits détectés:\n')
+      logger.error('Conflits détectés:')
       for (const error of validation.errors) {
-        console.error(`   • ${error.message}`)
+        logger.item(error.message, 'yellow')
         if ('plugins' in error && error.plugins) {
-          console.error(`     Plugins: ${error.plugins.join(', ')}`)
+          logger.dim(`Plugins: ${error.plugins.join(', ')}`)
         }
       }
-      console.log('')
     }
 
     if (validation.warnings.length > 0) {
-      console.warn('⚠️  Avertissements:\n')
+      logger.warn('Avertissements:')
       for (const warning of validation.warnings) {
-        console.warn(`   • ${warning.message}`)
+        logger.item(warning.message, 'yellow')
         if ('plugins' in warning && warning.plugins) {
-          console.warn(`     Plugins: ${warning.plugins.join(', ')}`)
+          logger.dim(`Plugins: ${warning.plugins.join(', ')}`)
         }
       }
-      console.log('')
     }
 
     if (validation.suggestions.length > 0) {
-      console.log('💡 Suggestions:\n')
+      logger.info('Suggestions:')
       for (const suggestion of validation.suggestions) {
-        console.log(`   • ${suggestion}`)
+        logger.item(suggestion, 'blue')
       }
-      console.log('')
     }
 
     // 5. Résultat final
     if (validation.valid) {
-      console.log(
-        "✨ Configuration valide ! Vous pouvez procéder à l'installation.\n"
+      logger.success(
+        "Configuration valide. Vous pouvez procéder à l'installation."
       )
       process.exit(0)
     } else {
-      console.error(
-        "❌ Configuration invalide. Corrigez les erreurs avant d'installer.\n"
+      logger.error(
+        "Configuration invalide. Corrigez les erreurs avant d'installer."
       )
       process.exit(2)
     }
   } catch (error) {
     logger.error('Erreur lors de la vérification:', error)
-    if (error instanceof Error) {
-      console.error(`\n❌ ${error.message}`)
-    }
     process.exit(1)
   }
 }
