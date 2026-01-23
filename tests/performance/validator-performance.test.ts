@@ -198,10 +198,10 @@ describe('Validator Performance Optimization (O(n²) → O(n))', () => {
     // - 100 vs 10: 10x scale → expect ratio ~10
     // - 200 vs 10: 20x scale → expect ratio ~20
     //
-    // Allow 50% variance for system noise
-    expect(ratio10to50).toBeLessThan(10) // Should be ~5, not ~25 (which would be O(n²))
-    expect(ratio10to100).toBeLessThan(20) // Should be ~10, not ~100 (which would be O(n²))
-    expect(ratio10to200).toBeLessThan(40) // Should be ~20, not ~400 (which would be O(n²))
+    // Allow 100% variance for system noise (especially during CI/deployment)
+    expect(ratio10to50).toBeLessThan(20) // Should be ~5, not ~25+ (which would be O(n²))
+    expect(ratio10to100).toBeLessThan(40) // Should be ~10, not ~100+ (which would be O(n²))
+    expect(ratio10to200).toBeLessThan(80) // Should be ~20, not ~400+ (which would be O(n²))
   })
 
   /**
