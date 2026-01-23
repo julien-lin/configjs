@@ -1,6 +1,10 @@
 import { resolve, normalize, sep, isAbsolute, dirname } from 'path'
-import { pathExists, realpath } from 'fs-extra'
+import { realpath as realpathCallback } from 'fs/promises'
+import fs from 'fs-extra'
 import { z } from 'zod'
+
+const pathExists = fs.pathExists
+const realpath = realpathCallback
 
 /**
  * Path Traversal Protection System (SEC-006)
