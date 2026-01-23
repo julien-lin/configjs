@@ -220,6 +220,35 @@ export const reduxToolkitPlugin: Plugin = {
         )
       }
 
+      // 7. Mettre à jour vite.config.ts pour optimiser Redux Toolkit
+      const viteConfigPath = join(ctx.projectRoot, `vite.config.${extension}`)
+      const viteConfigExists = await checkPathExists(
+        viteConfigPath,
+        ctx.fsAdapter
+      )
+
+      if (viteConfigExists) {
+        const viteConfigContent = await readFileContent(
+          viteConfigPath,
+          'utf-8',
+          ctx.fsAdapter
+        )
+        const updatedViteContent = updateViteConfigForRedux(viteConfigContent)
+
+        if (updatedViteContent !== viteConfigContent) {
+          await writer.writeFile(viteConfigPath, updatedViteContent, {
+            backup: true,
+          })
+          files.push({
+            type: 'modify',
+            path: normalizePath(viteConfigPath),
+            content: updatedViteContent,
+            backup: true,
+          })
+          logger.info(`Updated vite.config.${extension} for Redux Toolkit`)
+        }
+      }
+
       return {
         files,
         success: true,
@@ -599,4 +628,49 @@ function injectProvider(content: string, isTypeScript: boolean): string {
   }
 
   return modifiedContent
+}
+
+/**
+ * Met à jour vite.config.ts pour optimiser les imports de Redux Toolkit
+ */
+function updateViteConfigForRedux(content: string): string {
+  // Vérifier si optimizeDeps est déjà configuré
+  if (content.includes('optimizeDeps')) {
+    return content // Déjà configuré
+  }
+
+  // Chercher le dernier "}" de la configuration
+  const defineConfigMatch = content.match(
+    /export\s+default\s+defineConfig\s*\(/
+  )
+  const exportDefaultMatch = content.match(/export\s+default\s*\{/)
+
+  if (!defineConfigMatch && !exportDefaultMatch) {
+    return content // Format non reconnu
+  }
+
+  let closingPattern = ''
+  if (defineConfigMatch) {
+    closingPattern = '})'
+  } else {
+    closingPattern = '}'
+  }
+
+  const lastClosingPos = content.lastIndexOf(closingPattern)
+  if (lastClosingPos === -1) return content
+
+  const beforeClosing = content.substring(0, lastClosingPos).trimEnd()
+  const afterClosing = content.substring(lastClosingPos)
+
+  // Ajouter optimizeDeps avec virgule si nécessaire
+  const endsWithCommaOrBrace =
+    beforeClosing.endsWith(',') || beforeClosing.endsWith('{')
+  const comma = endsWithCommaOrBrace ? '' : ','
+
+  const optimizeDepsConfig = `${comma}
+  optimizeDeps: {
+    include: ['@reduxjs/toolkit', 'react-redux'],
+  }`
+
+  return beforeClosing + optimizeDepsConfig + '\n' + afterClosing
 }
